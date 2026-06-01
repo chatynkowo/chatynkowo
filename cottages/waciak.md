@@ -1,5 +1,5 @@
 ---
-title: "Chata z waty Skrzata trocinożercy"
+title: "Chata z waty Skrzata"
 slug: waciak
 occupant: puchatek
 lat: 50.32
