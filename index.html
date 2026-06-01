@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Chatynkowo — baśniowe chatynki Elfów</title>
+  <meta name="description" content="Baśniowa mapa ukrytych chatynek Elfów w Jurze Krakowsko-Częstochowskiej. Odkryj kamienne ścieżki, poznaj historie i znajdź wszystkie Chatynki."/>
+  <link rel="icon" href="assets/img/cropped-znacznik-192x192.png"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header class="hero" id="top">
+    <div class="stars" aria-hidden="true"></div>
+    <div class="fireflies" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="hero__inner">
+      <div class="hero__text">
+        <div class="hero__heading">
+          <img src="assets/img/logo.webp" alt="Chatynkowo — znacznik" class="hero__mark" loading="lazy"/>
+          <h1 class="hero__title">Witamy<br/>w&nbsp;Chatynkowie</h1>
+        </div>
+        <p class="hero__lede">
+          To miejsce, gdzie baśnie stają się rzeczywistością. W&nbsp;ukrytych zakamarkach natury,
+          czekają na Ciebie malutkie chatynki – domy prawdziwych elfów. Każda z&nbsp;nich kryje
+          w&nbsp;sobie niezwykłą historię i&nbsp;mądrość jej mieszkańca, ukrytą w&nbsp;magicznej
+          opowieści.
+        </p>
+        <nav class="hub" aria-label="Wybierz, co chcesz zobaczyć">
+          <ul class="hub__nav">
+            <li>
+              <button class="hub__btn" type="button"
+                      data-target="magia"
+                      aria-expanded="false" aria-controls="magia">
+                <span class="hub__icon" aria-hidden="true">✨</span>
+                <span class="hub__cap">Poznaj magię</span>
+              </button>
+            </li>
+            <li>
+              <button class="hub__btn" type="button"
+                      data-target="mapa"
+                      aria-expanded="false" aria-controls="mapa">
+                <span class="hub__icon" aria-hidden="true">🔎</span>
+                <span class="hub__cap">Znajdź chatynki</span>
+              </button>
+            </li>
+            <li>
+              <button class="hub__btn" type="button"
+                      data-target="kod"
+                      aria-expanded="false" aria-controls="kod">
+                <span class="hub__icon" aria-hidden="true">🎯</span>
+                <span class="hub__cap">Mam kod</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <figure class="hero__art">
+        <div class="hero__art-frame">
+          <div class="hero__slides" id="heroSlides" aria-label="Galeria chatynek">
+            <img class="hero__slide is-active"
+                 src="assets/img/WhatsApp-Image-2026-01-26-at-23.08.00-1.webp"
+                 alt="Baśniowa ilustracja chatynki w lesie"/>
+            <img class="hero__slide"
+                 src="assets/img/683x1024/WhatsApp-Image-2026-01-26-at-23.08.04-1-683x1024.webp"
+                 alt="" loading="lazy"/>
+            <img class="hero__slide"
+                 src="assets/img/WhatsApp-Image-2026-01-27-at-22.45.46.webp"
+                 alt="" loading="lazy"/>
+            <img class="hero__slide"
+                 src="assets/img/683x1024/WhatsApp-Image-2026-01-27-at-22.51.33-683x1024.webp"
+                 alt="" loading="lazy"/>
+            <img class="hero__slide"
+                 src="assets/img/WhatsApp-Image-2026-02-12-at-13.25.30.webp"
+                 alt="" loading="lazy"/>
+          </div>
+        </div>
+      </figure>
+    </div>
+  </header>
+
+  <main>
+
+    <section id="magia" class="section section--panel" hidden>
+      <h2 class="section__title">Na czym polega magia Chatynek</h2>
+      <div class="faq">
+        <article class="faq__item">
+          <h3>Czym są Chatynki?</h3>
+          <p>To malutkie, tajemnicze leśne domki pełne magii i historii.</p>
+        </article>
+        <article class="faq__item">
+          <h3>Jak odnaleźć Chatynki?</h3>
+          <p>Na Elfa możesz trafić w każdej chwili. Jeśli chcesz ich poszukać, otwórz baśniową mapę.</p>
+        </article>
+        <article class="faq__item">
+          <h3>Kim są mieszkańcy Chatynek?</h3>
+          <p>To Elfy. Każdy z nich ma nam do powiedzenia swoją historię. Bardzo ważną.</p>
+        </article>
+        <article class="faq__item">
+          <h3>Co zrobić jak znajdę Chatynkę?</h3>
+          <p>Zeskanuj kod QR, który znajduje się na tabliczce w jej pobliżu, albo wpisz tajny 4-cyfrowy kod.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="mapa" class="section section--panel section--map" hidden>
+      <h2 class="section__title">Znajdź wszystkie Chatynki</h2>
+      <p class="section__subtitle">
+        Baśniowa mapa lasu. Kamienne ścieżki wiodące spomiędzy drzew prowadzą do Chatynek.
+        Kliknij chatynkę, by otworzyć nawigację dojazdową, lub przeczytaj jej historię.
+      </p>
+
+      <div class="map-wrapper" aria-label="Interaktywna baśniowa mapa Chatynkowa">
+        <figure class="map-stage" id="mapStage">
+          <img src="assets/img/map_base_vertical-pins.webp" alt="Baśniowa mapa Chatynkowa"
+               class="map-image" id="mapImage"
+               onload="this.closest('.map-stage').classList.add('has-image')"
+               onerror="this.closest('.map-stage').classList.add('no-image')"/>
+          <!-- Shown until the image loads successfully. -->
+          <div class="map-placeholder" aria-hidden="true">
+            <div class="map-placeholder__inner">
+              <div class="map-placeholder__icon">🗺️</div>
+              <h3>Brakuje pliku mapy</h3>
+              <p>Zapisz swój obrazek jako</p>
+              <code>assets/img/map_base_vertical.png</code>
+              <p class="map-placeholder__note">
+                Po wgraniu odśwież stronę — chatynki pojawią się automatycznie
+                na swoich pozycjach procentowych z&nbsp;<code>data/cottages.json</code>.
+              </p>
+            </div>
+          </div>
+          <!-- Clickable hotspots are created by main.js and absolutely
+               positioned over the image at each cottage's mapX/mapY. -->
+          <div class="map-hotspots" id="mapHotspots" aria-label="Chatynki na mapie"></div>
+        </figure>
+        <p class="map-hint">
+          Najedź na chatynkę, aby zobaczyć jej nazwę. Kliknij — chatynka powiększy się,
+          a&nbsp;po chwili otworzy się okno z&nbsp;opisem i&nbsp;nawigacją.
+        </p>
+      </div>
+    </section>
+
+    <section id="kod" class="section section--panel section--code" hidden>
+      <h2 class="section__title">Poznaj historię</h2>
+      <p class="section__subtitle">
+        Poszukiwaczu, jeśli znalazłeś Chatynkę, wpisz tajny czterocyfrowy kod z&nbsp;tabliczki
+        i zobacz, jak dzieje się magia.
+      </p>
+      <form class="code" id="codeForm" novalidate>
+        <label class="sr-only" for="historiaKod">4-cyfrowy kod</label>
+        <input id="historiaKod" inputmode="numeric" pattern="[0-9]{4}" maxlength="4"
+               placeholder="• • • •" autocomplete="off" required/>
+        <button type="submit" class="btn btn--primary">Odkryj historię</button>
+      </form>
+      <p id="codeResult" class="code__result" role="status" aria-live="polite"></p>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <p>&copy; Chatynkowo. Baśniowy projekt inspirowany <a href="https://chatynkowo.pl" rel="noopener">chatynkowo.pl</a>.</p>
+      <ul class="legal-links">
+        <li><a href="legal/regulamin.html">Regulamin</a></li>
+        <li><a href="legal/polityka-prywatnosci.html">Polityka prywatności</a></li>
+      </ul>
+      <ul class="socials">
+        <li><a href="https://www.instagram.com/chatynkowo.pl/" rel="noopener">Instagram</a></li>
+        <li><a href="https://www.facebook.com/chatynkowo/" rel="noopener">Facebook</a></li>
+      </ul>
+      <p class="footer__version">rev.&nbsp;<code>BUILD_COMMIT</code></p>
+    </div>
+  </footer>
+
+  <!-- Floating Skarbiec (treasury) button. Always visible in the lower-right
+       corner; opens the badge gallery dialog. The numeric pip on the upper
+       right shows how many badges have been earned. -->
+  <button class="trophies-toggle" id="trophiesOpen" type="button"
+          aria-label="Otwórz Twój Skarbiec" aria-controls="trophiesModal">
+    <svg class="trophies-toggle__icon" viewBox="0 0 32 32" aria-hidden="true">
+      <defs>
+        <linearGradient id="trophyGold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#fff3b8"/>
+          <stop offset="55%" stop-color="#e0a84a"/>
+          <stop offset="100%" stop-color="#6b3f0a"/>
+        </linearGradient>
+      </defs>
+      <!-- Treasure-chest body -->
+      <path d="M5 14 H27 V25 Q27 27 25 27 H7 Q5 27 5 25 Z"
+            fill="url(#trophyGold)" stroke="#3a2308" stroke-width="1.4"/>
+      <!-- Curved lid -->
+      <path d="M5 14 Q5 8 16 8 Q27 8 27 14"
+            fill="url(#trophyGold)" stroke="#3a2308" stroke-width="1.4"/>
+      <!-- Lid band -->
+      <rect x="5" y="13" width="22" height="2.2" fill="#3a2308" opacity=".55"/>
+      <!-- Lock plate -->
+      <rect x="14" y="16" width="4" height="5" rx=".6"
+            fill="#3a2308"/>
+      <circle cx="16" cy="17.6" r=".9" fill="url(#trophyGold)"/>
+    </svg>
+    <span class="trophies-toggle__count" id="trophiesCount" aria-live="polite">0</span>
+  </button>
+
+  <!-- Skarbiec dialog: grid of badge cards. Earned ones come from
+       persist.data.badges; the registry of definitions lives in
+       window.chatynkowo.BADGES (currently empty — fills in later). -->
+  <dialog class="modal modal--trophies" id="trophiesModal" aria-labelledby="trophiesTitle">
+    <button class="modal__close" id="trophiesClose" type="button" aria-label="Zamknij">×</button>
+    <article class="modal__content">
+      <h2 class="modal__title" id="trophiesTitle">Twój Skarbiec</h2>
+      <p class="modal__intro">
+        Tu pojawiają się odznaki, które zdobywasz odkrywając kolejne Chatynki.
+      </p>
+      <p class="trophy-empty" id="trophyEmpty" hidden>
+        Jeszcze pusto — wyrusz na poszukiwanie Chatynek, by zacząć
+        kolekcjonować odznaki.
+      </p>
+      <ul class="trophy-grid" id="trophyGrid" hidden></ul>
+    </article>
+  </dialog>
+
+  <!-- Full-size map zoom (opened by clicking the map outside any pin) -->
+  <dialog class="map-zoom" id="mapZoom" aria-label="Powiększona mapa Chatynkowa">
+    <button class="map-zoom__close" id="mapZoomClose" type="button" aria-label="Zamknij powiększenie mapy">×</button>
+    <div class="map-zoom__scroll" id="mapZoomScroll">
+      <div class="map-zoom__stage" id="mapZoomStage">
+        <img class="map-zoom__img" id="mapZoomImg" alt="Pełna mapa Chatynkowa"/>
+        <div class="map-zoom__hotspots" id="mapZoomHotspots" aria-label="Chatynki na mapie"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Pin-click dialog: cottage name + the "Jak znaleźć" and "Co zrobić"
+       markdown sections (coordinates, navigation links, what-to-do guide).
+       NO story body, NO audio — those are the reward for actually finding
+       the cottage and entering the code from its tag. -->
+  <dialog class="modal modal--pin" id="pinModal" aria-labelledby="pinTitle">
+    <button class="modal__close" id="pinClose" type="button" aria-label="Zamknij">×</button>
+    <article class="modal__content" id="pinContent">
+      <h2 class="modal__title" id="pinTitle">Chatynka</h2>
+      <p><em>Ładuję wskazówki…</em></p>
+    </article>
+  </dialog>
+
+  <!-- Story dialog: opened ONLY after a valid 4-digit code. Shows the full
+       cottage story and the gramophone audio player. No map navigation —
+       the user already found the cottage. -->
+  <dialog class="modal modal--story" id="storyModal" aria-labelledby="storyTitle">
+    <button class="modal__close" id="storyClose" type="button" aria-label="Zamknij">×</button>
+    <article class="modal__content" id="storyContent">
+      <p>Ładuję opowieść…</p>
+    </article>
+
+    <!-- Fairy-tale gramophone player. Hidden until the cottage's mp3 is
+         confirmed to load (keeps cottages without audio clean). -->
+    <div class="gramophone" id="audioPlayer" hidden>
+      <audio id="audioElement" preload="none"></audio>
+      <img class="gramophone__art"
+           src="assets/img/gramophone.webp"
+           alt="Baśniowy gramofon" loading="lazy" decoding="async"/>
+      <button type="button" class="gramophone__play" id="audioPlay"
+              aria-label="Odtwórz baśń Elfa">
+        <svg class="gramophone__btn-icon" viewBox="0 0 40 40" aria-hidden="true">
+          <!-- Triangle (play) -->
+          <polygon class="gramophone__ico gramophone__ico--play"
+                   points="14,9 14,31 31,20" fill="#fff3b8"/>
+          <!-- Pause bars (toggled via CSS when .is-playing) -->
+          <g class="gramophone__ico gramophone__ico--pause" fill="#fff3b8">
+            <rect x="13" y="10" width="5" height="20" rx="1.2"/>
+            <rect x="22" y="10" width="5" height="20" rx="1.2"/>
+          </g>
+        </svg>
+      </button>
+      <div class="gramophone__main">
+        <p class="gramophone__label">Posłuchaj baśni Elfa</p>
+        <input type="range" min="0" max="1000" value="0" step="1"
+               class="gramophone__seek" id="audioSeek"
+               aria-label="Pozycja odtwarzania"/>
+        <div class="gramophone__time">
+          <span id="audioCurrent">0:00</span>
+          <span class="gramophone__time-sep">·</span>
+          <span id="audioDuration">0:00</span>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Markdown renderer: https://github.com/markedjs/marked -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js" defer></script>
+  <!-- App data store + badge registry. Must load BEFORE main.js so the
+       window.chatynkowo namespace is ready when main.js runs. -->
+  <script src="app_logic.js" defer></script>
+  <script src="main.js" defer></script>
+</body>
+</html>

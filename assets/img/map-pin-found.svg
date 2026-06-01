@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 44"
+     role="img" aria-label="Pinezka odkrytej chatynki">
+  <!-- Blue teardrop body, tip pointing down (coordinate 16,42) -->
+  <path d="M16 2 C8 2 2 8 2 16 C2 24 10 32 16 42 C22 32 30 24 30 16 C30 8 24 2 16 2 Z"
+        fill="#2a6cd4" stroke="#0d2d6b" stroke-width="1.6"/>
+  <!-- Inner gold dot — signals "treasure found" -->
+  <circle cx="16" cy="15" r="5.5" fill="#f3d27a" stroke="#0d2d6b" stroke-width="1.2"/>
+</svg>

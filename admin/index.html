@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Chatynkowo — Edytor</title>
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="lib/toastui-editor.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin="">
+</head>
+<body>
+
+  <!-- Auth / settings overlay (shown until PAT is configured) -->
+  <div id="auth-overlay" class="auth-overlay" hidden>
+    <div class="auth-card">
+      <h1>Chatynkowo · edytor</h1>
+      <p>
+        Edytor wymaga tokenu GitHub z uprawnieniem <strong>Contents: Read and Write</strong>
+        do repozytorium tego projektu.<br>
+        Token jest przechowywany tylko w Twojej przeglądarce (localStorage) —
+        nie jest wysyłany nigdzie poza api.github.com.
+      </p>
+      <label class="field">
+        <span>GitHub Personal Access Token</span>
+        <input id="auth-token" type="password" autocomplete="off" placeholder="github_pat_…">
+      </label>
+      <details class="auth-advanced">
+        <summary>Zaawansowane (repozytorium)</summary>
+        <label class="field">
+          <span>Właściciel (owner)</span>
+          <input id="auth-owner" type="text" autocomplete="off">
+        </label>
+        <label class="field">
+          <span>Nazwa repozytorium</span>
+          <input id="auth-repo" type="text" autocomplete="off">
+        </label>
+        <label class="field">
+          <span>Gałąź (branch)</span>
+          <input id="auth-branch" type="text" autocomplete="off" placeholder="main">
+        </label>
+      </details>
+      <p id="auth-error" class="auth-error" hidden></p>
+      <div style="display:flex;gap:.5rem;margin-top:.25rem">
+        <button id="btn-auth-confirm" class="btn btn-primary" type="button">Zaloguj</button>
+        <button id="btn-auth-cancel" class="btn btn-ghost" type="button" hidden>Anuluj</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main editor (hidden until auth succeeds) -->
+  <div id="editor-root" hidden>
+    <header class="topbar">
+      <div class="brand">Chatynkowo · edytor</div>
+      <select id="cottage-select" class="cottage-select"></select>
+      <button id="btn-add" class="btn" type="button">+ Dodaj nową</button>
+      <button id="btn-delete" class="btn btn-ghost danger" type="button">Usuń bieżącą</button>
+      <span id="status-pill" class="status-pill" data-state="clean">gotowy</span>
+      <button id="btn-save" class="btn btn-primary" type="button" disabled>Zapisz i opublikuj</button>
+      <button id="btn-settings" class="btn btn-ghost" type="button" title="Ustawienia">⚙</button>
+    </header>
+
+    <main class="layout">
+      <section class="form-pane">
+        <h2>Podstawowe dane</h2>
+        <label class="field">
+          <span>Nazwa chatynki</span>
+          <input id="f-title" type="text" autocomplete="off">
+        </label>
+        <label class="field">
+          <span>Mieszka tu (occupant)</span>
+          <input id="f-occupant" type="text" autocomplete="off">
+        </label>
+        <label class="field">
+          <span>Cnota (virtue)</span>
+          <input id="f-virtue" type="text" autocomplete="off">
+        </label>
+        <label class="field">
+          <span>Kod chatynki (4 cyfry — wpisywany przez gości)</span>
+          <input id="f-code" type="text" inputmode="numeric" maxlength="4" pattern="\d{4}" autocomplete="off" placeholder="np. 1234">
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span>Szerokość (lat)</span>
+            <input id="f-lat" type="number" step="0.000001" inputmode="decimal">
+          </label>
+          <label class="field">
+            <span>Długość (lng)</span>
+            <input id="f-lng" type="number" step="0.000001" inputmode="decimal">
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field">
+            <span>mapX (% szerokości mapy)</span>
+            <input id="f-mapx" type="number" step="0.01" min="0" max="100" inputmode="decimal">
+          </label>
+          <label class="field">
+            <span>mapY (% wysokości mapy)</span>
+            <input id="f-mapy" type="number" step="0.01" min="0" max="100" inputmode="decimal">
+          </label>
+        </div>
+
+        <h2>Opowieść (audio)</h2>
+        <div class="audio-row">
+          <audio id="audio-preview" controls preload="none"></audio>
+          <div class="audio-actions">
+            <label class="btn btn-ghost">
+              <input id="audio-file" type="file" accept="audio/mpeg,.mp3" hidden>
+              Wgraj nowy plik mp3…
+            </label>
+            <button id="btn-audio-delete" class="btn btn-ghost danger" type="button">Usuń</button>
+          </div>
+          <p id="audio-meta" class="meta">—</p>
+        </div>
+
+        <h2>Zdjęcia</h2>
+        <p class="meta">Pliki trafiają do <code>assets/img/cottages/&lt;slug&gt;/</code>.
+          Formaty: <code>.webp .jpg .png .gif .avif</code> (do 10 MB każdy).</p>
+        <div id="photos-grid" class="photos-grid"></div>
+        <div class="photos-actions">
+          <label class="btn btn-ghost">
+            <input id="photos-file" type="file" accept="image/*" multiple hidden>
+            Wgraj zdjęcia…
+          </label>
+          <span id="photos-meta" class="meta">—</span>
+        </div>
+
+        <h2>Treść (markdown)</h2>
+        <p class="meta">
+          Sekcje <code>## Jak znaleźć Chatynkę</code> i
+          <code>## Co zrobić, gdy trafisz pod chatynkę?</code> trafiają do dymka pinezki.
+        </p>
+        <div id="f-body-editor"></div>
+      </section>
+
+      <section class="map-pane">
+        <h2>Pinezka na bajkowej mapie</h2>
+        <p class="meta">Kliknij w obrazek, aby umieścić pinezkę (<code>mapX/mapY</code> jako %).</p>
+        <div id="symbolic-map" class="symbolic-map">
+          <img id="symbolic-img" src="../assets/img/map_base_vertical-pins.webp" alt="">
+          <div id="symbolic-pin" class="symbolic-pin" hidden></div>
+        </div>
+
+        <h2>Pinezka na rzeczywistej mapie</h2>
+        <p class="meta">Kliknij albo przeciągnij pinezkę, aby ustawić <code>lat/lng</code>.</p>
+        <div id="geo-map" class="geo-map"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Add cottage dialog -->
+  <dialog id="add-dialog" class="publish-dialog">
+    <form method="dialog">
+      <h2>Nowa chatynka</h2>
+      <label class="field">
+        <span>Slug (małe litery, cyfry, myślniki)</span>
+        <input id="add-slug" type="text" autocomplete="off" pattern="[a-z0-9-]+" required>
+      </label>
+      <label class="field">
+        <span>Tytuł chatynki</span>
+        <input id="add-title" type="text" autocomplete="off" placeholder="np. Chatynka Elfa Olka" required>
+      </label>
+      <p id="add-error" class="meta" style="color:var(--danger)" hidden></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="btn btn-ghost">Anuluj</button>
+        <button id="btn-add-confirm" class="btn btn-primary" type="button">Utwórz</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="lib/toastui-editor-all.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
+  <script src="admin.js" defer></script>
+</body>
+</html>

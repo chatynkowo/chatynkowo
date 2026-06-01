@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 44"
+     role="img" aria-label="Pinezka chatynki na mapie">
+  <!-- Red teardrop body, tip pointing down (coordinate 16,42) -->
+  <path d="M16 2 C8 2 2 8 2 16 C2 24 10 32 16 42 C22 32 30 24 30 16 C30 8 24 2 16 2 Z"
+        fill="#d4202a" stroke="#6b0010" stroke-width="1.6"/>
+  <!-- Inner cream-white dot -->
+  <circle cx="16" cy="15" r="5.5" fill="#fff4d0" stroke="#6b0010" stroke-width="1.2"/>
+</svg>

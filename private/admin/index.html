@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chatynkowo — Edytor wewnętrzny</title>
+  <link rel="stylesheet" href="/admin/admin.css">
+  <link rel="stylesheet" href="/admin/lib/toastui-editor.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin="">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Chatynkowo · edytor</div>
+    <select id="cottage-select" class="cottage-select"></select>
+    <button id="btn-add" class="btn" type="button" title="Dodaj nową chatynkę">+ Dodaj nową</button>
+    <button id="btn-delete" class="btn btn-ghost danger" type="button" title="Usuń bieżącą chatynkę">Usuń bieżącą</button>
+    <span id="status-pill" class="status-pill" data-state="clean">zapisane</span>
+    <button id="btn-save" class="btn btn-primary" disabled>Zapisz</button>
+    <button id="btn-publish" class="btn">Publikuj</button>
+  </header>
+
+  <main class="layout">
+    <section class="form-pane">
+      <h2>Podstawowe dane</h2>
+      <label class="field">
+        <span>Nazwa chatynki</span>
+        <input id="f-title" type="text" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Mieszka tu (occupant)</span>
+        <input id="f-occupant" type="text" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Cnota (virtue)</span>
+        <input id="f-virtue" type="text" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Kod chatynki (4 cyfry — wpisywany przez gości)</span>
+        <input id="f-code" type="text" inputmode="numeric" maxlength="4" pattern="\d{4}" autocomplete="off" placeholder="np. 1234">
+      </label>
+      <div class="field-row">
+        <label class="field">
+          <span>Szerokość (lat)</span>
+          <input id="f-lat" type="number" step="0.000001" inputmode="decimal">
+        </label>
+        <label class="field">
+          <span>Długość (lng)</span>
+          <input id="f-lng" type="number" step="0.000001" inputmode="decimal">
+        </label>
+      </div>
+      <div class="field-row">
+        <label class="field">
+          <span>mapX (% szerokości mapy)</span>
+          <input id="f-mapx" type="number" step="0.01" min="0" max="100" inputmode="decimal">
+        </label>
+        <label class="field">
+          <span>mapY (% wysokości mapy)</span>
+          <input id="f-mapy" type="number" step="0.01" min="0" max="100" inputmode="decimal">
+        </label>
+      </div>
+
+      <h2>Opowieść (audio)</h2>
+      <div class="audio-row">
+        <audio id="audio-preview" controls preload="none"></audio>
+        <div class="audio-actions">
+          <label class="btn btn-ghost">
+            <input id="audio-file" type="file" accept="audio/mpeg,.mp3" hidden>
+            Wgraj nowy plik mp3…
+          </label>
+          <button id="btn-audio-delete" class="btn btn-ghost danger" type="button">Usuń</button>
+        </div>
+        <p id="audio-meta" class="meta">—</p>
+      </div>
+
+      <h2>Zdjęcia</h2>
+      <p class="meta">Pliki trafiają do <code>assets/img/cottages/&lt;slug&gt;/</code>. Akceptowane formaty: <code>.webp .jpg .png .gif .avif</code> (do 15 MB każdy).</p>
+      <div id="photos-grid" class="photos-grid"></div>
+      <div class="photos-actions">
+        <label class="btn btn-ghost">
+          <input id="photos-file" type="file" accept="image/*" multiple hidden>
+          Wgraj zdjęcia…
+        </label>
+        <span id="photos-meta" class="meta">—</span>
+      </div>
+
+      <h2>Treść (markdown)</h2>
+      <p class="meta">
+        Sekcje takie jak <code>## Jak znaleźć Chatynkę</code> i
+        <code>## Co zrobić, gdy trafisz pod chatynkę?</code> trafiają do dymka pinezki —
+        pozostała treść do okna z opowieścią.
+      </p>
+      <div id="f-body-editor"></div>
+    </section>
+
+    <section class="map-pane">
+      <h2>Pinezka na bajkowej mapie</h2>
+      <p class="meta">Kliknij w obrazek, aby umieścić pinezkę. Wartości <code>mapX/mapY</code> wyrażone są w procentach rozmiaru obrazka.</p>
+      <div id="symbolic-map" class="symbolic-map">
+        <img id="symbolic-img" src="/assets/img/map_base_vertical-pins.webp" alt="">
+        <div id="symbolic-pin" class="symbolic-pin" hidden></div>
+      </div>
+
+      <h2>Pinezka na rzeczywistej mapie</h2>
+      <p class="meta">Kliknij na mapie albo przeciągnij pinezkę, aby ustawić <code>lat/lng</code>.</p>
+      <div id="geo-map" class="geo-map"></div>
+    </section>
+  </main>
+
+  <dialog id="add-dialog" class="publish-dialog">
+    <form method="dialog">
+      <h2>Nowa chatynka</h2>
+      <label class="field">
+        <span>Slug (małe litery, cyfry i myślniki — używany w nazwie pliku <code>.md</code>)</span>
+        <input id="add-slug" type="text" autocomplete="off" pattern="[a-z0-9-]+" required>
+      </label>
+      <label class="field">
+        <span>Tytuł chatynki</span>
+        <input id="add-title" type="text" autocomplete="off" placeholder="np. Chatynka Elfa Olka" required>
+      </label>
+      <p id="add-error" class="meta" style="color: var(--danger)" hidden></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="btn btn-ghost">Anuluj</button>
+        <button id="btn-add-confirm" value="default" class="btn btn-primary" type="button">Utwórz</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="publish-dialog" class="publish-dialog">
+    <form method="dialog">
+      <h2>Publikacja zmian</h2>
+      <p>Wszystkie zapisane zmiany trafią do repozytorium GitHub. Po zatwierdzeniu strona zostanie automatycznie przebudowana przez GitHub Pages.</p>
+      <label class="field">
+        <span>Wiadomość commit (opcjonalnie)</span>
+        <input id="publish-message" type="text" placeholder="np. „Halinka — nowy opis"">
+      </label>
+      <pre id="publish-log" class="publish-log" hidden></pre>
+      <div class="dialog-actions">
+        <button value="cancel" class="btn btn-ghost">Anuluj</button>
+        <button id="btn-publish-confirm" value="default" class="btn btn-primary" type="button">Publikuj</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/admin/lib/toastui-editor-all.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
+  <script src="/admin/admin.js" defer></script>
+</body>
+</html>

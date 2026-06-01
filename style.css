@@ -1,0 +1,1408 @@
+/* ----------  Chatynkowo — fairytale static site ---------- */
+
+/* ---------- Self-hosted fonts (latin + latin-ext for Polish glyphs) ----------
+   Files were downloaded from Google Fonts (SIL OFL) and committed under
+   assets/fonts/ to avoid the third-party CDN and silence Firefox font
+   sanitizer warnings on the gstatic build. */
+/* latin-ext */
+@font-face {
+  font-family: 'Cinzel Decorative';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('assets/fonts/Cinzel_Decorative-700-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cinzel Decorative';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('assets/fonts/Cinzel_Decorative-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Cinzel Decorative';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('assets/fonts/Cinzel_Decorative-900-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cinzel Decorative';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('assets/fonts/Cinzel_Decorative-900-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('assets/fonts/Cormorant_Garamond-400-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('assets/fonts/Cormorant_Garamond-400-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('assets/fonts/Cormorant_Garamond-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('assets/fonts/Cormorant_Garamond-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('assets/fonts/Cormorant_Garamond-600-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('assets/fonts/Cormorant_Garamond-600-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+
+:root {
+  --parchment:    #f5ead1;
+  --parchment-2:  #e8d6a2;
+  --ink:          #2c1e0f;
+  --ink-soft:     #5a4523;
+  --moss:         #3a6b3e;
+  --moss-dark:    #1f3f24;
+  --forest-bg:    #1a2a1c;
+  --gold:         #c79a4b;
+  --ember:        #e08a3d;
+  --mystic:       #6b3fa0;
+  --mist:         #d9cfa8;
+  --shadow:       0 10px 30px rgba(20,14,6,.35);
+  --radius:       18px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--ink);
+  min-height: 100vh;
+  background-color: #0f1a14;
+  /* Sticky-footer layout: body fills viewport height; <main> grows to push
+     the footer to the bottom even when all collapsible panels are closed. */
+  display: flex;
+  flex-direction: column;
+}
+main { flex: 1 0 auto; }
+/* Viewport-fixed background layer.
+   Using position:fixed on a pseudo-element (instead of background-attachment:
+   fixed on body) is reliable on iOS Safari and Android Chrome — the moonlit
+   forest stays visible behind every section as the user scrolls, on any device. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgba(8,14,10,.55) 0%, rgba(10,18,14,.78) 100%),
+    url('assets/img/background.webp') center / cover no-repeat;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0;
+  margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;
+}
+
+a { color: var(--gold); text-decoration: none; transition: color .2s; }
+a:hover { color: var(--ember); }
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative;
+  padding: 1rem 1.5rem 3rem;
+  color: var(--parchment);
+  overflow: hidden;
+  background: transparent;
+}
+.hero__inner {
+  position: relative; z-index: 3;
+  max-width: 1200px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 3rem;
+  align-items: center;
+}
+.hero__text { text-align: left; }
+.hero__heading {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  margin: 0 0 1rem;
+}
+.hero__mark {
+  flex: none;
+  width: 72px; height: 72px; object-fit: contain;
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,.6));
+  margin: 0;
+}
+.hero__title {
+  font-family: 'Cinzel Decorative', 'Cormorant Garamond', serif;
+  font-size: clamp(1.9rem, 4.4vw, 3.2rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: .02em;
+  margin: 0;
+  /* min-width:0 lets the flex item shrink below its intrinsic content width;
+     without it the longer line ("w Chatynkowie") overflows the column. */
+  min-width: 0;
+  color: #f5e6b8;
+  text-shadow: 0 2px 0 #000, 0 0 24px rgba(255,220,150,.4);
+}
+.hero__lede {
+  max-width: 640px; margin: 0 0 1.25rem;
+  font-size: 1.1rem;
+  color: #f1e2b5;
+  line-height: 1.5;
+}
+/* Hero illustration beside the heading */
+.hero__art {
+  margin: 0;
+  display: flex; justify-content: center; align-items: center;
+}
+.hero__art-frame {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 3 / 4;
+  padding: 14px;
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(199,154,75,.65), rgba(110, 74, 20, .4)),
+    radial-gradient(ellipse at 30% 30%, rgba(255,246,200,.22), transparent 65%);
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.55),
+    inset 0 0 0 1px rgba(245,234,209,.25),
+    inset 0 0 80px rgba(0,0,0,.25);
+}
+.hero__art-frame::before,
+.hero__art-frame::after {
+  content: '';
+  position: absolute; inset: 8px;
+  border: 1px dashed rgba(245,234,209,.45);
+  border-radius: 10px;
+  pointer-events: none;
+}
+.hero__art-frame::after {
+  inset: 16px;
+  border-style: solid;
+  border-color: rgba(245,234,209,.2);
+}
+.hero__art-frame img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+  filter: saturate(1.05) contrast(1.03);
+}
+/* Slideshow: every <img> is stacked at the same spot inside the frame; only
+   the .is-active one is opaque. JS rotates the class on a timer. */
+.hero__slides {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.hero__slide {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+  filter: saturate(1.05) contrast(1.03);
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.hero__slide.is-active { opacity: 1; }
+
+@media (max-width: 820px) {
+  .hero { text-align: center; }
+  .hero__inner { grid-template-columns: 1fr; gap: 2rem; }
+  .hero__text { text-align: center; }
+  .hero__heading { justify-content: center; gap: .85rem; }
+  .hero__art-frame { max-width: 340px; }
+}
+/* twinkling stars */
+.stars {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background-image:
+    radial-gradient(1.4px 1.4px at 8% 20%,  #fff 99%, transparent 100%),
+    radial-gradient(1px 1px at 22% 35%,   #fff 99%, transparent 100%),
+    radial-gradient(1.6px 1.6px at 37% 18%, #fff 99%, transparent 100%),
+    radial-gradient(1px 1px at 55% 10%,   #fff 99%, transparent 100%),
+    radial-gradient(1.2px 1.2px at 68% 30%, #fff 99%, transparent 100%),
+    radial-gradient(1px 1px at 82% 15%,   #fff 99%, transparent 100%),
+    radial-gradient(1.3px 1.3px at 12% 60%, #fff 99%, transparent 100%),
+    radial-gradient(1px 1px at 72% 70%,   #fff 99%, transparent 100%),
+    radial-gradient(1.4px 1.4px at 90% 50%, #fff 99%, transparent 100%);
+  opacity: .55;
+  animation: twinkle 4s ease-in-out infinite alternate;
+}
+@keyframes twinkle { from { opacity: .35; } to { opacity: .75; } }
+
+.fireflies { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.fireflies span {
+  position: absolute; width: 8px; height: 8px; border-radius: 50%;
+  background: radial-gradient(circle, #fff4a0 0%, rgba(255,244,160,.25) 40%, transparent 70%);
+  box-shadow: 0 0 12px 2px rgba(255,244,160,.55);
+  animation: drift 14s linear infinite;
+  opacity: 0;
+}
+.fireflies span:nth-child(1) { top: 30%; left: 10%; animation-delay: 0s;  }
+.fireflies span:nth-child(2) { top: 60%; left: 22%; animation-delay: 2s;  }
+.fireflies span:nth-child(3) { top: 40%; left: 38%; animation-delay: 4s;  }
+.fireflies span:nth-child(4) { top: 72%; left: 46%; animation-delay: 6s;  }
+.fireflies span:nth-child(5) { top: 20%; left: 60%; animation-delay: 1s;  }
+.fireflies span:nth-child(6) { top: 55%; left: 70%; animation-delay: 3s;  }
+.fireflies span:nth-child(7) { top: 35%; left: 82%; animation-delay: 5s;  }
+.fireflies span:nth-child(8) { top: 75%; left: 90%; animation-delay: 7s;  }
+.fireflies span:nth-child(9) { top: 15%; left: 30%; animation-delay: 9s;  }
+.fireflies span:nth-child(10){ top: 85%; left: 55%; animation-delay: 11s; }
+@keyframes drift {
+  0%   { transform: translate(0,0)     scale(.8); opacity: 0; }
+  15%  { opacity: .9; }
+  50%  { transform: translate(30px,-40px) scale(1.1); opacity: .9; }
+  85%  { opacity: .8; }
+  100% { transform: translate(-20px,-80px) scale(.7); opacity: 0; }
+}
+
+/* ---------- Hub (3 image buttons that toggle panels) ---------- */
+.hub {
+  max-width: 640px;
+  margin: 1.5rem auto 0;
+  padding: 0;
+}
+.hub__nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.hub__nav > li { display: flex; }
+.hub__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  width: 100%;
+  height: 100%;
+  min-height: 3.5rem;
+  padding: .75rem 1rem;
+  background: transparent;
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  cursor: pointer;
+  color: #f5e6b8;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  text-align: center;
+  text-shadow: 0 2px 0 #000, 0 0 14px rgba(199,154,75,.35);
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease, color .15s ease;
+}
+.hub__icon {
+  font-size: 1.25em;
+  line-height: 1;
+}
+.hub__btn:hover,
+.hub__btn:focus-visible {
+  transform: translateY(-2px);
+  background: rgba(199,154,75,.15);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0,0,0,.4), 0 0 18px rgba(255,220,150,.25);
+}
+.hub__btn:focus-visible {
+  outline: none;
+}
+.hub__btn[aria-expanded="true"] {
+  background: linear-gradient(180deg, #e0a84a, #b87b24);
+  color: #2c1e0f;
+  border-color: #6d4a14;
+  text-shadow: none;
+  box-shadow: 0 4px 14px rgba(224,138,61,.4), inset 0 1px 0 rgba(255,255,255,.4);
+}
+.hub__cap {
+  font: inherit;
+  color: inherit;
+  text-shadow: inherit;
+  text-align: center;
+}
+
+/* ---------- Collapsible panel sections ---------- */
+.section--panel {
+  /* The [hidden] attribute already sets display:none; no animation
+     needed — keep the toggle snappy. */
+  scroll-margin-top: 1rem;
+}
+
+/* ---------- Sections ---------- */
+.section {
+  max-width: 1200px; margin: 0 auto; padding: 4rem 1.5rem;
+  color: var(--parchment);
+}
+.section__title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  color: #f5e6b8;
+  text-align: center;
+  letter-spacing: .03em;
+  margin: 0 0 1rem;
+  text-shadow: 0 2px 0 #000, 0 0 20px rgba(199,154,75,.25);
+}
+.section__subtitle {
+  max-width: 780px; margin: 0 auto 2.5rem; text-align: center;
+  color: #e8d7a8; font-size: 1.1rem;
+}
+
+/* ---------- Map ---------- */
+.section--map { padding-bottom: 2rem; }
+.map-wrapper {
+  /* Portrait base image (1024x1536, aspect 2:3) — cap width on desktop
+     so the vertical scroll doesn't tower over the page. On mobile it
+     scales down to the viewport width. */
+  max-width: 720px;
+  margin: 0 auto;
+}
+.map-hint {
+  max-width: 720px;
+  margin: 1.25rem auto 0;
+  text-align: center;
+  color: #e8d7a8;
+  font-size: 1.02rem;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+/* The map is a bitmap (the user's painted scroll); clickable hotspots
+   are absolutely positioned dots on top at each cottage's mapX/mapY
+   (stored as PERCENTAGES of the image in data/cottages.json). */
+.map-stage {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 0;
+  line-height: 0;
+  border-radius: 10px;
+  overflow: visible;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(199,154,75,.3);
+}
+/* Hint that the map is clickable — pins override with cursor:pointer. */
+.map-stage.has-image { cursor: zoom-in; }
+/* Before the image loads, keep the stage visible with a placeholder
+   backdrop and a minimum height so users can see the instructions. */
+.map-stage:not(.has-image) {
+  min-height: 320px;
+  background:
+    repeating-linear-gradient(45deg,
+      rgba(245,234,209,.06) 0 14px,
+      rgba(245,234,209,.11) 14px 28px),
+    #1c2418;
+}
+/* Once the image is in, the stage size tracks the image exactly —
+   which is what the percentage-based hotspots rely on. */
+.map-stage.has-image {
+  background: transparent;
+  min-height: 0;
+}
+
+/* The <img> itself is hidden until it successfully loads — avoids the
+   broken-image icon when the map file is missing. */
+.map-image {
+  display: none;
+  width: 100%;
+  height: auto;
+  border-radius: inherit;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.map-stage.has-image .map-image     { display: block; }
+.map-stage.has-image .map-placeholder { display: none; }
+
+/* Visible until the image loads — prominent instructions on where to put
+   the map file. */
+.map-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  line-height: 1.5;
+  color: #f5e6b8;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  text-align: center;
+  border-radius: inherit;
+}
+.map-placeholder__inner {
+  max-width: 540px;
+}
+.map-placeholder__icon {
+  font-size: 3.6rem;
+  line-height: 1;
+  margin-bottom: .8rem;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.5));
+}
+.map-placeholder h3 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.55rem;
+  color: #f5e6b8;
+  margin: 0 0 .6rem;
+}
+.map-placeholder p {
+  font-size: 1.05rem;
+  margin: .35rem 0;
+  color: #e8d7a8;
+}
+.map-placeholder code {
+  display: inline-block;
+  margin: .2rem 0;
+  padding: .25rem .6rem;
+  background: rgba(245,234,209,.12);
+  border: 1px solid rgba(199,154,75,.45);
+  border-radius: 6px;
+  color: #f5e6b8;
+  font-family: 'Courier New', monospace;
+  font-size: .95rem;
+}
+.map-placeholder__note {
+  margin-top: 1rem !important;
+  font-size: .95rem !important;
+  color: #b9a97a !important;
+}
+.map-hotspots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;     /* only the dots themselves are clickable */
+}
+
+/* Cottage hotspot rendered as a classic red map pin (teardrop).
+   The pin's TIP points at the exact (mapX%, mapY%) coordinate, so we
+   translate by (-50%, -100%) instead of (-50%, -50%). */
+.cottage-hotspot {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  width: 32px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  line-height: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.55));
+  transition: transform .25s cubic-bezier(.34, 1.56, .64, 1),
+              filter    .25s ease-out;
+}
+.cottage-hotspot:focus { outline: none; }
+
+/* Pin graphic is a stand-alone asset at assets/img/map-pin.svg — edit
+   it there to change the pin's shape / colour. */
+.cottage-hotspot::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: url("assets/img/map-pin.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+/* Cottage already discovered by the user — pin turns blue with a gold
+   centre to signal "found". The class is added by main.js based on the
+   localStorage state. */
+.cottage-hotspot--found::before {
+  background-image: url("assets/img/map-pin-found.svg");
+}
+
+.cottage-hotspot:hover,
+.cottage-hotspot:focus-visible {
+  /* Lift the hovered pin (and its ::after tooltip, which shares this
+     stacking context) above all neighbouring pins, so the tooltip is
+     never obscured by an adjacent pin's body. */
+  z-index: 20;
+  transform: translate(-50%, -100%) translateY(-6px) scale(1.2);
+  filter: drop-shadow(0 8px 12px rgba(0,0,0,.55))
+          drop-shadow(0 0 14px rgba(255,220,120,.85));
+  animation: pin-bob 1.6s ease-in-out infinite;
+}
+.cottage-hotspot.is-clicked {
+  animation: none;
+  transform: translate(-50%, -100%) translateY(-14px) scale(3);
+  filter: drop-shadow(0 14px 22px rgba(0,0,0,.7))
+          drop-shadow(0 0 30px rgba(255,220,120,.9));
+  z-index: 10;
+  transition: transform .42s cubic-bezier(.2, .8, .3, 1.25),
+              filter    .3s ease-out;
+}
+
+@keyframes pin-bob {
+  0%,100% { transform: translate(-50%, -100%) translateY(-6px) scale(1.2); }
+  50%     { transform: translate(-50%, -100%) translateY(-12px) scale(1.22); }
+}
+
+/* Cottage name tooltip — appears ABOVE the pin so it doesn't cover the
+   map under it. */
+.cottage-hotspot::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  background: rgba(40,25,10,.95);
+  color: #f5dfa8;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  /* Allow long names ("Chatynka Strażnika Zamku") to wrap onto a second
+     line instead of overflowing the map; max-width keeps wrapping
+     conservative so single-word names still fit on one line. */
+  max-width: 280px;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.2;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease-out;
+  border: 1px solid rgba(199,154,75,.7);
+  box-shadow: 0 3px 8px rgba(0,0,0,.4);
+}
+/* Hover/focus only — the .is-clicked state scales the pin 3× and would
+   distort the tooltip and let the giant pin overlap its text. The modal
+   opening right after the click animation shows the name as a heading,
+   so suppressing the tooltip there is fine. */
+.cottage-hotspot:hover::after,
+.cottage-hotspot:focus-visible::after { opacity: 1; }
+
+/* -------- Responsive map + pins -------- */
+
+/* Tablet */
+@media (max-width: 820px) {
+  .cottage-hotspot {
+    width: 24px;
+    height: 32px;
+  }
+  .cottage-hotspot.is-clicked {
+    transform: translate(-50%, -100%) translateY(-10px) scale(2.6);
+  }
+  .cottage-hotspot::after {
+    font-size: 15px;
+    padding: 5px 10px;
+    max-width: 220px;
+  }
+}
+
+/* Phone */
+@media (max-width: 560px) {
+  .cottage-hotspot {
+    width: 20px;
+    height: 28px;
+  }
+  .cottage-hotspot.is-clicked {
+    transform: translate(-50%, -100%) translateY(-8px) scale(2.3);
+  }
+  /* Tooltip on phones: a touch smaller than tablet but still readable;
+     wraps as on bigger screens so long names fit. */
+  .cottage-hotspot::after {
+    font-size: 13px;
+    padding: 4px 9px;
+    max-width: min(180px, 60vw);
+  }
+  .map-placeholder h3 { font-size: 1.2rem; }
+  .map-placeholder p  { font-size: .95rem; }
+  .map-placeholder code { font-size: .85rem; }
+  .map-placeholder__icon { font-size: 2.6rem; }
+}
+
+/* ---------- FAQ ---------- */
+.faq {
+  display: grid; gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.faq__item {
+  background: rgba(245,234,209,.07);
+  border: 1px solid rgba(199,154,75,.3);
+  padding: 1.5rem; border-radius: var(--radius);
+  backdrop-filter: blur(2px);
+}
+.faq__item h3 {
+  margin: 0 0 .5rem; color: #f5e6b8;
+  font-family: 'Cinzel Decorative', serif; font-size: 1.15rem;
+  letter-spacing: .02em;
+}
+.faq__item p { margin: 0; color: #e8d7a8; }
+
+/* ---------- Code input ---------- */
+.section--code { text-align: center; }
+.code {
+  display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+  align-items: center;
+  background: rgba(245,234,209,.08);
+  padding: 1.25rem; border-radius: var(--radius);
+  border: 1px solid rgba(199,154,75,.3);
+}
+.code input {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 2rem;
+  text-align: center;
+  letter-spacing: .6rem;
+  width: 200px;
+  padding: .5rem .75rem;
+  background: #0e1a12; color: #f5e6b8;
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+}
+.code input:focus { outline: 3px solid var(--ember); outline-offset: 2px; }
+.code__result {
+  min-height: 2rem; margin-top: 1rem; font-size: 1.1rem;
+  color: #f5e6b8;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-block;
+  padding: .75rem 1.4rem;
+  border-radius: 999px;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  cursor: pointer;
+  border: 1px solid var(--gold);
+  text-decoration: none;
+  transition: transform .15s, box-shadow .15s, background .15s;
+}
+.btn--primary {
+  background: linear-gradient(180deg, #e0a84a, #b87b24);
+  color: #2c1e0f; border-color: #6d4a14;
+  box-shadow: 0 4px 14px rgba(224,138,61,.4), inset 0 1px 0 rgba(255,255,255,.4);
+}
+.btn--primary:hover { transform: translateY(-2px); color: #2c1e0f; }
+.btn--ghost {
+  background: transparent; color: #f5e6b8;
+}
+.btn--ghost:hover { background: rgba(199,154,75,.15); color: #fff; }
+
+/* ---------- Footer ---------- */
+.footer {
+  background: #0a120d;
+  color: #b9a97a;
+  padding: .85rem 1.5rem;
+  border-top: 1px solid rgba(199,154,75,.25);
+  font-size: .85rem;
+  line-height: 1.4;
+}
+.footer p { margin: 0; }
+.footer__version { font-size: .75rem; opacity: .5; margin-left: auto; white-space: nowrap; }
+.footer__inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; flex-wrap: wrap;
+}
+.socials,
+.legal-links {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; gap: 1rem;
+  font-size: .85rem;
+}
+.legal-links a { color: #b9a97a; }
+.legal-links a:hover { color: var(--ember); }
+
+/* ---------- Map zoom dialog ----------
+   Fullscreen overlay with the native-resolution map in a scrollable
+   container; touch + wheel + scrollbars all pan as usual. */
+.map-zoom {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  background: #14201a;
+  color: #f5e6b8;
+  inset: 0;
+  overflow: hidden;
+}
+.map-zoom::backdrop {
+  background: rgba(0,0,0,.92);
+  backdrop-filter: blur(4px);
+}
+.map-zoom__close {
+  position: fixed;
+  top: 12px; right: 12px;
+  z-index: 2;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: rgba(20,32,26,.85);
+  color: #f5e6b8;
+  border: 1px solid rgba(199,154,75,.6);
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,.5);
+}
+.map-zoom__close:hover { background: rgba(40,60,46,.95); }
+.map-zoom__scroll {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  cursor: grab;
+}
+.map-zoom__scroll.is-dragging { cursor: grabbing; }
+.map-zoom__stage {
+  position: relative;
+  display: block;
+  line-height: 0;
+  /* Stage shrink-wraps the image so hotspots positioned with inset:0 align
+     to the image bounds, and percentage left/top still map to the painting. */
+}
+.map-zoom__img {
+  display: block;
+  /* Native resolution; the scroll container handles overflow. */
+  width: auto;
+  height: auto;
+  max-width: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.map-zoom__hotspots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* In the zoom view the pins sit on a much bigger map, so make them a touch
+   bigger than the inline-map version for easier tapping. */
+.map-zoom__hotspots .cottage-hotspot {
+  width: 44px;
+  height: 60px;
+}
+.map-zoom__hotspots .cottage-hotspot:hover,
+.map-zoom__hotspots .cottage-hotspot:focus-visible {
+  transform: translate(-50%, -100%) translateY(-6px) scale(1.15);
+}
+
+/* ---------- Gramophone audio player ----------
+   The decorative artwork is a PNG; a separate circular triangle button
+   handles play/pause. The native <audio> tag is hidden. */
+.gramophone {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1rem 1.4rem 1.1rem;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(199,154,75,.18), transparent 60%),
+    linear-gradient(180deg, rgba(245,234,209,.55), rgba(232,214,162,.7));
+  border-top: 1px dashed rgba(90,69,35,.4);
+  color: var(--ink);
+}
+.gramophone audio { display: none; }
+.gramophone__art {
+  flex: none;
+  width: 110px;
+  height: 110px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 6px 14px rgba(0,0,0,.45);
+  border: 1px solid rgba(90,69,35,.5);
+  transition: transform .25s ease;
+}
+.gramophone.is-playing .gramophone__art {
+  /* Subtle wobble while the elf's voice is playing. */
+  animation: gram-art-bob 4s ease-in-out infinite;
+}
+@keyframes gram-art-bob {
+  0%, 100% { transform: translateY(0)    rotate(0deg); }
+  50%      { transform: translateY(-2px) rotate(-.5deg); }
+}
+
+/* Triangle / pause button — circular brass disc beside the gramophone art. */
+.gramophone__play {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid #3a2308;
+  background: radial-gradient(circle at 35% 30%, #fff3b8, #c79a4b 60%, #6b3f0a);
+  box-shadow:
+    0 5px 12px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.35),
+    inset 0 -3px 6px rgba(0,0,0,.25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.gramophone__play:hover,
+.gramophone__play:focus-visible {
+  outline: none;
+  transform: scale(1.06);
+  box-shadow:
+    0 8px 16px rgba(0,0,0,.5),
+    0 0 18px rgba(255,220,150,.65),
+    inset 0 1px 0 rgba(255,255,255,.4),
+    inset 0 -3px 6px rgba(0,0,0,.25);
+}
+.gramophone__btn-icon {
+  width: 60%;
+  height: 60%;
+  display: block;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
+}
+.gramophone__ico { transition: opacity .2s ease; }
+.gramophone__ico--pause { opacity: 0; }
+.gramophone.is-playing .gramophone__ico--play  { opacity: 0; }
+.gramophone.is-playing .gramophone__ico--pause { opacity: 1; }
+
+.gramophone__main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.gramophone__label {
+  margin: 0 0 .35rem;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.05rem;
+  letter-spacing: .03em;
+  color: var(--ink);
+}
+
+/* Parchment-themed seek slider — restyled for both WebKit and Firefox. */
+.gramophone__seek {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+  margin: 0;
+}
+.gramophone__seek::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #b9912f, #5e3a0a);
+  border: 1px solid #3a2308;
+  box-shadow: inset 0 1px 0 rgba(255,243,184,.35);
+}
+.gramophone__seek::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #b9912f, #5e3a0a);
+  border: 1px solid #3a2308;
+}
+.gramophone__seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; height: 18px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3b8, #c79a4b 60%, #6b3f0a);
+  border: 1px solid #3a2308;
+  box-shadow: 0 2px 4px rgba(0,0,0,.45);
+  cursor: grab;
+}
+.gramophone__seek::-moz-range-thumb {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3b8, #c79a4b 60%, #6b3f0a);
+  border: 1px solid #3a2308;
+  box-shadow: 0 2px 4px rgba(0,0,0,.45);
+  cursor: grab;
+}
+.gramophone__seek:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(224,138,61,.6); }
+.gramophone__seek:focus-visible::-moz-range-thumb     { box-shadow: 0 0 0 3px rgba(224,138,61,.6); }
+
+.gramophone__time {
+  margin-top: .25rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: .95rem;
+  color: var(--ink-soft);
+  letter-spacing: .05em;
+  font-variant-numeric: tabular-nums;
+}
+.gramophone__time-sep { margin: 0 .4rem; color: var(--gold); }
+
+@media (max-width: 560px) {
+  .gramophone       { padding: .85rem 1rem 1rem; gap: .75rem; }
+  .gramophone__art  { width: 84px; height: 84px; }
+  .gramophone__play { width: 52px; height: 52px; }
+  .gramophone__label { font-size: .95rem; }
+}
+
+/* ---------- Trophies (Skarbiec) ----------
+   A persistent floating button in the lower-right; clicking it opens a
+   modal that lists every defined or earned badge as a card. The count
+   pip on the button reflects persist.earnedBadges().length and updates
+   whenever the inventory is re-rendered. */
+.trophies-toggle {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 50;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 1px solid #3a2308;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3b8, #c79a4b 60%, #6b3f0a);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.35),
+    inset 0 -3px 6px rgba(0,0,0,.25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.trophies-toggle:hover,
+.trophies-toggle:focus-visible {
+  outline: none;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow:
+    0 12px 24px rgba(0,0,0,.55),
+    0 0 18px rgba(255,220,150,.65),
+    inset 0 1px 0 rgba(255,255,255,.4),
+    inset 0 -3px 6px rgba(0,0,0,.25);
+}
+.trophies-toggle__icon {
+  width: 60%;
+  height: 60%;
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.45));
+}
+/* Numeric pip (top-right). Hidden when no badges earned yet. */
+.trophies-toggle__count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #0d2d6b;
+  color: #f3d27a;
+  border: 1px solid #2a6cd4;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 22px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(13,45,107,.45);
+  display: none;
+}
+.trophies-toggle--has .trophies-toggle__count { display: inline-block; }
+
+@media (max-width: 560px) {
+  .trophies-toggle { width: 48px; height: 48px; right: .75rem; bottom: .75rem; }
+  .trophies-toggle__count { min-width: 18px; height: 18px; line-height: 18px; font-size: 11px; }
+}
+
+/* Trophies dialog content */
+.modal--trophies { max-width: min(720px, calc(100% - 2rem)); }
+.modal__intro {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+  text-align: center;
+  margin: -.4rem auto 1.5rem;
+  max-width: 540px;
+}
+.trophy-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+.trophy {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: .6rem;
+  padding: .9rem .9rem 1rem;
+  border-radius: 14px;
+  background: rgba(245,234,209,.65);
+  border: 1px solid rgba(90,69,35,.3);
+  text-align: center;
+}
+.trophy__art {
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  background: #f5e6c5;
+  border: 1px solid rgba(90,69,35,.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: rgba(90,69,35,.45);
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 2.4rem;
+}
+.trophy__art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.trophy__name {
+  margin: 0;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.05rem;
+  color: var(--ink);
+  letter-spacing: .02em;
+}
+.trophy__desc {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: .95rem;
+  color: var(--ink-soft);
+  line-height: 1.35;
+}
+.trophy__date {
+  margin: .2rem 0 0;
+  font-size: .85rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.trophy__date time { font-style: normal; color: var(--ink); }
+
+/* Earned: blue + gold ring like the discovered-pin colour pair. */
+.trophy--earned {
+  background: linear-gradient(180deg, rgba(245,234,209,.95), rgba(232,214,162,.95));
+  border-color: #2a6cd4;
+  box-shadow: 0 4px 12px rgba(13,45,107,.25), inset 0 0 0 1px rgba(243,210,122,.5);
+}
+.trophy--earned .trophy__name { color: #0d2d6b; }
+
+/* Locked: greyscale + dashed parchment border. */
+.trophy--locked {
+  opacity: .65;
+  filter: grayscale(.7);
+  border-style: dashed;
+}
+
+.trophy-empty {
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+  font-style: italic;
+  padding: 1rem 0 .5rem;
+}
+
+@media (max-width: 560px) {
+  .trophy-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .75rem; }
+  .trophy { padding: .7rem .7rem .9rem; }
+  .trophy__name { font-size: .95rem; }
+  .trophy__desc { font-size: .9rem; }
+}
+
+/* ---------- Modal ---------- */
+.modal {
+  border: none;
+  padding: 0;
+  max-width: min(780px, calc(100% - 2rem));
+  width: 100%;
+  border-radius: var(--radius);
+  background: var(--parchment);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  position: fixed;
+  inset: 0; margin: auto;
+}
+.modal::backdrop {
+  background: radial-gradient(ellipse at center, rgba(10,18,13,.85), rgba(0,0,0,.95));
+  backdrop-filter: blur(3px);
+}
+.modal__close {
+  position: absolute; top: .5rem; right: .75rem;
+  background: transparent; border: none; font-size: 2rem;
+  color: var(--ink-soft); cursor: pointer; line-height: 1;
+}
+.modal__content {
+  padding: 2rem 2.2rem .5rem;
+  font-family: 'Cormorant Garamond', serif;
+  max-height: 65vh; overflow-y: auto;
+}
+.modal__content h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 2rem; color: var(--ink);
+  margin: 0 0 .5rem;
+}
+.modal__content h2 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.25rem; color: var(--ink-soft);
+  border-bottom: 1px dashed rgba(90,69,35,.4);
+  padding-bottom: .2rem;
+  margin-top: 1.5rem;
+}
+.modal__content blockquote {
+  border-left: 4px solid var(--gold);
+  margin: 1rem 0;
+  padding: .2rem 1rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  background: rgba(224,138,61,.07);
+}
+.modal__content code {
+  background: rgba(90,69,35,.12);
+  padding: .1rem .4rem; border-radius: 4px;
+}
+.modal__content ul, .modal__content ol { padding-left: 1.4rem; }
+
+/* Pin-click modal styling: a touch narrower than the story dialog and
+   centered on the cottage name + the two how-to-find/what-to-do markdown
+   sections. */
+.modal--pin { max-width: min(560px, calc(100% - 2rem)); }
+.modal__title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.6rem;
+  color: var(--ink);
+  margin: 0 0 .8rem;
+  text-align: center;
+}
+
+/* Discovery-state pill under the title in the pin dialog. Driven by the
+   same persist.isFound(slug) check that paints the pin blue, so the two
+   indicators stay in sync. */
+.pin-status {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 1.2rem;
+  padding: .35rem 1rem;
+  border-radius: 999px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: .95rem;
+  letter-spacing: .03em;
+  text-align: center;
+}
+/* Blue + gold mirrors the assets/img/map-pin-found.svg colour pair. */
+.pin-status--found {
+  background: #0d2d6b;
+  color: #f3d27a;
+  border: 1px solid #2a6cd4;
+  box-shadow: 0 2px 6px rgba(13,45,107,.35);
+}
+.pin-status__check {
+  margin-right: .4rem;
+  color: #f3d27a;
+  font-weight: 700;
+}
+.pin-status__sep { margin: 0 .2rem; color: rgba(243,210,122,.6); }
+.pin-status--found time { color: inherit; font-style: normal; }
+.pin-status--unfound {
+  background: rgba(90,69,35,.08);
+  color: var(--ink-soft);
+  border: 1px dashed rgba(90,69,35,.4);
+  font-style: italic;
+  max-width: 100%;
+}
+.modal__actions {
+  display: flex; gap: .8rem; flex-wrap: wrap;
+  padding: 1rem 2.2rem 1.4rem;
+  border-top: 1px dashed rgba(90,69,35,.4);
+  background: rgba(232,214,162,.6);
+}
+.modal__actions .btn { font-size: .95rem; padding: .55rem 1rem; }
+.modal__actions .btn--ghost { color: var(--ink-soft); border-color: var(--ink-soft); }
+.modal__actions .btn--ghost:hover { background: rgba(90,69,35,.15); color: var(--ink); }
+
+/* ---------- Responsive (general page controls) ---------- */
+
+/* Tablets */
+@media (max-width: 820px) {
+  body             { font-size: 17px; }
+  .hero            { padding: .75rem 1.25rem 2.5rem; }
+  .hero__mark      { width: 60px; height: 60px; }
+  .hero__lede      { font-size: 1.05rem; }
+  .section__title  { font-size: clamp(1.6rem, 5vw, 2.2rem); }
+  .section__subtitle { font-size: 1rem; }
+  .map-hint        { font-size: .95rem; }
+  .hub__nav        { gap: 1rem; }
+  .hub__cap        { font-size: .95rem; }
+}
+
+/* Phones */
+@media (max-width: 560px) {
+  body             { font-size: 16px; }
+  .hero            { padding: .5rem 1rem 2.5rem; }
+  .hero__mark      { width: 48px; height: 48px; }
+  .hero__title     { font-size: clamp(1.6rem, 7.2vw, 2.4rem); }
+  .hero__lede      { font-size: 1rem; line-height: 1.5; }
+  .hero__art-frame { max-width: 260px; padding: 10px; }
+
+  /* Hub: keep all 3 buttons side-by-side, just smaller. */
+  .hub             { margin-top: 1.25rem; max-width: 360px; }
+  .hub__nav        { gap: .6rem; }
+  .hub__btn        { gap: .35rem; padding: .55rem .6rem; font-size: .85rem; letter-spacing: .02em; }
+  .hub__cap        { font-size: .85rem; letter-spacing: .02em; }
+
+  .section         { padding: 2.5rem 1rem; }
+
+  /* FAQ: single column with tighter padding */
+  .faq             { gap: .9rem; }
+  .faq__item       { padding: 1.1rem; }
+
+  /* Code input fills more of the row & doesn't force overflow */
+  .code            { padding: 1rem; gap: .75rem; width: 100%; box-sizing: border-box; }
+  .code input      { width: 100%; max-width: 220px; font-size: 1.5rem; letter-spacing: .4rem; }
+  .code .btn       { width: 100%; max-width: 260px; }
+
+  /* Modal: nearly full-width + its buttons stack */
+  .modal           { max-width: calc(100% - 1rem); border-radius: 12px; }
+  .modal__content  { padding: 1.5rem 1.2rem .25rem; max-height: 60vh; }
+  .modal__content h1 { font-size: 1.55rem; }
+  .modal__content h2 { font-size: 1.1rem; }
+  .modal__actions  { flex-direction: column; align-items: stretch; padding: .9rem 1.2rem 1.1rem; }
+  .modal__actions .btn { text-align: center; }
+
+  /* Footer stacks and centres */
+  .footer__inner   { flex-direction: column; text-align: center; gap: .6rem; }
+  .socials         { justify-content: center; }
+}
+
+/* Very narrow phones (e.g. older iPhone SE in portrait ~ 320 px) */
+@media (max-width: 380px) {
+  .hero__title     { font-size: 1.5rem; }
+  .hero__mark      { width: 42px; height: 42px; }
+  .hero__heading   { gap: .55rem; }
+  .hero__lede      { font-size: .95rem; }
+  .section         { padding: 2rem .85rem; }
+  .cottage-hotspot { width: 18px; height: 25px; }
+  .hub__cap        { font-size: .78rem; }
+  .hub__nav        { gap: .45rem; }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .stars, .fireflies span,
+  .cottage-hotspot { animation: none !important; }
+}
+
+/* ---------- Legal pages (Regulamin, Privacy Policy) ----------
+   Standalone parchment article on the same forest backdrop. Lives
+   under /legal/ and reuses the global header colour palette via the
+   :root CSS variables defined above. */
+.legal-body {
+  background: var(--forest-bg);
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+.legal-header {
+  background: #0a120d;
+  color: var(--parchment);
+  border-bottom: 1px solid rgba(199,154,75,.25);
+  padding: .85rem 1.5rem;
+  font-size: .9rem;
+}
+.legal-header__inner {
+  max-width: 1000px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; flex-wrap: wrap;
+}
+.legal-back { color: var(--gold); font-weight: 600; }
+.legal-back:hover { color: var(--ember); }
+.legal-lang { margin: 0; }
+.legal {
+  flex: 1;
+  padding: 2.5rem 1.5rem 3rem;
+}
+.legal__content {
+  max-width: 780px;
+  margin: 0 auto;
+  background: var(--parchment);
+  color: var(--ink);
+  padding: 2.5rem 2.25rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(199,154,75,.45);
+  line-height: 1.65;
+}
+.legal__content h1 {
+  margin: 0 0 .25rem;
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  color: var(--moss-dark);
+}
+.legal__content h2 {
+  margin: 1.8rem 0 .6rem;
+  font-size: 1.2rem;
+  color: var(--moss-dark);
+  border-bottom: 1px solid rgba(58,107,62,.25);
+  padding-bottom: .25rem;
+}
+.legal__content section:first-of-type h2 { margin-top: 1.5rem; }
+.legal__content p { margin: .6rem 0; }
+.legal__content ul { margin: .5rem 0 .8rem; padding-left: 1.3rem; }
+.legal__content li { margin: .25rem 0; }
+.legal__content code {
+  background: rgba(58,107,62,.10);
+  border: 1px solid rgba(58,107,62,.18);
+  padding: 0 .35rem; border-radius: 4px;
+  font-size: .92em;
+}
+.legal__content a { color: var(--moss-dark); text-decoration: underline; }
+.legal__content a:hover { color: var(--ember); }
+.legal__updated {
+  color: var(--ink-soft);
+  font-style: italic;
+  margin: 0 0 1rem;
+  font-size: .9rem;
+}
+
+@media (max-width: 640px) {
+  .legal { padding: 1.25rem .75rem 2rem; }
+  .legal__content { padding: 1.5rem 1.2rem; }
+  .legal-header__inner { flex-direction: column; text-align: center; gap: .4rem; }
+}
