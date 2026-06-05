@@ -1,7 +1,7 @@
 ---
-title: "Chatynka Strażnika Zamku"
+title: "Chatynka elfa Strzały"
 slug: straznik-zamku
-occupant: "Strażnik Zamku"
+occupant: "Strażnik Zamku Bydlin"
 lat: 50.387586
 lng: 19.645313
 virtue: wierność
@@ -15,13 +15,13 @@ Nie strzeże murów, lecz opowieści. Mówi, że każdy zamek, który upada, zap
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.387586, 19.645313`
-- **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.387586,19.645313)
-- **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.387586&mlon=19.645313#map=16/50.387586/19.645313)
+* **Współrzędne:** `50.387586, 19.645313`
+* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.387586,19.645313)
+* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.387586&mlon=19.645313#map=16/50.387586/19.645313)
 
 ## Mieszka tu
 
-**Strażnik Zamku**, który uczy wędrowców cnoty: _wierność_.
+**Strażnik Zamku**, który uczy wędrowców cnoty: *wierność*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
