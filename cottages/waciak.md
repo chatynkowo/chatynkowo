@@ -2,8 +2,8 @@
 title: "Chatynka elfki Zofii"
 slug: waciak
 occupant: Zofia
-lat: 50.32
-lng: 19.6
+lat: 50.2996
+lng: 19.5926
 virtue: mądrość
 ---
 
