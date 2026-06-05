@@ -1,7 +1,7 @@
 ---
-title: "Chatynka Starego Elfa"
+title: "Chatynka Starego Elfa Janusza"
 slug: stary-elf
-occupant: "Stary Elf"
+occupant: Janusz
 lat: 50.306783
 lng: 19.616489
 virtue: mądrość
@@ -15,13 +15,13 @@ Ma tylko jedno krzesło, ale zaprasza każdego. Mówi, że gość może siedzie�
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.306783, 19.616489`
-- **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.306783,19.616489)
-- **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.306783&mlon=19.616489#map=16/50.306783/19.616489)
+* **Współrzędne:** `50.306783, 19.616489`
+* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.306783,19.616489)
+* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.306783&mlon=19.616489#map=16/50.306783/19.616489)
 
 ## Mieszka tu
 
-**Stary Elf**, który uczy wędrowców cnoty: _mądrość_.
+**Stary Elf**, który uczy wędrowców cnoty: *mądrość*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
