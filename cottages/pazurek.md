@@ -1,7 +1,7 @@
 ---
 title: "Chatynka Elfa Pazurka"
 slug: pazurek
-occupant: "Elf Pazurek"
+occupant: "dwa domki"
 lat: 50.3285202
 lng: 19.6242689
 virtue: rzemiosło
@@ -15,13 +15,13 @@ Każdy wycięty przez niego znak to pytanie, a każda rysa — odpowiedź. Jeśl
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.3285202, 19.6242689`
-- **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.3285202,19.6242689)
-- **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.3285202&mlon=19.6242689#map=16/50.3285202/19.6242689)
+* **Współrzędne:** `50.3285202, 19.6242689`
+* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.3285202,19.6242689)
+* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.3285202&mlon=19.6242689#map=16/50.3285202/19.6242689)
 
 ## Mieszka tu
 
-**Elf Pazurek**, który uczy wędrowców cnoty: _rzemiosło_.
+**Elf Pazurek**, który uczy wędrowców cnoty: *rzemiosło*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
