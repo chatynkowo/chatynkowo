@@ -1,15 +1,15 @@
 ---
-title: "Chata z waty Skrzata"
+title: "Chatynka elfki Zofii"
 slug: waciak
-occupant: puchatek
+occupant: Zofia
 lat: 50.32
 lng: 19.6
-virtue: delikatność
+virtue: mądrość
 ---
 
 # Chata z waty Skrzata
 
-> Krótki opis chatynki.
+> W małej szczelinie , na zamku Rabsztyn dzieje się wiele , zajrzyj tam :)
 
 ## Jak znaleźć Chatynkę
 
