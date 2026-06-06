@@ -9,8 +9,8 @@ virtue: "starość to radość"
 
 # chatynka Wawrzyńca
 
-> niedawno, nie wiadomo skąd pojawiły się w okolicy bobry akurat tutaj postanowiły się osiedlić .
-> a Wawrzyniec tylko się ucieszył , bo w końcu ma z kim pływać i nie tylko :)
+> Niedawno, nie wiadomo skąd pojawiły się w okolicy bobry, akurat tutaj postanowiły się osiedlić.
+> Elf Wawrzyniec tylko się ucieszył , bo w końcu ma z kim pływać i nie tylko :)
 
 ## Jak znaleźć Chatynkę
 
