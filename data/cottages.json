@@ -18,6 +18,6 @@
   { "slug": "stary-elf",      "title": "Chatynka Starego Elfa Janusza",              "lat": 50.306783,  "lng": 19.616489,  "mapX": 65.09, "mapY": 56.58, "code": "2214" },
   { "slug": "alex",           "title": "Chatynka Elfów Jędrzeja i Franka",           "lat": 50.1748269, "lng": 19.743247,  "mapX": 50.29, "mapY": 57.46, "code": "3338" },
   { "slug": "12345",          "title": "Chatynka Luizy i Nitki",                     "lat": 50.361228,  "lng": 19.607387,  "mapX": 50,    "mapY": 50,    "code": "2255" },
-  { "slug": "waciak",         "title": "Chatynka elfki Zofii",                       "lat": 50.2996,    "lng": 19.5926,    "mapX": 58.98, "mapY": 55.59 },
+  { "slug": "waciak",         "title": "Chatynka elfki Zofii",                       "lat": 50.2996,    "lng": 19.5926,    "mapX": 58.98, "mapY": 55.59, "code": "3026" },
   { "slug": "wiktoria",       "title": "Chatynka Wiktorii",                          "lat": 50.278164,  "lng": 19.558636,  "mapX": 50,    "mapY": 50,    "code": "2345" }
 ]
