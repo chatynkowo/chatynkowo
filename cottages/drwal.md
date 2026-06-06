@@ -1,19 +1,18 @@
 ---
-title: "chatynka drwala"
+title: "chatynka drwala Dębomira"
 slug: drwal
-occupant: ""
-lat: 50.32
-lng: 19.6
-virtue: ""
+occupant: Dębomir
+lat: 50.14275
+lng: 19.27416
+virtue: "siła i wytrzymałość"
 ---
 
 # chatynka drwala
 
-> Krótki opis chatynki.
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.32, 19.6`
+* **Współrzędne:** `50.32, 19.6`
 
 ## Mieszka tu
 
