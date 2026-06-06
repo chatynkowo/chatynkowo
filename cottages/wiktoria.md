@@ -9,8 +9,8 @@ virtue: zwycięstwo
 
 # Chatynka Wiktorii
 
-> Tutaj wydarzyło się wiele , w historii miasta Olkusz , ale , to wydarzyło się ostatnio , to chyba naprawdę magia :)
-> poznacie historię Wiktorii
+> Tutaj wydarzyło się wiele w historii miasta Olkusz , ale to co wydarzyło się ostatnio , to chyba naprawdę magia :)
+> poznajcie historię Wiktorii
 
 ## Jak znaleźć Chatynkę
 
