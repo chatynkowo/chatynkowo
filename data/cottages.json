@@ -5,7 +5,7 @@
   { "slug": "teodor",         "title": "Chatynka Elfa Teodora",                      "lat": 50.339095,  "lng": 19.593019,  "mapX": 62.16, "mapY": 47.72, "code": "1212" },
   { "slug": "tupak",          "title": "Chatynka Elfa Tupaka",                       "lat": 50.307355,  "lng": 19.643231,  "mapX": 82.47, "mapY": 62.57, "code": "6776" },
   { "slug": "elfka-z-duza-d", "title": "Chatynka Elfki z dużą d...ą",                "lat": 50.3344711, "lng": 19.5720617, "mapX": 39.99, "mapY": 48.44, "code": "2121" },
-  { "slug": "pazurek",        "title": "Chatynka Elfa Pazurka",                      "lat": 50.3285202, "lng": 19.6242689, "mapX": 56.01, "mapY": 52.67, "code": "8333" },
+  { "slug": "pazurek",        "title": "Chatynka Elfa z Pazurka",                    "lat": 50.3285202, "lng": 19.6242689, "mapX": 56.01, "mapY": 52.67, "code": "8333" },
   { "slug": "gwerda-filinek", "title": "Chatynka Gwerdy i Filinka",                  "lat": 50.335995,  "lng": 19.561836,  "mapX": 45.65, "mapY": 52.8,  "code": "9331" },
   { "slug": "straznik-zamku", "title": "Chatynka elfa Strzały",                      "lat": 50.387586,  "lng": 19.645313,  "mapX": 28,    "mapY": 45,    "code": "7291" },
   { "slug": "dwaj-bracia",    "title": "Chatynka dwóch Braci",                       "lat": 50.307728,  "lng": 19.619081,  "mapX": 59.03, "mapY": 62.11, "code": "4569" },

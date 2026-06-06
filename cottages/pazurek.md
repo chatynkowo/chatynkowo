@@ -1,5 +1,5 @@
 ---
-title: "Chatynka Elfa Pazurka"
+title: "Chatynka Elfa z Pazurka"
 slug: pazurek
 occupant: "dwa domki"
 lat: 50.3285202
