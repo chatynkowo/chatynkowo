@@ -9,6 +9,7 @@ virtue: "siła i wytrzymałość"
 
 # chatynka drwala
 
+Czasem trzeba spojżeć inaczej na to, co dzieje się w około , żeby zrozumieć .
 
 ## Jak znaleźć Chatynkę
 
