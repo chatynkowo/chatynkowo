@@ -1,19 +1,20 @@
 ---
 title: "Chatynka Wiktorii"
 slug: wiktoria
-occupant: ""
-lat: 50.32
-lng: 19.6
-virtue: ""
+occupant: Wiktoria
+lat: 50.278164
+lng: 19.558636
+virtue: zwycięstwo
 ---
 
 # Chatynka Wiktorii
 
-> Krótki opis chatynki.
+> Tutaj wydarzyło się wiele , w historii miasta Olkusz , ale , to wydarzyło się ostatnio , to chyba naprawdę magia :)
+> poznacie historię Wiktorii
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.32, 19.6`
+* **Współrzędne:** `50.32, 19.6`
 
 ## Mieszka tu
 
