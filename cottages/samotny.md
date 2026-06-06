@@ -1,5 +1,5 @@
 ---
-title: "Chatynka Samotnego Elfa"
+title: "Chatynka Samotnego Elfa Fredka"
 slug: samotny
 occupant: Fredek
 lat: 50.324119
