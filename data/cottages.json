@@ -19,5 +19,6 @@
   { "slug": "12345",          "title": "Chatynka Luizy i Nitki",                     "lat": 50.361228,  "lng": 19.607387,  "mapX": 50,        "mapY": 50,    "code": "2255" },
   { "slug": "wiktoria",       "title": "Chatynka Wiktorii",                          "lat": 50.278164,  "lng": 19.558636,  "mapX": 50,        "mapY": 50,    "code": "2345" },
   { "slug": "zofia",          "title": "Chatynka Zofii z Rabsztyna",                 "lat": 50.3008,    "lng": 19.5942,    "mapX": 50,        "mapY": 50,    "code": "3026" },
-  { "slug": "wawrzyniec",     "title": "chatynka Wawrzyńca",                         "lat": 50.32,      "lng": 19.645387,  "mapX": 50.334479, "mapY": 50,    "code": "2026" }
+  { "slug": "wawrzyniec",     "title": "chatynka Wawrzyńca",                         "lat": 50.32,      "lng": 19.645387,  "mapX": 50.334479, "mapY": 50,    "code": "2026" },
+  { "slug": "ogrodniczki",    "title": "chatynka dwóch sióstr ogrodniczek",          "lat": 50.32,      "lng": 19.6,       "mapX": 50,        "mapY": 50 }
 ]
