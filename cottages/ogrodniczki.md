@@ -1,7 +1,7 @@
 ---
 title: "chatynka dwóch sióstr ogrodniczek"
 slug: ogrodniczki
-occupant: "ola i Wiktoria"
+occupant: "Ola i Wiktoria"
 lat: 50.322672
 lng: 19.639401
 virtue: "kupa szczęścia"
