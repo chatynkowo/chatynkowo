@@ -1,19 +1,20 @@
 ---
 title: "chatynka Wawrzyńca"
 slug: wawrzyniec
-occupant: ""
+occupant: Wawrzyniec
 lat: 50.32
-lng: 19.6
-virtue: ""
+lng: 19.645387
+virtue: "starość to radość"
 ---
 
 # chatynka Wawrzyńca
 
-> Krótki opis chatynki.
+> niedawno, nie wiadomo skąd pojawiły się w okolicy bobry akurat tutaj postanowiły się osiedlić .
+> a Wawrzyniec tylko się ucieszył , bo w końcu ma z kim pływać i nie tylko :)
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.32, 19.6`
+* **Współrzędne:** `50.32, 19.6`
 
 ## Mieszka tu
 
