@@ -2,8 +2,8 @@
 title: "Chatynka Elfa Iwo"
 slug: iwo
 occupant: "Elf Iwo"
-lat: 50.18008
-lng: 19.35327
+lat: 50.18004
+lng: 19.35322
 virtue: gościnność
 ---
 
@@ -15,13 +15,13 @@ Kiedy Iwo wspina się na swoje kamienne schody, zawsze niesie ze sobą garść o
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.18008, 19.35327`
-- **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.18008,19.35327)
-- **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.18008&mlon=19.35327#map=16/50.18008/19.35327)
+* **Współrzędne:** `50.18008, 19.35327`
+* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.18008,19.35327)
+* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.18008&mlon=19.35327#map=16/50.18008/19.35327)
 
 ## Mieszka tu
 
-**Elf Iwo**, który uczy wędrowców cnoty: _gościnność_.
+**Elf Iwo**, który uczy wędrowców cnoty: *gościnność*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
