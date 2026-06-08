@@ -586,6 +586,34 @@
       if (justFound) {
         drawCottages();
         renderTrophies();
+        // Anonymous, aggregate counts (never tied to a visitor). Guarded so a
+        // blocked/absent counter never throws. count.js URL-encodes the params
+        // itself, so we pass raw strings (no manual encodeURIComponent).
+        if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+          // Per-cottage breakdown: which cottages get discovered.
+          window.goatcounter.count({
+            path:  'found-' + c.slug,
+            title: 'Cottage found: ' + c.title,
+            event: true,
+          });
+          // Constant path — its total count = all cottage discoveries combined.
+          window.goatcounter.count({
+            path:  'cottage-found',
+            title: 'Cottage found (any)',
+            event: true,
+          });
+          // Progress distribution: how many cottages this visitor has found so
+          // far (includes the one just uncovered). Hit counts on progress-1,
+          // progress-2, … show how far seekers get — still anonymous, no
+          // per-visitor identity. Bounded by the cottage count, so the path
+          // set stays small.
+          const foundCount = persist.foundSlugs().length;
+          window.goatcounter.count({
+            path:  'progress-' + foundCount,
+            title: 'Reached ' + foundCount + ' found',
+            event: true,
+          });
+        }
       }
       out.innerHTML = `✨ Magia ożywa… Elf z <strong>${c.title}</strong> chce Ci coś opowiedzieć.`;
       openStory(c);

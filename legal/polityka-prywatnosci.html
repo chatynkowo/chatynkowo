@@ -19,15 +19,19 @@
   <main class="legal">
     <article class="legal__content">
       <h1>Polityka prywatności</h1>
-      <p class="legal__updated">Ostatnia aktualizacja: 6 maja 2026</p>
+      <p class="legal__updated">Ostatnia aktualizacja: 8 czerwca 2026</p>
 
       <section>
         <h2>W skrócie</h2>
         <p>
-          <strong>Chatynkowo nie zbiera o Tobie żadnych danych.</strong>
-          Strona jest w pełni statyczna, nie ma własnego serwera aplikacyjnego,
-          nie używa plików <em>cookie</em>, nie korzysta z analityki ani z
-          narzędzi śledzących. Wszystko, co dotyczy Twojego postępu w grze,
+          <strong>Chatynkowo nie buduje Twojego profilu i nie zbiera danych
+          osobowych.</strong> Strona jest w pełni statyczna, nie ma własnego
+          serwera aplikacyjnego i <strong>nie używa plików <em>cookie</em></strong>.
+          Aby sprawdzić, jak popularna jest strona, korzystamy wyłącznie z
+          prywatnościowego, otwartoźródłowego licznika odwiedzin
+          <strong>GoatCounter</strong>, który zlicza wizyty <strong>bez plików
+          cookie i&nbsp;bez zapisywania Twojego adresu IP</strong> (szczegóły
+          w&nbsp;pkt&nbsp;4). Wszystko, co dotyczy Twojego postępu w grze,
           zostaje na Twoim urządzeniu.
         </p>
       </section>
@@ -37,8 +41,10 @@
         <p>
           Serwis Chatynkowo jest projektem fanowskim, baśniowym, inspirowanym
           stroną <a href="https://chatynkowo.pl" rel="noopener">chatynkowo.pl</a>.
-          Z uwagi na charakter Serwisu (brak zbierania danych osobowych)
-          administrator nie przetwarza danych osobowych użytkowników w rozumieniu RODO.
+          Z uwagi na charakter Serwisu administrator ogranicza przetwarzanie
+          danych do zanonimizowanych, zbiorczych statystyk odwiedzin (patrz
+          pkt&nbsp;4) i nie buduje profili ani nie gromadzi danych pozwalających
+          na identyfikację użytkowników.
           W razie pytań — kontakt poprzez profile w mediach społecznościowych:
           <a href="https://www.instagram.com/chatynkowo.pl/" rel="noopener">Instagram</a>
           lub <a href="https://www.facebook.com/chatynkowo/" rel="noopener">Facebook</a>.
@@ -72,20 +78,44 @@
       <section>
         <h2>3. Pliki cookie</h2>
         <p>
-          Serwis <strong>nie wykorzystuje plików cookie</strong>. Dane, o których
-          mowa wyżej, przechowywane są w <em>localStorage</em>, które jest osobnym
-          mechanizmem przeglądarki — nie jest wysyłane wraz z żądaniami HTTP
-          i nie pełni roli identyfikatora śledzącego.
+          Serwis <strong>nie wykorzystuje plików cookie</strong> — także nasz
+          licznik odwiedzin (GoatCounter, pkt&nbsp;4) działa całkowicie bez
+          cookie. Dane o Twoim postępie w grze przechowywane są w
+          <em>localStorage</em>, które jest osobnym mechanizmem przeglądarki —
+          nie jest wysyłane wraz z żądaniami HTTP i nie pełni roli identyfikatora
+          śledzącego.
         </p>
       </section>
 
       <section>
         <h2>4. Analityka, reklamy, śledzenie</h2>
         <p>
-          Serwis <strong>nie korzysta</strong> z Google Analytics, Meta Pixel,
-          ani z żadnego innego narzędzia analitycznego, marketingowego czy
-          retargetującego. Nie tworzymy profilu użytkownika i nie analizujemy
-          jego zachowań.
+          Do oceny popularności strony korzystamy z <strong>GoatCounter</strong>
+          — otwartoźródłowego, nastawionego na prywatność licznika odwiedzin.
+          GoatCounter <strong>nie używa plików cookie, nie śledzi Cię pomiędzy
+          stronami i nie tworzy profilu użytkownika</strong>.
+        </p>
+        <p>
+          Zbierane są wyłącznie zagregowane, anonimowe statystyki: liczba odsłon
+          poszczególnych stron, przybliżona liczba unikalnych wizyt, strona
+          odsyłająca (referrer), rodzaj przeglądarki i kraj. Twój adres IP jest
+          wykorzystywany jedynie chwilowo — do wyliczenia anonimowego,
+          zmienianego każdego dnia skrótu, który pozwala odróżnić wizyty — a
+          <strong>sam adres IP nie jest nigdzie zapisywany</strong>.
+        </p>
+        <p>
+          Dodatkowo, gdy odkryjesz Chatynkę wpisując jej kod, zapisywane jest
+          anonimowe zdarzenie wskazujące, <em>która</em> Chatynka została
+          odkryta oraz <em>ile</em> Chatynek odkryto dotąd w tej przeglądarce —
+          bez powiązania z Twoją osobą. Pomaga nam to zobaczyć, które Chatynki
+          są najczęściej odnajdywane i jak daleko docierają poszukiwacze.
+        </p>
+        <p>
+          Nadal <strong>nie korzystamy</strong> z Google Analytics, Meta Pixela
+          ani z żadnych narzędzi marketingowych czy retargetujących. Zasady
+          przetwarzania danych przez GoatCounter opisuje
+          <a href="https://www.goatcounter.com/help/gdpr" rel="noopener">dokumentacja
+          GoatCounter dotycząca RODO</a>.
         </p>
       </section>
 
@@ -177,5 +207,9 @@
       </ul>
     </div>
   </footer>
+
+  <!-- Cookieless, IP-not-stored visit counter (GoatCounter). See §4 above. -->
+  <script data-goatcounter="https://chatynkowo.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

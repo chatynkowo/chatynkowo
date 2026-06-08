@@ -19,15 +19,19 @@
   <main class="legal">
     <article class="legal__content">
       <h1>Privacy Policy</h1>
-      <p class="legal__updated">Last updated: 6 May 2026</p>
+      <p class="legal__updated">Last updated: 8 June 2026</p>
 
       <section>
         <h2>In short</h2>
         <p>
-          <strong>Chatynkowo does not collect any data about you.</strong>
-          The Site is fully static, has no application server of its own, uses
-          no <em>cookies</em>, no analytics, and no tracking. Anything related
-          to your in-game progress stays on your device.
+          <strong>Chatynkowo does not build a profile of you and does not
+          collect personal data.</strong> The Site is fully static, has no
+          application server of its own, and <strong>uses no
+          <em>cookies</em></strong>. To gauge how popular the page is, we use
+          only <strong>GoatCounter</strong>, a privacy-friendly, open-source
+          visit counter that counts visits <strong>without cookies and without
+          storing your IP address</strong> (details in section&nbsp;4). Anything
+          related to your in-game progress stays on your device.
         </p>
       </section>
 
@@ -36,9 +40,10 @@
         <p>
           Chatynkowo is a fan-made, fairytale project inspired by
           <a href="https://chatynkowo.pl" rel="noopener">chatynkowo.pl</a>.
-          Because of the nature of the Site (no personal data is collected),
-          the operator does not process personal data within the meaning of
-          GDPR. For any questions, please reach out via our social profiles:
+          Given the nature of the Site, the operator limits processing to
+          anonymous, aggregate visit statistics (see section&nbsp;4) and does
+          not build profiles or gather data that could identify users.
+          For any questions, please reach out via our social profiles:
           <a href="https://www.instagram.com/chatynkowo.pl/" rel="noopener">Instagram</a>
           or <a href="https://www.facebook.com/chatynkowo/" rel="noopener">Facebook</a>.
         </p>
@@ -71,19 +76,42 @@
       <section>
         <h2>3. Cookies</h2>
         <p>
-          The Site <strong>does not use cookies</strong>. The data above lives
-          in <em>localStorage</em>, which is a separate browser mechanism — it
-          is not transmitted with HTTP requests and does not act as a tracking
-          identifier.
+          The Site <strong>does not use cookies</strong> — our visit counter
+          (GoatCounter, section&nbsp;4) is entirely cookieless too. Your
+          progress data lives in <em>localStorage</em>, which is a separate
+          browser mechanism — it is not transmitted with HTTP requests and does
+          not act as a tracking identifier.
         </p>
       </section>
 
       <section>
         <h2>4. Analytics, ads, tracking</h2>
         <p>
-          The Site <strong>does not use</strong> Google Analytics, the Meta
-          Pixel, or any other analytics, marketing, or retargeting tool. We
-          don't profile you and we don't analyse your behaviour.
+          To gauge the page's popularity we use <strong>GoatCounter</strong>,
+          an open-source, privacy-focused visit counter. GoatCounter
+          <strong>uses no cookies, does not track you across sites, and builds
+          no user profile</strong>.
+        </p>
+        <p>
+          Only aggregate, anonymous statistics are collected: per-page view
+          counts, an approximate number of unique visits, the referrer, browser
+          type, and country. Your IP address is used only momentarily — to
+          compute an anonymous, daily-rotating hash that lets visits be told
+          apart — and <strong>the IP address itself is never stored</strong>.
+        </p>
+        <p>
+          In addition, when you uncover a cottage by entering its code, an
+          anonymous event is recorded indicating <em>which</em> cottage was
+          found and <em>how many</em> cottages have been found so far in this
+          browser — with no link to you personally. This helps us see which
+          cottages are discovered most often and how far seekers get.
+        </p>
+        <p>
+          We still <strong>do not use</strong> Google Analytics, the Meta Pixel,
+          or any marketing or retargeting tools. GoatCounter's data practices
+          are described in the
+          <a href="https://www.goatcounter.com/help/gdpr" rel="noopener">GoatCounter
+          GDPR documentation</a>.
         </p>
       </section>
 
@@ -173,5 +201,9 @@
       </ul>
     </div>
   </footer>
+
+  <!-- Cookieless, IP-not-stored visit counter (GoatCounter). See §4 above. -->
+  <script data-goatcounter="https://chatynkowo.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
