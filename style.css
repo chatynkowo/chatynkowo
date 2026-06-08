@@ -517,6 +517,81 @@ a:hover { color: var(--ember); }
   font-size: .95rem !important;
   color: #b9a97a !important;
 }
+
+/* ---------- Tourist-route panel ----------
+   Sits below the map; lists the route stages (each a Google Maps + Mapy.cz
+   link) and a GPX download. Parchment-on-forest card matching the page. */
+.route-panel {
+  max-width: 720px;
+  margin: 1.5rem auto 0;
+  padding: 1.4rem 1.6rem 1.6rem;
+  border-radius: var(--radius);
+  background: rgba(20, 30, 20, .55);
+  border: 1px solid rgba(199, 154, 75, .35);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.route-panel__title {
+  font-family: 'Cinzel Decorative', serif;
+  color: #f5e6b8;
+  font-size: 1.45rem;
+  margin: 0 0 .4rem;
+}
+.route-panel__lede {
+  color: #e8d7a8;
+  font-size: 1rem;
+  line-height: 1.5;
+  max-width: 56ch;
+  margin: 0 auto .9rem;
+  opacity: .9;
+}
+.route-panel__summary {
+  color: var(--gold);
+  font-weight: 600;
+  letter-spacing: .03em;
+  margin: 0 0 1.1rem;
+}
+.route-stages {
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  margin-bottom: 1.2rem;
+}
+.route-stage {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  flex-wrap: wrap;
+  padding: .7rem .9rem;
+  border-radius: 12px;
+  background: rgba(245, 234, 209, .07);
+  border: 1px solid rgba(199, 154, 75, .25);
+}
+.route-stage__label {
+  color: #f5e6b8;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  text-align: left;
+}
+.route-stage__links { display: flex; gap: .5rem; flex-wrap: wrap; }
+.route-stage__link { font-size: .85rem; padding: .45rem .9rem; }
+.route-gpx { display: inline-block; }
+.route-error {
+  color: #f5e6b8;
+  background: rgba(0, 0, 0, .35);
+  border: 1px dashed rgba(199, 154, 75, .5);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.route-error code {
+  background: rgba(245, 234, 209, .14);
+  padding: .1rem .4rem;
+  border-radius: 4px;
+}
+
 .map-hotspots {
   position: absolute;
   inset: 0;
@@ -1259,6 +1334,50 @@ a:hover { color: var(--ember); }
 .modal__actions .btn--ghost { color: var(--ink-soft); border-color: var(--ink-soft); }
 .modal__actions .btn--ghost:hover { background: rgba(90,69,35,.15); color: var(--ink); }
 
+/* Pin dialog "Jak tu dotrzeć" nav block — coords + Google/Mapy.cz links,
+   generated from cottages.json. The ghost buttons here sit on parchment, so
+   they take the dark-ink variant rather than the cream one used on forest. */
+.pin-nav__coord { margin: .4rem 0 .8rem; }
+.pin-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0 0 .5rem;
+}
+.pin-nav__link {
+  font-size: .85rem;
+  padding: .45rem .9rem;
+  color: var(--ink-soft);
+  border-color: var(--ink-soft);
+}
+.pin-nav__link:hover { background: rgba(90,69,35,.15); color: var(--ink); }
+
+/* Story dialog "Stąd blisko do…" — a couple of nearby cottages to visit next,
+   each a button that opens that cottage's pin window. */
+.neighbors { margin-top: 1.5rem; }
+.neighbors__intro { margin: .3rem 0 .8rem; color: var(--ink-soft); }
+.neighbors__list { list-style: none; padding: 0; margin: 0; display: grid; gap: .6rem; }
+.neighbors__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  text-align: left;
+  padding: .7rem .95rem;
+  border-radius: 12px;
+  cursor: pointer;
+  background: rgba(224, 138, 61, .08);
+  border: 1px solid var(--gold);
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--ink);
+  transition: background .15s, transform .15s;
+}
+.neighbors__item:hover { background: rgba(224, 138, 61, .18); transform: translateY(-1px); }
+.neighbors__item--found { opacity: .75; border-style: dashed; }
+.neighbors__name { font-size: 1.1rem; font-weight: 600; }
+.neighbors__meta { font-size: .9rem; color: var(--ink-soft); white-space: nowrap; }
+
 /* ---------- Responsive (general page controls) ---------- */
 
 /* Tablets */
@@ -1311,6 +1430,14 @@ a:hover { color: var(--ember); }
   /* Footer stacks and centres */
   .footer__inner   { flex-direction: column; text-align: center; gap: .6rem; }
   .socials         { justify-content: center; }
+
+  /* Route stages: stack label over links, full-width buttons */
+  .route-panel     { padding: 1.1rem 1rem 1.25rem; }
+  .route-stage     { flex-direction: column; align-items: stretch; gap: .55rem; }
+  .route-stage__label { text-align: center; }
+  .route-stage__links { justify-content: center; }
+  .route-gpx       { width: 100%; }
+  .neighbors__item { flex-direction: column; align-items: flex-start; gap: .2rem; }
 }
 
 /* Very narrow phones (e.g. older iPhone SE in portrait ~ 320 px) */

@@ -23,6 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - name: Rebuild the symbolic map from the pin-less source
         # Regenerates assets/img/map_base_vertical.webp from
         # private/img/origs/map_base_vertical.png so the published map can never
@@ -40,6 +43,8 @@ jobs:
         # codes. Must run BEFORE the strip step below, while private/ still
         # exists. The plaintext codes themselves never reach the artifact.
         run: node private/build-code-hashes.mjs
+      - name: Build site (generate tourist route + GPX into dist/)
+        run: bash scripts/build.sh
       - name: Strip non-public files from the deploy artifact
         run: rm -rf private scrape
       - name: Inject git commit into footer

@@ -31,6 +31,39 @@ The `/admin/` editor maintains this split automatically: text goes to the
 `private/codes.json` together with the regenerated `data/code_hashes.json`
 in the same commit.
 
+## Build
+
+The site has one build step that generates the tourist route from the cottage
+locations. The same entry point runs locally and on deploy, so the two stay in
+step:
+
+```bash
+npm run build        # → bash scripts/build.sh
+```
+
+This reads `data/cottages.json` and writes the **gitignored** output directory
+`dist/`:
+
+| File | Contents |
+|---|---|
+| `dist/route.json` | Optimised visiting order, split into stages (each within the Google Maps / Mapy.cz waypoint limits), plus a ready-made Google Maps and Mapy.cz link per stage. |
+| `dist/chatynkowo-trasa.gpx` | The full route (all stops) as a GPX track. |
+
+The route maths live in `route_logic.js` (shared between the Node build script
+and the browser). On deploy, `.github/workflows/pages.yml` runs the same
+`scripts/build.sh`.
+
+> If you open the site **without** building first, the map screen shows a
+> "Brakuje pliku `dist/route.json` — najpierw zbuduj aplikację" notice. Run
+> `npm run build` and reload.
+
+To preview locally, build then serve:
+
+```bash
+npm run dev          # build + python3 -m http.server 8000
+# → http://localhost:8000/
+```
+
 ## Editor
 
 The built-in editor lives at `/admin/` on the deployed GitHub Pages site.  

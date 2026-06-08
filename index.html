@@ -139,6 +139,24 @@
           a&nbsp;po chwili otworzy się okno z&nbsp;opisem i&nbsp;nawigacją.
         </p>
       </div>
+
+      <!-- Tourist route: built from cottage locations at deploy time
+           (scripts/build.sh → dist/route.json + dist/chatynkowo-trasa.gpx).
+           The optimised order is split into stages that each stay within the
+           Google Maps / Mapy.cz waypoint limits. If the build hasn't run,
+           main.js shows a "build the app first" message here. -->
+      <aside class="route-panel" id="routePanel" hidden aria-labelledby="routePanelTitle">
+        <h3 class="route-panel__title" id="routePanelTitle">Pełna trasa turystyczna</h3>
+        <p class="route-panel__lede">
+          Jedna trasa łącząca wszystkie chatynki, ułożona z&nbsp;ich lokalizacji.
+          Otwórz kolejne etapy w&nbsp;nawigacji albo pobierz całość jako plik&nbsp;GPX.
+        </p>
+        <p class="route-panel__summary" id="routeSummary"></p>
+        <div class="route-stages" id="routeStages"></div>
+        <a class="btn btn--primary route-gpx" id="routeGpx" href="#" hidden>
+          ⬇&nbsp;Pobierz całą trasę (GPX)
+        </a>
+      </aside>
     </section>
 
     <section id="kod" class="section section--panel section--code" hidden>
@@ -291,6 +309,9 @@
   <!-- App data store + badge registry. Must load BEFORE main.js so the
        window.chatynkowo namespace is ready when main.js runs. -->
   <script src="app_logic.js" defer></script>
+  <!-- Shared route/geo helpers (window.chatynkowo.route). Used by main.js for
+       the pin window's nav links and the neighbouring-cottage suggestions. -->
+  <script src="route_logic.js" defer></script>
   <script src="main.js" defer></script>
 
   <!-- Cookieless, IP-not-stored visit counter (GoatCounter). Public pages
