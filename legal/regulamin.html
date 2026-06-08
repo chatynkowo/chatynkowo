@@ -19,7 +19,7 @@
   <main class="legal">
     <article class="legal__content">
       <h1>Regulamin serwisu Chatynkowo</h1>
-      <p class="legal__updated">Ostatnia aktualizacja: 6 maja 2026</p>
+      <p class="legal__updated">Ostatnia aktualizacja: 8 czerwca 2026</p>
 
       <section>
         <h2>1. O serwisie</h2>
@@ -38,8 +38,10 @@
       <section>
         <h2>2. Charakter Serwisu</h2>
         <p>
-          Serwis jest stroną w pełni statyczną. Nie posiada warstwy serwerowej,
-          nie zbiera ani nie przesyła żadnych danych do operatora. Wszystkie
+          Serwis jest stroną w pełni statyczną i nie posiada własnej warstwy
+          serwerowej. Poza zanonimizowanymi, zbiorczymi statystykami odwiedzin
+          (licznik GoatCounter — bez plików cookie i bez zapisywania adresu IP)
+          Serwis nie zbiera danych osobowych użytkowników. Wszystkie
           informacje o postępach (odnalezione Chatynki, zdobyte odznaki) są
           przechowywane <strong>wyłącznie w pamięci lokalnej przeglądarki</strong>
           użytkownika (mechanizm <em>localStorage</em>) i nie opuszczają jego
@@ -136,5 +138,9 @@
       </ul>
     </div>
   </footer>
+
+  <!-- Cookieless, IP-not-stored visit counter (GoatCounter). -->
+  <script data-goatcounter="https://chatynkowo.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
