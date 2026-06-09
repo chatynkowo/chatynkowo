@@ -48,3 +48,33 @@ node private/admin/server.mjs
 ```
 
 The local server reads and writes files directly on disk — no token required.
+
+## Map generation
+
+The fairytale map (the **Mapa** section) is built from two layers:
+
+- **A pin-less base image** — `assets/img/map_base_vertical.webp`, the parchment
+  illustration with *no* location pins painted on it.
+- **Data-driven pins** — `main.js` (`drawCottages()`) draws one interactive pin
+  per cottage in `data/cottages.json`, positioned at its `mapX`/`mapY`. This
+  overlay is the **single source of pins**, so every pin on the map corresponds
+  to a real cottage and moves automatically when the data changes.
+
+> ⚠️ **Never bake pins into the base image.** A painted-in pin has no cottage
+> behind it, isn't clickable, and stays frozen while the real pins move — a
+> "dead pin". Keep the base map pin-less; let the data overlay draw the pins.
+
+### Regenerating the base image
+
+The published `.webp` is built from the pin-less source
+`private/img/origs/map_base_vertical.png` (1024×1536, no pins):
+
+```bash
+node private/img/build-map.mjs
+```
+
+It has no npm dependencies — it shells out to `cwebp` (libwebp), the standard
+WebP encoder. Install it if missing: `sudo apt-get install webp` (Debian/Ubuntu)
+or `brew install webp` (macOS). The GitHub Pages deploy
+([`.github/workflows/pages.yml`](.github/workflows/pages.yml)) runs this step too,
+so the live map is always rebuilt from the pin-less source before publishing.

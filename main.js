@@ -22,10 +22,14 @@
   }
 
   /* ---------- Cottage hotspots (image overlay) ----------
-     The map is a bitmap at assets/img/map-base.png. For each cottage, we
-     place a transparent <button> at its mapX/mapY position (expressed as a
-     PERCENTAGE of the image in data/cottages.json). CSS gives it a gold
-     pulsing glow on hover/focus and an animated zoom on click. */
+     The background is the PIN-LESS base map (assets/img/map_base_vertical.webp).
+     Every pin on the map is drawn here, from data: for each cottage we place a
+     <button> at its mapX/mapY position (a PERCENTAGE of the image in
+     data/cottages.json), styled as a visible pin via CSS (.cottage-hotspot →
+     map-pin.svg, blue map-pin-found.svg once found). This overlay is the SINGLE
+     source of pins — never bake pins into the base image, or they become "dead
+     pins" with no cottage behind them. CSS gives each pin a gold pulsing glow
+     on hover/focus and an animated zoom on click. */
   const ZOOM_DELAY_MS = 360;  // matches the .is-clicked CSS transition
 
   function makeHotspot(c, onActivate) {
