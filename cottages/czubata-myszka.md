@@ -15,13 +15,13 @@ Razem prowadzą małą bibliotekę szeleszczących liści. Każdy liść to jedn
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.33598, 19.555542`
-- **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.33598,19.555542)
-- **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.33598&mlon=19.555542#map=16/50.33598/19.555542)
+* **Współrzędne:** `50.33598, 19.555542`
+* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.33598,19.555542)
+* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.33598&mlon=19.555542#map=16/50.33598/19.555542)
 
 ## Mieszka tu
 
-**Czubata i Myszka**, który uczy wędrowców cnoty: _wyobraźnia_.
+**Czubata i Myszka**, który uczy wędrowców cnoty: *wyobraźnia*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
