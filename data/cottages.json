@@ -22,5 +22,5 @@
   { "slug": "wawrzyniec",     "title": "chatynka Wawrzyńca",                         "lat": 50.33447,   "lng": 19.645387,  "mapX": 50,    "mapY": 50,    "code": "2026" },
   { "slug": "ogrodniczki",    "title": "chatynka dwóch sióstr ogrodniczek",          "lat": 50.322672,  "lng": 19.639401,  "mapX": 50,    "mapY": 50,    "code": "2602" },
   { "slug": "drwal",          "title": "chatynka drwala Dębomira",                   "lat": 50.14275,   "lng": 19.27416,   "mapX": 50,    "mapY": 50,    "code": "5281" },
-  { "slug": "kira",           "title": "chatynka  Kiry",                             "lat": 50.1827,    "lng": 19.3315,    "mapX": 50,    "mapY": 50,    "code": "3541" }
+  { "slug": "kira",           "title": "chatynka  Kiry",                             "lat": 50.1827,    "lng": 19.3315,    "mapX": 43.25, "mapY": 50.29, "code": "3541" }
 ]
