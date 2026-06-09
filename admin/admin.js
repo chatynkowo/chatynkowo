@@ -354,8 +354,29 @@
   /* ---------- status ---------- */
 
   function setStatus(s, text) { els.status.dataset.state = s; els.status.textContent = text; }
-  function markDirty() { state.dirty = true; els.save.disabled = false; setStatus('dirty', 'niezapisane'); }
-  function markClean() { state.dirty = false; els.save.disabled = true; setStatus('clean', 'zapisane'); }
+  function markDirty() { state.dirty = true; els.save.disabled = false; els.discard.disabled = false; setStatus('dirty', 'niezapisane'); }
+  function markClean() { state.dirty = false; els.save.disabled = true; els.discard.disabled = true; setStatus('clean', 'zapisane'); }
+
+  /* ---------- discard changes ----------
+     Throw away unsaved edits to the current cottage and reload the canonical
+     version straight from the repository (GitHub). */
+  async function discardChanges() {
+    if (!state.current || !state.dirty) return;
+    if (!confirm('Odrzucić niezapisane zmiany i wczytać aktualną wersję z repozytorium?')) return;
+    const slug = state.current.slug;
+    // Clear the dirty flag first so the reload doesn't trigger the
+    // "unsaved changes" prompt again inside selectCottage().
+    state.dirty = false;
+    els.discard.disabled = true;
+    setStatus('saving', 'wczytuję z repozytorium…');
+    try {
+      await loadAll(slug);   // re-fetches the tree + blobs from the remote
+    } catch (e) {
+      setStatus('error', `błąd: ${e.message}`);
+      state.dirty = true;
+      els.discard.disabled = false;
+    }
+  }
 
   /* ---------- save cottage ---------- */
 
@@ -730,6 +751,7 @@
     editorRoot: $('#editor-root'),
     select: $('#cottage-select'),
     save: $('#btn-save'),
+    discard: $('#btn-discard'),
     add: $('#btn-add'),
     delete: $('#btn-delete'),
     settings: $('#btn-settings'),
@@ -824,6 +846,7 @@
 
     els.select.addEventListener('change', () => selectCottage(els.select.value));
     els.save.addEventListener('click', save);
+    els.discard.addEventListener('click', discardChanges);
     els.settings.addEventListener('click', () => showAuthOverlay());
     els.add.addEventListener('click', openAddDialog);
     els.delete.addEventListener('click', deleteCurrent);
