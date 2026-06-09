@@ -2,8 +2,8 @@
 title: "chatynka  Kiry"
 slug: kira
 occupant: Kira
-lat: 50.1827
-lng: 19.3315
+lat: 50.307492
+lng: 19.554178
 virtue: niezdecydowanie
 ---
 
