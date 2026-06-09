@@ -15,7 +15,7 @@
   { "slug": "samotny",        "title": "Chatynka Samotnego Elfa Fredka",             "lat": 50.324119,  "lng": 19.628782,  "mapX": 69.87, "mapY": 54.56 },
   { "slug": "skalne-iglice",  "title": "Chatynka dwóch sióstr na skalnych iglicach", "lat": 50.324143,  "lng": 19.629747,  "mapX": 79.68, "mapY": 54.32, "code": "2376" },
   { "slug": "stary-elf",      "title": "Chatynka Starego Elfa Janusza",              "lat": 50.306783,  "lng": 19.616489,  "mapX": 65.09, "mapY": 56.58, "code": "2214" },
-  { "slug": "alex",           "title": "Chatynka Elfów Jędrzeja i Franka",           "lat": 50.1748269, "lng": 19.743247,  "mapX": 43.18, "mapY": 70.27, "code": "3338" },
+  { "slug": "alex",           "title": "Chatynka Elfów Jędrzeja i Franka",           "lat": 50.1748269, "lng": 19.743247,  "mapX": 41.95, "mapY": 67.8,  "code": "3338" },
   { "slug": "12345",          "title": "Chatynka Luizy i Nitki",                     "lat": 50.361228,  "lng": 19.607387,  "mapX": 40.69, "mapY": 62.25, "code": "2255" },
   { "slug": "wiktoria",       "title": "Chatynka Wiktorii",                          "lat": 50.278164,  "lng": 19.558636,  "mapX": 31.72, "mapY": 61.03, "code": "7557" },
   { "slug": "zofia",          "title": "Chatynka Zofii z Rabsztyna",                 "lat": 50.3008,    "lng": 19.5942,    "mapX": 20.91, "mapY": 42.48, "code": "3026" },
