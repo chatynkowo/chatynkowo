@@ -40,14 +40,20 @@ The token is stored only in your browser's `localStorage` and is never sent anyw
 
 Click the **⚙** button in the top-right corner of the editor to open the settings panel and enter a new token.
 
-### Local development (Node.js server)
+### Running the editor locally
+
+The editor is a static page, so you can run it without deploying — serve the
+repo with any static file server and open `/admin/`:
 
 ```bash
-node private/admin/server.mjs
-# editor → http://localhost:3000/admin/
+python3 -m http.server 8000
+# editor → http://localhost:8000/admin/
 ```
 
-The local server reads and writes files directly on disk — no token required.
+On first load, open the **⚙** settings panel and enter your **owner**, **repo**
+and **PAT** (repo auto-detection only works on the live `*.github.io` URL). The
+editor then reads and writes the live repository through the GitHub API, exactly
+as on the deployed site.
 
 ## Map generation
 
