@@ -9,7 +9,7 @@
   { "slug": "gwerda-filinek", "title": "Chatynka Gwerdy i Filinka",                  "lat": 50.335995,  "lng": 19.561836,  "mapX": 34.28, "mapY": 42.84, "code": "9331" },
   { "slug": "straznik-zamku", "title": "Chatynka elfa Strzały",                      "lat": 50.387586,  "lng": 19.645313,  "mapX": 42.15, "mapY": 41.26, "code": "7291" },
   { "slug": "dwaj-bracia",    "title": "Chatynka dwóch Braci",                       "lat": 50.307728,  "lng": 19.619081,  "mapX": 59.03, "mapY": 62.11, "code": "4569" },
-  { "slug": "czubata-myszka", "title": "Chatynka Czubatej i Myszki",                 "lat": 50.33598,   "lng": 19.555542,  "mapX": 43.07, "mapY": 42.11, "code": "5775" },
+  { "slug": "czubata-myszka", "title": "Chatynka Czubatej i Myszki",                 "lat": 50.33598,   "lng": 19.555542,  "mapX": 39.4,  "mapY": 40.04, "code": "5775" },
   { "slug": "zielonowlosy",   "title": "Chatynka Zielonowłosego",                    "lat": 50.340103,  "lng": 19.55149,   "mapX": 53.08, "mapY": 38.22, "code": "7667" },
   { "slug": "zaprasza",       "title": "Chatynka, która zaprasza",                   "lat": 50.317941,  "lng": 19.635328,  "mapX": 77.98, "mapY": 52.28, "code": "9873" },
   { "slug": "samotny",        "title": "Chatynka Samotnego Elfa Fredka",             "lat": 50.324119,  "lng": 19.628782,  "mapX": 69.87, "mapY": 54.56 },
