@@ -142,7 +142,7 @@
     return `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${path}?v=${sha.slice(0, 8)}`;
   }
 
-  /* ---------- frontmatter / JSON serialisers (mirrors server.mjs) ---------- */
+  /* ---------- frontmatter / JSON serialisers ---------- */
 
   function parseFrontmatter(raw) {
     const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
