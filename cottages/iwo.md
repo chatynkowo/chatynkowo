@@ -2,8 +2,8 @@
 title: "Chatynka Elfa Iwo"
 slug: iwo
 occupant: "Elf Iwo"
-lat: 50.18004
-lng: 19.35322
+lat: 50.3000097
+lng: 19.592267
 virtue: gościnność
 ---
 
