@@ -2,7 +2,7 @@
 title: "chatynka Wawrzyńca"
 slug: wawrzyniec
 occupant: Wawrzyniec
-lat: 50.32
+lat: 50.33447
 lng: 19.645387
 virtue: "starość to radość"
 ---
