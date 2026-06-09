@@ -15,13 +15,13 @@ Jest najstarszym ogrodnikiem Chatynkowa. Naucza, że świat nie należy do tych,
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.340103, 19.55149`
-- **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.340103,19.55149)
-- **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.340103&mlon=19.55149#map=16/50.340103/19.55149)
+* **Współrzędne:** `50.340103, 19.55149`
+* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.340103,19.55149)
+* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.340103&mlon=19.55149#map=16/50.340103/19.55149)
 
 ## Mieszka tu
 
-**Elf Zielonowłosy**, który uczy wędrowców cnoty: _szacunek_.
+**Elf Zielonowłosy**, który uczy wędrowców cnoty: *szacunek*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
