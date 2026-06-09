@@ -21,6 +21,6 @@
   { "slug": "zofia",          "title": "Chatynka Zofii z Rabsztyna",                 "lat": 50.3008,    "lng": 19.5942,    "mapX": 50,    "mapY": 50,    "code": "3026" },
   { "slug": "wawrzyniec",     "title": "chatynka Wawrzyńca",                         "lat": 50.33447,   "lng": 19.645387,  "mapX": 50,    "mapY": 50,    "code": "2026" },
   { "slug": "ogrodniczki",    "title": "chatynka dwóch sióstr ogrodniczek",          "lat": 50.322672,  "lng": 19.639401,  "mapX": 50,    "mapY": 50,    "code": "2602" },
-  { "slug": "drwal",          "title": "chatynka drwala Dębomira",                   "lat": 50.14275,   "lng": 19.27416,   "mapX": 29.34, "mapY": 38.69, "code": "5281" },
+  { "slug": "drwal",          "title": "chatynka drwala Dębomira",                   "lat": 50.14275,   "lng": 19.27416,   "mapX": 20,    "mapY": 28.93, "code": "5281" },
   { "slug": "kira",           "title": "chatynka  Kiry",                             "lat": 50.307492,  "lng": 19.554178,  "mapX": 43.25, "mapY": 50.29, "code": "3541" }
 ]
