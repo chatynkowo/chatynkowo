@@ -15,13 +15,13 @@ Pod jej chatynką zawsze leży miska mleka dla jeża i garść żołędzi dla wi
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.3344711, 19.5720617`
-- **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.3344711,19.5720617)
-- **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.3344711&mlon=19.5720617#map=16/50.3344711/19.5720617)
+* **Współrzędne:** `50.3344711, 19.5720617`
+* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.3344711,19.5720617)
+* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.3344711&mlon=19.5720617#map=16/50.3344711/19.5720617)
 
 ## Mieszka tu
 
-**Elfka z dużą d...ą**, który uczy wędrowców cnoty: _dobroć_.
+**Elfka z dużą d...ą**, który uczy wędrowców cnoty: *dobroć*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
