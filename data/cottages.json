@@ -16,7 +16,7 @@
   { "slug": "skalne-iglice",  "title": "Chatynka dwóch sióstr na skalnych iglicach", "lat": 50.324143,  "lng": 19.629747,  "mapX": 75.63, "mapY": 57.94, "code": "2376" },
   { "slug": "stary-elf",      "title": "Chatynka Starego Elfa Janusza",              "lat": 50.306783,  "lng": 19.616489,  "mapX": 65.09, "mapY": 56.58, "code": "2214" },
   { "slug": "alex",           "title": "Chatynka Elfów Jędrzeja i Franka",           "lat": 50.1748269, "lng": 19.743247,  "mapX": 50.29, "mapY": 57.46, "code": "3338" },
-  { "slug": "12345",          "title": "Chatynka Luizy i Nitki",                     "lat": 50.361228,  "lng": 19.607387,  "mapX": 50,    "mapY": 50,    "code": "2255" },
+  { "slug": "12345",          "title": "Chatynka Luizy i Nitki",                     "lat": 50.361228,  "lng": 19.607387,  "mapX": 40.69, "mapY": 62.25, "code": "2255" },
   { "slug": "wiktoria",       "title": "Chatynka Wiktorii",                          "lat": 50.278164,  "lng": 19.558636,  "mapX": 50,    "mapY": 50,    "code": "7557" },
   { "slug": "zofia",          "title": "Chatynka Zofii z Rabsztyna",                 "lat": 50.3008,    "lng": 19.5942,    "mapX": 50,    "mapY": 50,    "code": "3026" },
   { "slug": "wawrzyniec",     "title": "chatynka Wawrzyńca",                         "lat": 50.33447,   "lng": 19.645387,  "mapX": 50,    "mapY": 50,    "code": "2026" },
