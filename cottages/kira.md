@@ -1,19 +1,19 @@
 ---
-title: "chatynka Kiry"
+title: "chatynka  Kiry"
 slug: kira
-occupant: ""
-lat: 50.32
-lng: 19.6
-virtue: ""
+occupant: Kira
+lat: 50.1827
+lng: 19.3315
+virtue: niezdecydowanie
 ---
 
 # chatynka Kiry
 
-> Krótki opis chatynki.
+> czasem wystarczy po prostu być sobą !!!
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.32, 19.6`
+* **Współrzędne:** `50.32, 19.6`
 
 ## Mieszka tu
 
