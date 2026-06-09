@@ -15,13 +15,13 @@ Mówi, że każdy liść pamięta rok, w którym spadł. Gdy ułoży je w kręgu
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.339095, 19.593019`
-- **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.339095,19.593019)
-- **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.339095&mlon=19.593019#map=16/50.339095/19.593019)
+* **Współrzędne:** `50.339095, 19.593019`
+* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.339095,19.593019)
+* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.339095&mlon=19.593019#map=16/50.339095/19.593019)
 
 ## Mieszka tu
 
-**Elf Teodor**, który uczy wędrowców cnoty: _cierpliwość_.
+**Elf Teodor**, który uczy wędrowców cnoty: *cierpliwość*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
