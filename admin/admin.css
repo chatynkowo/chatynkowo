@@ -241,18 +241,52 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-si
   user-select: none;
   -webkit-user-drag: none;
 }
-.symbolic-pin {
+/* Editor pins reuse the SAME teardrop as the public map (assets/img/map-pin.svg)
+   and are tip-anchored at mapX/mapY exactly like .cottage-hotspot in style.css,
+   so the editor is a faithful preview of where the pin lands on the real map. */
+.symbolic-pin,
+.symbolic-pin--ghost {
   position: absolute;
-  width: 18px;
-  height: 18px;
-  margin-left: -9px;
-  margin-top: -9px;
-  border-radius: 50%;
-  background: gold;
-  border: 2px solid var(--accent-strong);
-  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.35);
+  transform: translate(-50%, -100%);
   pointer-events: none;
+}
+/* The cottage being edited / added — a bold GOLD teardrop (the pin shape used
+   as a mask so we can recolour it), on top, so it's easy to locate. */
+.symbolic-pin {
+  width: 28px;
+  height: 38px;
+  -webkit-mask: url("../assets/img/map-pin.svg") center / contain no-repeat;
+          mask: url("../assets/img/map-pin.svg") center / contain no-repeat;
+  background: gold;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.6)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+  z-index: 3;
   transition: left 80ms ease, top 80ms ease;
+}
+/* Every OTHER cottage — the actual map pin, desaturated to grey. Using the real
+   image (not a flat silhouette) keeps the pin's dark outline + light centre dot,
+   so a neutral-grey pin stays legible on both the parchment and the dark forest.
+   A touch smaller than the gold pin so the edited one stands out. */
+.symbolic-pin--ghost {
+  width: 24px;
+  height: 33px;
+  background: url("../assets/img/map-pin.svg") center / contain no-repeat;
+  filter: grayscale(1) opacity(0.9) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+  z-index: 1;
+}
+/* The edited pin in collision turns red; the cottage it overlaps drops the grey
+   filter and shows its true red so the clash is obvious. */
+.symbolic-pin.is-conflict { background: #ff3b30; }
+.symbolic-pin--ghost.is-conflict {
+  filter: opacity(1) drop-shadow(0 0 1px #fff) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+  z-index: 2;
+}
+
+/* Proximity warning under the symbolic map. */
+.pin-warning {
+  color: #b3000d;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0.1rem 0 0.6rem;
 }
 
 /* Geo map --------------------------------------------------------------- */

@@ -295,6 +295,8 @@
     els.delete.disabled = false;
     fillForm(c);
     placeSymbolicPin(c.mapX, c.mapY);
+    renderGhostPins();
+    checkPinProximity();
     placeGeoMarker(c.frontmatter.lat, c.frontmatter.lng);
     refreshAudio();
     refreshPhotos();
@@ -365,6 +367,16 @@
       setStatus('error', `kod ${code} zajęty przez „${conflict.frontmatter?.title || conflict.slug}"`);
       els.code.focus();
       return;
+    }
+    // Soft guard: overlapping pins are hard to tap on a phone. Let the author
+    // save anyway (two cottages may genuinely share a trailhead), but not by
+    // accident — require an explicit confirm.
+    const near = nearestConflict(numOrNull(els.mapX.value), numOrNull(els.mapY.value));
+    if (near) {
+      const t = near.cottage.frontmatter?.title || near.cottage.slug;
+      if (!confirm(`Pinezka nakłada się z chatynką „${t}" — będzie trudno ją kliknąć na telefonie. Zapisać mimo to?`)) {
+        return;
+      }
     }
     setStatus('saving', 'zapisuję…');
     els.save.disabled = true;
@@ -594,11 +606,70 @@
 
   /* ---------- symbolic pin ---------- */
 
+  // Pins closer than this — measured in native map-image pixels (the image is
+  // 1024x1536) — merge into an untappable blob on a phone. dx/dy are percentages,
+  // so scale to native px before measuring.
+  const MIN_GAP_PX = 50;
+  const gapPx = (ax, ay, bx, by) =>
+    Math.hypot((ax - bx) * 10.24, (ay - by) * 15.36);
+
   function placeSymbolicPin(x, y) {
     if (x == null || y == null || isNaN(x) || isNaN(y)) { els.symbolicPin.hidden = true; return; }
     els.symbolicPin.hidden = false;
     els.symbolicPin.style.left = `${x}%`;
     els.symbolicPin.style.top = `${y}%`;
+  }
+
+  // Dimmed markers for every OTHER cottage, so the author can place into empty
+  // space instead of on top of an existing pin.
+  function renderGhostPins() {
+    els.symbolicMap.querySelectorAll('.symbolic-pin--ghost').forEach(n => n.remove());
+    const cur = state.current?.slug;
+    for (const c of state.cottages) {
+      if (c.slug === cur) continue;
+      const x = Number(c.mapX), y = Number(c.mapY);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+      const g = document.createElement('div');
+      g.className = 'symbolic-pin--ghost';
+      g.dataset.slug = c.slug;
+      g.style.left = `${x}%`;
+      g.style.top = `${y}%`;
+      g.title = c.frontmatter?.title || c.slug;
+      els.symbolicMap.appendChild(g);
+    }
+  }
+
+  // Closest OTHER cottage within MIN_GAP_PX of (x,y), or null.
+  function nearestConflict(x, y) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    let best = null;
+    for (const c of state.cottages) {
+      if (c.slug === state.current?.slug) continue;
+      const cx = Number(c.mapX), cy = Number(c.mapY);
+      if (!Number.isFinite(cx) || !Number.isFinite(cy)) continue;
+      const d = gapPx(x, y, cx, cy);
+      if (d < MIN_GAP_PX && (!best || d < best.gapPx)) best = { cottage: c, gapPx: d };
+    }
+    return best;
+  }
+
+  // Live proximity feedback — mirrors checkCodeUniqueness().
+  function checkPinProximity() {
+    const hit = nearestConflict(numOrNull(els.mapX.value), numOrNull(els.mapY.value));
+    els.symbolicMap.querySelectorAll('.symbolic-pin--ghost.is-conflict')
+      .forEach(n => n.classList.remove('is-conflict'));
+    els.symbolicPin.classList.toggle('is-conflict', !!hit);
+    if (hit) {
+      const g = els.symbolicMap.querySelector(`.symbolic-pin--ghost[data-slug="${hit.cottage.slug}"]`);
+      if (g) g.classList.add('is-conflict');
+      const title = hit.cottage.frontmatter?.title || hit.cottage.slug;
+      els.pinWarning.textContent =
+        `⚠ Za blisko chatynki „${title}" — na telefonie pinezki będą się nakładać. Przesuń pinezkę dalej.`;
+      els.pinWarning.hidden = false;
+    } else {
+      els.pinWarning.hidden = true;
+      els.pinWarning.textContent = '';
+    }
   }
 
   function symbolicMapClick(ev) {
@@ -608,6 +679,7 @@
     if (x < 0 || x > 100 || y < 0 || y > 100) return;
     els.mapX.value = x; els.mapY.value = y;
     placeSymbolicPin(x, y);
+    checkPinProximity();
     markDirty();
   }
 
@@ -669,6 +741,7 @@
     audioDelete: $('#btn-audio-delete'), audioMeta: $('#audio-meta'),
     photosGrid: $('#photos-grid'), photosFile: $('#photos-file'), photosMeta: $('#photos-meta'),
     symbolicMap: $('#symbolic-map'), symbolicImg: $('#symbolic-img'), symbolicPin: $('#symbolic-pin'),
+    pinWarning: $('#pin-warning'),
     geoMap: $('#geo-map'),
     addDialog: $('#add-dialog'), addSlug: $('#add-slug'), addTitle: $('#add-title'),
     addError: $('#add-error'), addConfirm: $('#btn-add-confirm'),
@@ -762,7 +835,7 @@
       els[id].addEventListener('input', () => {
         markDirty();
         if (id === 'code') checkCodeUniqueness();
-        if (id === 'mapX' || id === 'mapY') placeSymbolicPin(numOrNull(els.mapX.value), numOrNull(els.mapY.value));
+        if (id === 'mapX' || id === 'mapY') { placeSymbolicPin(numOrNull(els.mapX.value), numOrNull(els.mapY.value)); checkPinProximity(); }
         if ((id === 'lat' || id === 'lng') && state.geo) {
           const lat = numOrNull(els.lat.value), lng = numOrNull(els.lng.value);
           placeGeoMarker(lat, lng);
