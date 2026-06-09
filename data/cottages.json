@@ -13,7 +13,7 @@
   { "slug": "zielonowlosy",   "title": "Chatynka Zielonowłosego",                    "lat": 50.340103,  "lng": 19.55149,   "mapX": 39.59, "mapY": 39.06, "code": "7667" },
   { "slug": "zaprasza",       "title": "Chatynka, która zaprasza",                   "lat": 50.317941,  "lng": 19.635328,  "mapX": 77.98, "mapY": 52.28, "code": "9873" },
   { "slug": "samotny",        "title": "Chatynka Samotnego Elfa Fredka",             "lat": 50.324119,  "lng": 19.628782,  "mapX": 69.87, "mapY": 54.56 },
-  { "slug": "skalne-iglice",  "title": "Chatynka dwóch sióstr na skalnych iglicach", "lat": 50.324143,  "lng": 19.629747,  "mapX": 75.63, "mapY": 57.94, "code": "2376" },
+  { "slug": "skalne-iglice",  "title": "Chatynka dwóch sióstr na skalnych iglicach", "lat": 50.324143,  "lng": 19.629747,  "mapX": 79.68, "mapY": 54.32, "code": "2376" },
   { "slug": "stary-elf",      "title": "Chatynka Starego Elfa Janusza",              "lat": 50.306783,  "lng": 19.616489,  "mapX": 65.09, "mapY": 56.58, "code": "2214" },
   { "slug": "alex",           "title": "Chatynka Elfów Jędrzeja i Franka",           "lat": 50.1748269, "lng": 19.743247,  "mapX": 50.29, "mapY": 57.46, "code": "3338" },
   { "slug": "12345",          "title": "Chatynka Luizy i Nitki",                     "lat": 50.361228,  "lng": 19.607387,  "mapX": 40.69, "mapY": 62.25, "code": "2255" },
