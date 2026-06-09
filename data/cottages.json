@@ -1,5 +1,5 @@
 [
-  { "slug": "fredek",         "title": "Chatynka Elfa FERDKA I NIETOPERZA",          "lat": 50.193972,  "lng": 19.7745,    "mapX": 54.83, "mapY": 57.94, "code": "2375" },
+  { "slug": "fredek",         "title": "Chatynka Elfa FERDKA I NIETOPERZA",          "lat": 50.193972,  "lng": 19.7745,    "mapX": 48.92, "mapY": 70.06, "code": "2375" },
   { "slug": "iwo",            "title": "Chatynka Elfa Iwo",                          "lat": 50.18004,   "lng": 19.35322,   "mapX": 46.24, "mapY": 62.96, "code": "7890" },
   { "slug": "zamczysko",      "title": "Chatynka na Górze Zamczysko",                "lat": 50.330968,  "lng": 19.598763,  "mapX": 40.38, "mapY": 56.05, "code": "2620" },
   { "slug": "teodor",         "title": "Chatynka Elfa Teodora",                      "lat": 50.339095,  "lng": 19.593019,  "mapX": 62.16, "mapY": 47.72, "code": "1212" },

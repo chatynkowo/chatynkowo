@@ -7,7 +7,7 @@ lng: 19.7745
 virtue: cisza
 ---
 
-# Chatynka Elfa Ferdka i nietoperza 
+# Chatynka Elfa Ferdka i nietoperza
 
 > Ferdek długo szukał miejsca, w którym poczuje się naprawdę po elfiemu. Chodził między skałami, zaglądał pod korzenie i wspinał się na stare drzewa, ale nigdzie nie bylo idealnie.
 > 
