@@ -23,6 +23,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Rebuild the symbolic map from the pin-less source
+        # Regenerates assets/img/map_base_vertical.webp from
+        # private/img/origs/map_base_vertical.png so the published map can never
+        # drift back to a pinned ("dead pins") background. Must run BEFORE the
+        # strip step below, while private/ still exists. Fails the deploy if the
+        # rebuild can't run — a broken build step must be visible, not silently
+        # skipped (the last successful deploy stays live until it's fixed).
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y webp
+          node private/img/build-map.mjs
       - name: Strip non-public files from the deploy artifact
         run: rm -rf private scrape
       - name: Inject git commit into footer
