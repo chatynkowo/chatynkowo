@@ -51,6 +51,10 @@
       : `${GH}/repos/${cfg.owner}/${cfg.repo}/${endpoint}`;
     const res = await fetch(url, {
       method,
+      // GitHub API responses carry `Cache-Control: max-age=60`; the browser's
+      // HTTP cache would serve a pre-save branch tip for up to a minute,
+      // making the next commit a non-fast-forward (422 on PATCH git/refs).
+      cache: 'no-store',
       headers: {
         Authorization: `token ${cfg.token}`,
         Accept: 'application/vnd.github.v3+json',
