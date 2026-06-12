@@ -2,8 +2,6 @@
 title: "Chatynka dwóch Braci"
 slug: dwaj-bracia
 occupant: "Dwaj Bracia"
-lat: 50.307728
-lng: 19.619081
 virtue: braterstwo
 ---
 
@@ -12,12 +10,6 @@ virtue: braterstwo
 > Dwóch Elfów, bliźniaków, dzieli jedną chatynkę. Jeden wstaje o świcie, drugi — o zmierzchu. Widzieli się tylko dwa razy w życiu.
 
 Zostawiają sobie karteczki pod kamieniem. Zna je tylko las. Gdy pewnego dnia jedna z karteczek przyfrunie do Ciebie na wietrze — przeczytaj ją z uśmiechem i puść dalej.
-
-## Jak znaleźć Chatynkę
-
-- **Współrzędne:** `50.307728, 19.619081`
-- **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.307728,19.619081)
-- **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.307728&mlon=19.619081#map=16/50.307728/19.619081)
 
 ## Mieszka tu
 

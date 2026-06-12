@@ -2,18 +2,12 @@
 title: "chatynka drwala Dębomira"
 slug: drwal
 occupant: Dębomir
-lat: 50.14275
-lng: 19.27416
 virtue: "siła i wytrzymałość"
 ---
 
 # chatynka drwala
 
 Czasem trzeba spojżeć inaczej na to, co dzieje się w około , żeby zrozumieć .
-
-## Jak znaleźć Chatynkę
-
-* **Współrzędne:** `50.32, 19.6`
 
 ## Mieszka tu
 

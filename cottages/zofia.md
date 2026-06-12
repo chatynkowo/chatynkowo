@@ -2,18 +2,12 @@
 title: "Chatynka Zofii z Rabsztyna"
 slug: zofia
 occupant: Zofia
-lat: 50.3008
-lng: 19.5942
 virtue: skromność
 ---
 
 # Chatynka Zofii z Rabsztyna
 
 > na zamku Rabsztyn jeszcze takich dziwów nie było :) najeżdżano go , plądrowano, palono ....aż tu nagle w 2025 roku zimą stało się coś magicznego :)
-
-## Jak znaleźć Chatynkę
-
-* **Współrzędne:** `50.32, 19.6`
 
 ## Mieszka tu
 

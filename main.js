@@ -21,6 +21,22 @@
   async function loadCottages() {
     const res = await fetch(COTTAGES_URL);
     state.cottages = await res.json();
+    await loadTitles();
+  }
+
+  /* Each cottage's title lives ONLY in its .md frontmatter — the single
+     source of truth for all text; data/cottages.json carries just
+     location/map data. Fetched in parallel at startup: the files are tiny,
+     and the dialogs hit the same HTTP cache when they re-fetch them later. */
+  async function loadTitles() {
+    await Promise.all(state.cottages.map(async (c) => {
+      try {
+        const res = await fetch(`${MD_DIR}/${c.slug}.md`);
+        const fm = (await res.text()).match(/^---\n([\s\S]*?)\n---/);
+        const t = fm && fm[1].match(/^title:\s*("?)(.*?)\1\s*$/m);
+        c.title = (t && t[2]) || c.slug;
+      } catch (_) { c.title = c.slug; }
+    }));
   }
 
   /* The plaque codes are SECRET — they live only in private/codes.json, which
@@ -130,10 +146,28 @@
     else modal.removeAttribute('open');
   }
 
-  /* Sections of every cottage .md file that belong in the PIN dialog (how
-     to get there + what to do once you arrive). Everything else stays in
-     the STORY dialog. */
-  const PIN_SECTIONS = ['Jak znaleźć Chatynkę', 'Co zrobić, gdy trafisz pod chatynkę?'];
+  /* The PIN dialog shows how to get there + what to do once you arrive;
+     everything else stays in the STORY dialog. The location block is
+     GENERATED from lat/lng in data/cottages.json (the single source of
+     truth) — any leftover hand-written "Jak znaleźć" section in a cottage's
+     .md is ignored, so the two can never disagree. */
+  const LOCATION_SECTION = 'Jak znaleźć Chatynkę';
+  const ARRIVAL_SECTION  = 'Co zrobić, gdy trafisz pod chatynkę?';
+  const PIN_SECTIONS = [LOCATION_SECTION, ARRIVAL_SECTION];
+
+  /* Coordinates + Google Maps navigation, rendered from data/cottages.json. */
+  function locationHtml(c) {
+    const lat = Number(c.lat), lng = Number(c.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return '';
+    const dest = `${lat},${lng}`;
+    return `<h2>${LOCATION_SECTION}</h2>
+      <ul>
+        <li><strong>Współrzędne:</strong> <code>${lat}, ${lng}</code></li>
+        <li><strong>Nawigacja (Google Maps):</strong>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${dest}"
+             target="_blank" rel="noopener">Poprowadź mnie tam</a></li>
+      </ul>`;
+  }
 
   async function fetchCottageMd(slug) {
     const res = await fetch(`${MD_DIR}/${slug}.md`);
@@ -233,12 +267,12 @@
     showDialog(modal);
     try {
       const parts = splitMd(await fetchCottageMd(c.slug));
-      const md    = renderSections(parts.sections, PIN_SECTIONS);
+      const md    = renderSections(parts.sections, [ARRIVAL_SECTION]);
       content.replaceChildren(title, document.createRange().createContextualFragment(
-        status + mdToHtml(md)));
+        status + locationHtml(c) + mdToHtml(md)));
     } catch (err) {
       content.replaceChildren(title, document.createRange().createContextualFragment(
-        status + '<p>Nie udało się wczytać wskazówek do tej Chatynki.</p>'));
+        status + locationHtml(c) + '<p>Nie udało się wczytać wskazówek do tej Chatynki.</p>'));
     }
   }
 

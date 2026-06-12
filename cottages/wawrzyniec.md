@@ -2,8 +2,6 @@
 title: "chatynka Wawrzyńca"
 slug: wawrzyniec
 occupant: Wawrzyniec
-lat: 50.33447
-lng: 19.645387
 virtue: "starość to radość"
 ---
 
@@ -11,10 +9,6 @@ virtue: "starość to radość"
 
 > Niedawno, nie wiadomo skąd pojawiły się w okolicy bobry, akurat tutaj postanowiły się osiedlić.
 > Elf Wawrzyniec tylko się ucieszył , bo w końcu ma z kim pływać i nie tylko :)
-
-## Jak znaleźć Chatynkę
-
-* **Współrzędne:** `50.32, 19.6`
 
 ## Mieszka tu
 

@@ -2,8 +2,6 @@
 title: "Chatynka Elfa z Pazurka"
 slug: pazurek
 occupant: "dwa domki"
-lat: 50.3285202
-lng: 19.6242689
 virtue: rzemiosło
 ---
 
@@ -12,12 +10,6 @@ virtue: rzemiosło
 > Pazurek rzeźbi w kamieniu. Jego chatynka wygląda jak skała, która postanowiła zostać domem.
 
 Każdy wycięty przez niego znak to pytanie, a każda rysa — odpowiedź. Jeśli znajdziesz jego kamień z trzema kreskami, to znaczy, że Pazurek pozdrawia Cię z drugiej strony doliny.
-
-## Jak znaleźć Chatynkę
-
-* **Współrzędne:** `50.3285202, 19.6242689`
-* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.3285202,19.6242689)
-* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.3285202&mlon=19.6242689#map=16/50.3285202/19.6242689)
 
 ## Mieszka tu
 

@@ -2,8 +2,6 @@
 title: "Chatynka Starego Elfa Janusza"
 slug: stary-elf
 occupant: Janusz
-lat: 50.306783
-lng: 19.616489
 virtue: mądrość
 ---
 
@@ -12,12 +10,6 @@ virtue: mądrość
 > Stary Elf pamięta, jak pierwszy raz sypał śnieg na tej polanie. Ma tyle wiosen, że już przestał liczyć.
 
 Ma tylko jedno krzesło, ale zaprasza każdego. Mówi, że gość może siedzieć, a on może stać — bo przez tyle lat dosyć się już nasiedział.
-
-## Jak znaleźć Chatynkę
-
-* **Współrzędne:** `50.306783, 19.616489`
-* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.306783,19.616489)
-* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.306783&mlon=19.616489#map=16/50.306783/19.616489)
 
 ## Mieszka tu
 

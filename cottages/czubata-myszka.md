@@ -2,8 +2,6 @@
 title: "Chatynka Czubatej i Myszki"
 slug: czubata-myszka
 occupant: "Czubata i Myszka"
-lat: 50.33598
-lng: 19.555542
 virtue: wyobraźnia
 ---
 
@@ -12,12 +10,6 @@ virtue: wyobraźnia
 > Czubata to Elfka z bujną fryzurą z mchu, Myszka — jej najlepsza towarzyszka z długim ogonkiem i jeszcze dłuższą listą pomysłów.
 
 Razem prowadzą małą bibliotekę szeleszczących liści. Każdy liść to jedno opowiadanie; kto przyjdzie i posłucha szumu, ten pożyczył książkę.
-
-## Jak znaleźć Chatynkę
-
-* **Współrzędne:** `50.33598, 19.555542`
-* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.33598,19.555542)
-* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.33598&mlon=19.555542#map=16/50.33598/19.555542)
 
 ## Mieszka tu
 

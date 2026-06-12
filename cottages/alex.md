@@ -2,8 +2,6 @@
 title: "Chatynka Elfów Jędrzeja i Franka"
 slug: alex
 occupant: "bracia Jędrzej i Franek"
-lat: 50.1748269
-lng: 19.743247
 virtue: wyluzowani
 ---
 
@@ -25,9 +23,7 @@ virtue: wyluzowani
 > Zbudowali nową chatynkę i od tamtej pory czuwają nad nurtem rzeki.
 > Nie robią wiele.
 > Patrzą, słuchają i przypominają wszystkim, którzy do nich trafią, że nie wszystko musi działać jak młyn!!!
-> Czasem dobrze jest po prostu usiąść i posłuchać szumu.Jak znaleźć Chatynkę
-
-* **Współrzędne:** `50.32, 19.6`
+> Czasem dobrze jest po prostu usiąść i posłuchać szumu.
 
 ## Mieszka tu
 

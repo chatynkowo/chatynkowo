@@ -2,8 +2,6 @@
 title: "Chatynka Zielonowłosego"
 slug: zielonowlosy
 occupant: "Elf Zielonowłosy"
-lat: 50.340103
-lng: 19.55149
 virtue: szacunek
 ---
 
@@ -12,12 +10,6 @@ virtue: szacunek
 > Jego włosy to mech, a broda — paproć. Gdy chodzi, za nim wyrastają konwalie.
 
 Jest najstarszym ogrodnikiem Chatynkowa. Naucza, że świat nie należy do tych, którzy go mają, lecz do tych, którzy go słyszą.
-
-## Jak znaleźć Chatynkę
-
-* **Współrzędne:** `50.340103, 19.55149`
-* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.340103,19.55149)
-* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.340103&mlon=19.55149#map=16/50.340103/19.55149)
 
 ## Mieszka tu
 
