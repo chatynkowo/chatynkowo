@@ -11,7 +11,7 @@ virtue: "kupa szczęścia"
 
 ## Mieszka tu
 
-(uzupełnij: kto mieszka, jakiej cnoty uczy)
+**Ola i Wiktoria**, które uczą wędrowców cnoty: *kupa szczęścia*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 

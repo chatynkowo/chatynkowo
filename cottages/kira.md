@@ -11,7 +11,7 @@ virtue: niezdecydowanie
 
 ## Mieszka tu
 
-(uzupełnij: kto mieszka, jakiej cnoty uczy)
+**Kira**, która uczy wędrowców cnoty: *niezdecydowanie*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 

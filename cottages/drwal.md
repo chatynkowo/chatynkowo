@@ -11,7 +11,7 @@ Czasem trzeba spojrzeć inaczej na to, co dzieje się wokoło, żeby zrozumieć.
 
 ## Mieszka tu
 
-(uzupełnij: kto mieszka, jakiej cnoty uczy)
+**Dębomir**, który pochwala: *siłę i wytrzymałość*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 

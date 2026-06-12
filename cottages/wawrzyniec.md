@@ -12,7 +12,7 @@ virtue: "starość to radość"
 
 ## Mieszka tu
 
-(uzupełnij: kto mieszka, jakiej cnoty uczy)
+**Wawrzyniec**, który uczy wędrowców cnoty: *starość to radość*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
