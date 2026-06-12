@@ -638,8 +638,16 @@
         out.textContent = 'Podaj prawidłowy 4-cyfrowy kod znaleziony na tabliczce Chatynki.';
         return;
       }
-      if (!state.codeHashes || !window.crypto?.subtle) {
-        out.textContent = 'Nie udało się sprawdzić kodu — odśwież stronę i spróbuj ponownie.';
+      // crypto.subtle exists only in secure contexts (HTTPS or localhost).
+      // Plain http:// over LAN (e.g. http://some-host:8000) lands here —
+      // say so explicitly instead of a generic "try again".
+      if (!window.isSecureContext || !window.crypto?.subtle) {
+        out.textContent = `Sprawdzanie kodu wymaga bezpiecznego połączenia, a strona działa na „${location.origin}”. `
+          + 'Otwórz ją przez HTTPS albo przez http://localhost.';
+        return;
+      }
+      if (!state.codeHashes) {
+        out.textContent = 'Nie udało się wczytać danych weryfikacji kodów — odśwież stronę i spróbuj ponownie.';
         return;
       }
       const c = await cottageByCode(v);

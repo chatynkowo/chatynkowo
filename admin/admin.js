@@ -223,6 +223,12 @@
   }
 
   async function sha256Hex(text) {
+    // crypto.subtle exists only in secure contexts (HTTPS or localhost) —
+    // surface a clear error instead of a cryptic TypeError when the editor
+    // runs over plain http:// on a LAN hostname.
+    if (!window.isSecureContext || !window.crypto?.subtle) {
+      throw new Error(`zapis kodów wymaga bezpiecznego połączenia (HTTPS lub localhost), a edytor działa na „${location.origin}”`);
+    }
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
     return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('');
   }
