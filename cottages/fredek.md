@@ -2,8 +2,6 @@
 title: "Chatynka Elfa FERDKA I NIETOPERZA"
 slug: fredek
 occupant: "Elf Feredek"
-lat: 50.193972
-lng: 19.7745
 virtue: cisza
 ---
 
@@ -24,12 +22,6 @@ virtue: cisza
 > Wieczorami siedzi przed chatką razem z nietoperzami i słucha ich melodyjnych pisków. A kiedy wiatr wpada do jaskini, melodia wraca cicho między skałami, jakby samo miejsce śpiewało elfom kołysankę.
 > 
 > A morał tej historii jest taki Czasem trzeba długo szukać i zaufać nawet najdziwniejszej melodii, żeby odnaleźć miejsce, w którym serce czuje się jak w domu.Fredek opowie Ci, że najważniejsze skarby leśni mieszkańcy chowają wcale nie w kufrach, lecz w ciszy. Jeśli usłyszysz, jak mchy szepczą, a paprocie przytakują, wiedz, że to Fredek ćwiczy właśnie swoją najnowszą pieśń.
-
-## Jak znaleźć Chatynkę
-
-* **Współrzędne:** `50.324119, 19.6287821`
-* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.324119,19.6287821)
-* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.324119&mlon=19.6287821#map=16/50.324119/19.6287821)
 
 ## Mieszka tu
 

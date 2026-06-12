@@ -2,8 +2,6 @@
 title: "Chatynka Gwerdy i Filinka"
 slug: gwerda-filinek
 occupant: "u Mocnych"
-lat: 50.335995
-lng: 19.561836
 virtue: przyjaźń
 ---
 
@@ -12,12 +10,6 @@ virtue: przyjaźń
 > Gwerda jest Elfką, a Filinek — małą, puchatą sową, która trzyma wachtę na dachu chatynki.
 
 Razem tworzą najlepszą parę w całym Chatynkowie: Gwerda wie, co się dzieje w dzień, Filinek — co się dzieje w nocy. Razem widzą cały świat.
-
-## Jak znaleźć Chatynkę
-
-* **Współrzędne:** `50.335995, 19.561836`
-* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.335995,19.561836)
-* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.335995&mlon=19.561836#map=16/50.335995/19.561836)
 
 ## Mieszka tu
 

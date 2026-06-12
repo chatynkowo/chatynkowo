@@ -2,8 +2,6 @@
 title: "Chatynka Elfa Teodora"
 slug: teodor
 occupant: "Elf Teodor"
-lat: 50.339095
-lng: 19.593019
 virtue: cierpliwość
 ---
 
@@ -12,12 +10,6 @@ virtue: cierpliwość
 > Teodor jest kolekcjonerem spadających liści. Ma ich skrzynię większą niż on sam.
 
 Mówi, że każdy liść pamięta rok, w którym spadł. Gdy ułoży je w kręgu, powstaje cały kalendarz lasu — a wiatr czyta go jak księgę.
-
-## Jak znaleźć Chatynkę
-
-* **Współrzędne:** `50.339095, 19.593019`
-* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.339095,19.593019)
-* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.339095&mlon=19.593019#map=16/50.339095/19.593019)
 
 ## Mieszka tu
 

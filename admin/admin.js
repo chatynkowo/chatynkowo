@@ -164,7 +164,7 @@
   }
 
   function serializeMd(fm, body) {
-    const order = ['title', 'slug', 'occupant', 'lat', 'lng', 'virtue'];
+    const order = ['title', 'slug', 'occupant', 'virtue'];
     const seen = new Set();
     const lines = ['---'];
     const emit = (k, v) => {
@@ -182,9 +182,9 @@
   }
 
   function serializeCottagesJson(records) {
-    // NO 'code' here — cottages.json is published with the site, and the
-    // plaque codes are secret. They live in private/codes.json instead.
-    const fields = ['slug', 'title', 'lat', 'lng', 'mapX', 'mapY'];
+    // Location/map data ONLY. No 'title' — the .md frontmatter is the single
+    // source for text. No 'code' — the secret codes live in private/codes.json.
+    const fields = ['slug', 'lat', 'lng', 'mapX', 'mapY'];
     const segMax = {};
     for (const f of fields) {
       let max = 0;
@@ -317,6 +317,7 @@
         }));
       return {
         slug, frontmatter: fm, body,
+        lat: j.lat ?? null, lng: j.lng ?? null,
         mapX: j.mapX ?? null, mapY: j.mapY ?? null,
         code: codeBySlug.get(slug) ?? null,
         audio: {
@@ -360,7 +361,7 @@
     placeSymbolicPin(c.mapX, c.mapY);
     renderGhostPins();
     checkPinProximity();
-    placeGeoMarker(c.frontmatter.lat, c.frontmatter.lng);
+    placeGeoMarker(c.lat, c.lng);
     refreshAudio();
     refreshPhotos();
     markClean();
@@ -371,8 +372,8 @@
     els.occupant.value = c.frontmatter.occupant ?? '';
     els.virtue.value = c.frontmatter.virtue ?? '';
     els.code.value = c.code ?? '';
-    els.lat.value = c.frontmatter.lat ?? '';
-    els.lng.value = c.frontmatter.lng ?? '';
+    els.lat.value = c.lat ?? '';
+    els.lng.value = c.lng ?? '';
     els.mapX.value = c.mapX ?? '';
     els.mapY.value = c.mapY ?? '';
     state.mde.setMarkdown(c.body ?? '');
@@ -381,15 +382,17 @@
 
   function harvestForm() {
     return {
+      // Text only — the .md frontmatter is the single source for title &co.
+      // Location (lat/lng, mapX/mapY) goes to data/cottages.json instead.
       frontmatter: {
         title: els.title.value.trim(),
         slug: state.current.slug,
         occupant: els.occupant.value.trim(),
-        lat: numOrNull(els.lat.value),
-        lng: numOrNull(els.lng.value),
         virtue: els.virtue.value.trim(),
       },
       body: state.mde.getMarkdown(),
+      lat: numOrNull(els.lat.value),
+      lng: numOrNull(els.lng.value),
       mapX: numOrNull(els.mapX.value),
       mapY: numOrNull(els.mapY.value),
       code: els.code.value.trim() || null,
@@ -469,16 +472,15 @@
       const slug = state.current.slug;
 
       const fm = { ...(payload.frontmatter || {}), slug };
-      if (typeof fm.lat === 'string') fm.lat = Number(fm.lat);
-      if (typeof fm.lng === 'string') fm.lng = Number(fm.lng);
       const mdText = serializeMd(fm, payload.body || '');
 
+      // cottages.json carries ONLY location/map data — no title (md
+      // frontmatter owns the text), no code (private/codes.json owns those).
       const freshJson = state.cottagesJson.map(e => ({ ...e }));
       let entry = freshJson.find(c => c.slug === slug);
       if (!entry) { entry = { slug }; freshJson.push(entry); }
-      if (fm.title) entry.title = fm.title;
-      if (Number.isFinite(fm.lat)) entry.lat = fm.lat;
-      if (Number.isFinite(fm.lng)) entry.lng = fm.lng;
+      if (payload.lat != null) entry.lat = Number(payload.lat);
+      if (payload.lng != null) entry.lng = Number(payload.lng);
       if (payload.mapX != null) entry.mapX = Number(payload.mapX);
       if (payload.mapY != null) entry.mapY = Number(payload.mapY);
 
@@ -498,7 +500,7 @@
       // Update in-memory state to the freshly committed version.
       state.cottagesJson = freshJson;
       if (freshCodes) state.codesFile = freshCodes;
-      Object.assign(state.current, { frontmatter: fm, body: payload.body, mapX: payload.mapX, mapY: payload.mapY, code: payload.code });
+      Object.assign(state.current, { frontmatter: fm, body: payload.body, lat: payload.lat, lng: payload.lng, mapX: payload.mapX, mapY: payload.mapY, code: payload.code });
 
       // Refresh the dropdown option label to reflect the new title.
       const opt = Array.from(els.select.options).find(o => o.value === slug);
@@ -517,9 +519,11 @@
   const DEFAULT_LAT = 50.32, DEFAULT_LNG = 19.6;
 
   function newCottageBody(title) {
+    // NO location section here — the pin dialog generates "Jak znaleźć
+    // Chatynkę" (coordinates + navigation link) from lat/lng in
+    // data/cottages.json, so hand-written coordinates would only drift.
     return [
       `# ${title}`, '', '> Krótki opis chatynki.', '',
-      '## Jak znaleźć Chatynkę', '', `- **Współrzędne:** \`${DEFAULT_LAT}, ${DEFAULT_LNG}\``, '',
       '## Mieszka tu', '', '(uzupełnij: kto mieszka, jakiej cnoty uczy)', '',
       '## Co zrobić, gdy trafisz pod chatynkę?', '', '1. Przystań na chwilę.', '2. Posłuchaj.',
     ].join('\n');
@@ -541,8 +545,8 @@
     if (state.cottages.some(c => c.slug === slug)) { showAddError(`Chatynka „${slug}" już istnieje.`); return; }
     els.addConfirm.disabled = true;
     try {
-      const fm = { title, slug, occupant: '', lat: DEFAULT_LAT, lng: DEFAULT_LNG, virtue: '' };
-      const newEntry = { slug, title, lat: DEFAULT_LAT, lng: DEFAULT_LNG, mapX: 50, mapY: 50 };
+      const fm = { title, slug, occupant: '', virtue: '' };
+      const newEntry = { slug, lat: DEFAULT_LAT, lng: DEFAULT_LNG, mapX: 50, mapY: 50 };
       const freshJson = state.cottagesJson.map(e => ({ ...e }));
       if (freshJson.some(c => c.slug === slug)) { showAddError(`Chatynka „${slug}" już istnieje.`); return; }
       freshJson.push(newEntry);
