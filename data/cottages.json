@@ -10,7 +10,7 @@
   { "slug": "straznik-zamku", "lat": 50.387586,  "lng": 19.645313,  "mapX": 44.8,  "mapY": 40.86 },
   { "slug": "dwaj-bracia",    "lat": 50.307728,  "lng": 19.619081,  "mapX": 59.03, "mapY": 62.11 },
   { "slug": "czubata-myszka", "lat": 50.33598,   "lng": 19.555542,  "mapX": 40.41, "mapY": 39.27 },
-  { "slug": "zielonowlosy",   "lat": 50.340103,  "lng": 19.55149,   "mapX": 37,    "mapY": 37 },
+  { "slug": "zielonowlosy",   "lat": 50.340103,  "lng": 19.55149,   "mapX": 36.19, "mapY": 37.26 },
   { "slug": "zaprasza",       "lat": 50.317941,  "lng": 19.635328,  "mapX": 79.59, "mapY": 49.89 },
   { "slug": "samotny",        "lat": 50.324119,  "lng": 19.628782,  "mapX": 69.87, "mapY": 54.56 },
   { "slug": "skalne-iglice",  "lat": 50.324143,  "lng": 19.629747,  "mapX": 79.68, "mapY": 54.32 },
