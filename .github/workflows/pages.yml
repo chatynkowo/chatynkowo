@@ -34,6 +34,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y webp
           node private/img/build-map.mjs
+      - name: Rebuild the public code-hash lookup from the secret codes
+        # Regenerates data/code_hashes.json from private/codes.json so the
+        # published validation data can never drift from the real plaque
+        # codes. Must run BEFORE the strip step below, while private/ still
+        # exists. The plaintext codes themselves never reach the artifact.
+        run: node private/build-code-hashes.mjs
       - name: Strip non-public files from the deploy artifact
         run: rm -rf private scrape
       - name: Inject git commit into footer
