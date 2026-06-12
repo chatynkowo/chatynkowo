@@ -11,7 +11,7 @@
   { "slug": "dwaj-bracia",    "title": "Chatynka dwóch Braci",                       "lat": 50.307728,  "lng": 19.619081,  "mapX": 59.03, "mapY": 62.11, "code": "4569" },
   { "slug": "czubata-myszka", "title": "Chatynka Czubatej i Myszki",                 "lat": 50.33598,   "lng": 19.555542,  "mapX": 39.4,  "mapY": 40.04, "code": "5775" },
   { "slug": "zielonowlosy",   "title": "Chatynka Zielonowłosego",                    "lat": 50.340103,  "lng": 19.55149,   "mapX": 37,    "mapY": 37,    "code": "7667" },
-  { "slug": "zaprasza",       "title": "Chatynka, która zaprasza",                   "lat": 50.317941,  "lng": 19.635328,  "mapX": 77.98, "mapY": 52.28, "code": "9873" },
+  { "slug": "zaprasza",       "title": "Chatynka, która zaprasza",                   "lat": 50.317941,  "lng": 19.635328,  "mapX": 79.59, "mapY": 49.89, "code": "9873" },
   { "slug": "samotny",        "title": "Chatynka Samotnego Elfa Fredka",             "lat": 50.324119,  "lng": 19.628782,  "mapX": 69.87, "mapY": 54.56 },
   { "slug": "skalne-iglice",  "title": "Chatynka dwóch sióstr na skalnych iglicach", "lat": 50.324143,  "lng": 19.629747,  "mapX": 79.68, "mapY": 54.32, "code": "2376" },
   { "slug": "stary-elf",      "title": "Chatynka Starego Elfa Janusza",              "lat": 50.306783,  "lng": 19.616489,  "mapX": 65.09, "mapY": 56.58, "code": "2214" },
@@ -19,8 +19,8 @@
   { "slug": "12345",          "title": "Chatynka Luizy i Nitki",                     "lat": 50.361228,  "lng": 19.607387,  "mapX": 40.69, "mapY": 62.25, "code": "2255" },
   { "slug": "wiktoria",       "title": "Chatynka Wiktorii",                          "lat": 50.278164,  "lng": 19.558636,  "mapX": 31.72, "mapY": 61.03, "code": "7557" },
   { "slug": "zofia",          "title": "Chatynka Zofii z Rabsztyna",                 "lat": 50.3008,    "lng": 19.5942,    "mapX": 20.91, "mapY": 42.48, "code": "3026" },
-  { "slug": "wawrzyniec",     "title": "chatynka Wawrzyńca",                         "lat": 50.334470,  "lng": 19.645387,  "mapX": 84.08, "mapY": 59.08, "code": "2026" },
+  { "slug": "wawrzyniec",     "title": "chatynka Wawrzyńca",                         "lat": 50.33447,   "lng": 19.645387,  "mapX": 84.08, "mapY": 59.08, "code": "2026" },
   { "slug": "ogrodniczki",    "title": "chatynka dwóch sióstr ogrodniczek",          "lat": 50.322672,  "lng": 19.639401,  "mapX": 77.48, "mapY": 54.32, "code": "2602" },
-  { "slug": "drwal",          "title": "chatynka drwala Dębomira",                   "lat": 50.142750,  "lng": 19.274160,  "mapX": 20.00, "mapY": 28.93, "code": "5281" },
+  { "slug": "drwal",          "title": "chatynka drwala Dębomira",                   "lat": 50.14275,   "lng": 19.27416,   "mapX": 20,    "mapY": 28.93, "code": "5281" },
   { "slug": "kira",           "title": "chatynka  Kiry",                             "lat": 50.307492,  "lng": 19.554178,  "mapX": 43.25, "mapY": 50.29, "code": "3541" }
 ]
