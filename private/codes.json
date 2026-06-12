@@ -1,210 +1,29 @@
 {
-  "source": "https://www.chatynkowo.pl/wp-admin/admin-ajax.php (action=historia_ajax)",
-  "captured_at": "2026-04-27",
-  "entries": [
-    {
-      "code": "1212",
-      "title": "Chatynka Elfa Teodora",
-      "slug": "teodor",
-      "audio_url": "https://www.chatynkowo.pl/wp-content/uploads/2026/02/Elf-Teodor.mp3",
-      "plays_at_capture": 382,
-      "issues": [],
-      "local_path": "assets/stories/teodor.mp3",
-      "download_status": "ok",
-      "bytes": 1516151
-    },
-    {
-      "code": "2121",
-      "title": "Chatynka Elfki z dużą d...ą",
-      "slug": "elfka-z-duza-d",
-      "audio_url": "https://www.chatynkowo.pl/wp-content/uploads/2026/02/Dupnica.mp3",
-      "plays_at_capture": 122,
-      "issues": [],
-      "local_path": "assets/stories/elfka-z-duza-d.mp3",
-      "download_status": "ok",
-      "bytes": 2050827
-    },
-    {
-      "code": "2214",
-      "title": "Chatynka starego Elfa",
-      "slug": "stary-elf",
-      "audio_url": "https://www.chatynkowo.pl/wp-content/uploads/2026/01/Januszowka.mp3",
-      "plays_at_capture": 130,
-      "issues": [],
-      "local_path": "assets/stories/stary-elf.mp3",
-      "download_status": "ok",
-      "bytes": 1156680
-    },
-    {
-      "code": "2375",
-      "title": "Chatynka Elfa Fredka",
-      "slug": "fredek",
-      "audio_url": "http://19.6287821",
-      "plays_at_capture": 168,
-      "issues": [
-        "broken_url_looks_like_coordinate",
-        "insecure_http"
-      ],
-      "local_path": null,
-      "download_status": "skipped_broken_url"
-    },
-    {
-      "code": "2620",
-      "title": "Chatynka na Górze Zamczysko",
-      "slug": "zamczysko",
-      "audio_url": "https://www.chatynkowo.pl/wp-content/uploads/2026/04/Alerion.mp3",
-      "plays_at_capture": 4,
-      "issues": [],
-      "local_path": "assets/stories/zamczysko.mp3",
-      "download_status": "ok",
-      "bytes": 2177054
-    },
-    {
-      "code": "3026",
-      "title": "Chatynka Elfki Zofii",
-      "slug": null,
-      "audio_url": "https://www.chatynkowo.pl/wp-content/uploads/2026/04/Elfka-Zofia-i-Iwo.mp3",
-      "plays_at_capture": 55,
-      "issues": [],
-      "local_path": "assets/stories/elfka-zofia.mp3",
-      "download_status": "ok",
-      "bytes": 2009029
-    },
-    {
-      "code": "4569",
-      "title": "Chatynka dwóch Braci",
-      "slug": "dwaj-bracia",
-      "audio_url": "http://serwer403491.lh.pl/autoinstalator/serwer403491.lh.pl/aiwordpress1892/wp-content/uploads/2026/01/Kopia-Elfy-1.mp3",
-      "plays_at_capture": 75,
-      "issues": [
-        "non_canonical_host",
-        "insecure_http"
-      ],
-      "local_path": "assets/stories/dwaj-bracia.mp3",
-      "download_status": "ok",
-      "bytes": 1379539
-    },
-    {
-      "code": "5557",
-      "title": "Chatynka Elfki Halinki",
-      "slug": "halinka",
-      "audio_url": "https://www.chatynkowo.pl/wp-content/uploads/2026/02/Elfka-Halinka.mp3",
-      "plays_at_capture": 61,
-      "issues": [],
-      "local_path": "assets/stories/halinka.mp3",
-      "download_status": "ok",
-      "bytes": 1838249
-    },
-    {
-      "code": "5775",
-      "title": "Chatynka Czubatej i Myszki",
-      "slug": "czubata-myszka",
-      "audio_url": "http://serwer403491.lh.pl/autoinstalator/serwer403491.lh.pl/aiwordpress1892/wp-content/uploads/2026/02/Czubata.mp3",
-      "plays_at_capture": 160,
-      "issues": [
-        "non_canonical_host",
-        "insecure_http"
-      ],
-      "local_path": "assets/stories/czubata-myszka.mp3",
-      "download_status": "ok",
-      "bytes": 1457406
-    },
-    {
-      "code": "6776",
-      "title": "Chatynka Elfa Tupaka",
-      "slug": "tupak",
-      "audio_url": "https://www.chatynkowo.pl/wp-content/uploads/2026/02/Elf-Tupak.mp3",
-      "plays_at_capture": 103,
-      "issues": [],
-      "local_path": "assets/stories/tupak.mp3",
-      "download_status": "ok",
-      "bytes": 1036853
-    },
-    {
-      "code": "7291",
-      "title": "Chatynka Strażnika Zamku",
-      "slug": "straznik-zamku",
-      "audio_url": "http://serwer403491.lh.pl/autoinstalator/serwer403491.lh.pl/aiwordpress1892/wp-content/uploads/2026/01/Straznik-zamku.mp3",
-      "plays_at_capture": 69,
-      "issues": [
-        "non_canonical_host",
-        "insecure_http"
-      ],
-      "local_path": "assets/stories/straznik-zamku.mp3",
-      "download_status": "ok",
-      "bytes": 2219792
-    },
-    {
-      "code": "7667",
-      "title": "Chatynka Zielonowłosego",
-      "slug": "zielonowlosy",
-      "audio_url": "http://serwer403491.lh.pl/autoinstalator/serwer403491.lh.pl/aiwordpress1892/wp-content/uploads/2026/02/siwowlosy-elf.mp3",
-      "plays_at_capture": 147,
-      "issues": [
-        "non_canonical_host",
-        "insecure_http"
-      ],
-      "local_path": "assets/stories/zielonowlosy.mp3",
-      "download_status": "ok",
-      "bytes": 1239815
-    },
-    {
-      "code": "7890",
-      "title": "Chatynka Elfa Iwo",
-      "slug": "iwo",
-      "audio_url": "https://www.chatynkowo.pl/wp-content/uploads/2026/04/Iwo.mp3",
-      "plays_at_capture": 51,
-      "issues": [],
-      "local_path": "assets/stories/iwo.mp3",
-      "download_status": "ok",
-      "bytes": 2030400
-    },
-    {
-      "code": "8333",
-      "title": "Chatynka Elfa Pazurka",
-      "slug": "pazurek",
-      "audio_url": "https://www.chatynkowo.pl/wp-content/uploads/2026/02/Elf-Pazurek.mp3",
-      "plays_at_capture": 118,
-      "issues": [],
-      "local_path": "assets/stories/pazurek.mp3",
-      "download_status": "ok",
-      "bytes": 1763673
-    },
-    {
-      "code": "9331",
-      "title": "Chatynka Gwerdy i Filinka",
-      "slug": "gwerda-filinek",
-      "audio_url": "http://serwer403491.lh.pl/autoinstalator/serwer403491.lh.pl/aiwordpress1892/wp-content/uploads/2026/01/Kopia-Gwerda.mp3",
-      "plays_at_capture": 153,
-      "issues": [
-        "non_canonical_host",
-        "insecure_http"
-      ],
-      "local_path": "assets/stories/gwerda-filinek.mp3",
-      "download_status": "ok",
-      "bytes": 1751223
-    },
-    {
-      "code": "9873",
-      "title": "Chatynka, która zaprasza",
-      "slug": "zaprasza",
-      "audio_url": "http://serwer403491.lh.pl/autoinstalator/serwer403491.lh.pl/aiwordpress1892/wp-content/uploads/2026/02/Chatynka-ktora-zaprasza.mp3",
-      "plays_at_capture": 125,
-      "issues": [
-        "non_canonical_host",
-        "insecure_http"
-      ],
-      "local_path": "assets/stories/zaprasza.mp3",
-      "download_status": "ok",
-      "bytes": 744998
-    }
-  ],
-  "repo_cottages_without_code": [
-    "samotny",
-    "skalne-iglice",
-    "straznik-lodu"
-  ],
-  "production_titles_not_in_repo": [
-    "Chatynka Elfki Zofii"
+  "_comment": "TAJNE pary slug → code (kody z tabliczek na chatynkach). Plik istnieje tylko w private/, które workflow deployu usuwa z artefaktu — kody nigdy nie trafiają na stronę. Publiczna walidacja kodów działa na solonych haszach w data/code_hashes.json; po KAŻDEJ zmianie tego pliku uruchom: node private/build-code-hashes.mjs (edytor /admin/ robi to automatycznie).",
+  "salt": "6bbd23916c523969b92a6fca",
+  "codes": [
+    { "slug": "fredek",         "code": "2375" },
+    { "slug": "iwo",            "code": "7890" },
+    { "slug": "zamczysko",      "code": "2620" },
+    { "slug": "teodor",         "code": "1212" },
+    { "slug": "tupak",          "code": "6776" },
+    { "slug": "elfka-z-duza-d", "code": "2121" },
+    { "slug": "pazurek",        "code": "8333" },
+    { "slug": "gwerda-filinek", "code": "9331" },
+    { "slug": "straznik-zamku", "code": "7291" },
+    { "slug": "dwaj-bracia",    "code": "4569" },
+    { "slug": "czubata-myszka", "code": "5775" },
+    { "slug": "zielonowlosy",   "code": "7667" },
+    { "slug": "zaprasza",       "code": "9873" },
+    { "slug": "skalne-iglice",  "code": "2376" },
+    { "slug": "stary-elf",      "code": "2214" },
+    { "slug": "alex",           "code": "3338" },
+    { "slug": "12345",          "code": "2255" },
+    { "slug": "wiktoria",       "code": "7557" },
+    { "slug": "zofia",          "code": "3026" },
+    { "slug": "wawrzyniec",     "code": "2026" },
+    { "slug": "ogrodniczki",    "code": "2602" },
+    { "slug": "drwal",          "code": "5281" },
+    { "slug": "kira",           "code": "3541" }
   ]
 }

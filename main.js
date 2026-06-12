@@ -3,6 +3,7 @@
   'use strict';
 
   const COTTAGES_URL = 'data/cottages.json';
+  const CODE_HASHES_URL = 'data/code_hashes.json';
   const MD_DIR       = 'cottages';
   const AUDIO_DIR    = 'assets/stories';
 
@@ -13,12 +14,38 @@
 
   const state = {
     cottages: [],
+    codeHashes: null,   // { salt, entries: { sha256(salt:code) → slug } }
   };
 
   /* ---------- Load cottages ---------- */
   async function loadCottages() {
     const res = await fetch(COTTAGES_URL);
     state.cottages = await res.json();
+  }
+
+  /* The plaque codes are SECRET — they live only in private/codes.json, which
+     never reaches the published site. The page validates an entered code by
+     comparing its salted SHA-256 against this generated lookup
+     (private/build-code-hashes.mjs), so the plaintext codes cannot be read
+     off the site. A failed load only disables code entry, never the map. */
+  async function loadCodeHashes() {
+    try {
+      const res = await fetch(CODE_HASHES_URL);
+      if (res.ok) state.codeHashes = await res.json();
+    } catch (_) { /* offline / missing file — handled at submit time */ }
+  }
+
+  async function sha256Hex(text) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  /* Returns the cottage matching a plaque code, or null. */
+  async function cottageByCode(code) {
+    if (!state.codeHashes) return null;
+    const hash = await sha256Hex(`${state.codeHashes.salt}:${code}`);
+    const slug = state.codeHashes.entries[hash];
+    return slug ? state.cottages.find(c => c.slug === slug) || null : null;
   }
 
   /* ---------- Cottage hotspots (image overlay) ----------
@@ -570,14 +597,18 @@
     const form = document.getElementById('codeForm');
     const input = document.getElementById('historiaKod');
     const out = document.getElementById('codeResult');
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const v = (input.value || '').trim();
       if (!/^\d{4}$/.test(v)) {
         out.textContent = 'Podaj prawidłowy 4-cyfrowy kod znaleziony na tabliczce Chatynki.';
         return;
       }
-      const c = state.cottages.find(x => x.code === v);
+      if (!state.codeHashes || !window.crypto?.subtle) {
+        out.textContent = 'Nie udało się sprawdzić kodu — odśwież stronę i spróbuj ponownie.';
+        return;
+      }
+      const c = await cottageByCode(v);
       if (!c) {
         out.textContent = 'Nieznany kod. Sprawdź tabliczkę na chatynce.';
         return;
@@ -636,6 +667,7 @@
     wireAudioPlayer();
     wireTrophies();
     renderTrophies();   // initial paint of the count pip
+    loadCodeHashes();   // independent of the map — failure only blocks code entry
     try {
       await loadCottages();
       drawCottages();

@@ -182,7 +182,9 @@
   }
 
   function serializeCottagesJson(records) {
-    const fields = ['slug', 'title', 'lat', 'lng', 'mapX', 'mapY', 'code'];
+    // NO 'code' here — cottages.json is published with the site, and the
+    // plaque codes are secret. They live in private/codes.json instead.
+    const fields = ['slug', 'title', 'lat', 'lng', 'mapX', 'mapY'];
     const segMax = {};
     for (const f of fields) {
       let max = 0;
@@ -204,12 +206,59 @@
     return '[\n' + lines.join(',\n') + '\n]\n';
   }
 
+  /* ---------- secret plaque codes (private/codes.json) ----------
+     The codes never enter any published file in plaintext. The site validates
+     an entered code against data/code_hashes.json — sha256(`${salt}:${code}`)
+     hex, the same algorithm as private/build-code-hashes.mjs — so whenever
+     the codes change, BOTH files must be rewritten in the same commit. */
+
+  function serializeCodesJson(file) {
+    const w = Math.max(0, ...file.codes.map(e => e.slug.length));
+    const lines = file.codes.map(e =>
+      `    { "slug": "${e.slug}",${' '.repeat(w - e.slug.length)} "code": "${e.code}" }`);
+    return '{\n'
+      + `  "_comment": ${JSON.stringify(file._comment || '')},\n`
+      + `  "salt": ${JSON.stringify(file.salt)},\n`
+      + `  "codes": [\n${lines.join(',\n')}\n  ]\n}\n`;
+  }
+
+  async function sha256Hex(text) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function buildCodeHashesJson(file) {
+    const entries = {};
+    for (const { slug, code } of file.codes) {
+      entries[await sha256Hex(`${file.salt}:${code}`)] = slug;
+    }
+    return JSON.stringify({ salt: file.salt, entries }, null, 2) + '\n';
+  }
+
+  /* Clone the codes file with one slug's code set (or removed when null),
+     preserving entry order. */
+  function withCode(file, slug, code) {
+    const codes = file.codes.filter(e => e.slug !== slug || code != null)
+      .map(e => e.slug === slug ? { ...e, code } : { ...e });
+    if (code != null && !file.codes.some(e => e.slug === slug)) codes.push({ slug, code });
+    return { ...file, codes };
+  }
+
+  /* The two generated/secret files every code change must rewrite together. */
+  async function codeFileChanges(codesFile) {
+    return [
+      { path: 'private/codes.json', text: serializeCodesJson(codesFile) },
+      { path: 'data/code_hashes.json', text: await buildCodeHashesJson(codesFile) },
+    ];
+  }
+
 
   /* ---------- state ---------- */
 
   const state = {
     cottages: [],
     cottagesJson: [],      // in-memory copy of data/cottages.json
+    codesFile: null,       // in-memory copy of private/codes.json ({_comment, salt, codes})
     sha: new Map(),        // path → git blob SHA (for writes)
     current: null,
     dirty: false,
@@ -238,12 +287,22 @@
 
     // Fetch file content via blob API — authoritative, no CDN propagation delay.
     const fetchBlob = sha => ghFetch('GET', `git/blobs/${sha}`).then(b => base64ToUtf8(b.content));
-    const [jsonRaw, ...mdTexts] = await Promise.all([
+    const codesSha = state.sha.get('private/codes.json');
+    const [jsonRaw, codesRaw, ...mdTexts] = await Promise.all([
       fetchBlob(state.sha.get('data/cottages.json')).then(t => JSON.parse(t)),
+      // Branches that predate the secret-codes split have no private/codes.json;
+      // start empty there and the first code edit will create the file.
+      codesSha ? fetchBlob(codesSha).then(t => JSON.parse(t)) : Promise.resolve(null),
       ...slugs.map(s => fetchBlob(state.sha.get(`cottages/${s}.md`))),
     ]);
 
     state.cottagesJson = jsonRaw;
+    state.codesFile = codesRaw || {
+      _comment: 'TAJNE pary slug → code. Nigdy nie publikować — patrz private/build-code-hashes.mjs.',
+      salt: Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2, '0')).join(''),
+      codes: [],
+    };
+    const codeBySlug = new Map(state.codesFile.codes.map(e => [e.slug, e.code]));
     const bySlug = new Map(jsonRaw.map(c => [c.slug, c]));
 
     state.cottages = slugs.map((slug, i) => {
@@ -259,7 +318,7 @@
       return {
         slug, frontmatter: fm, body,
         mapX: j.mapX ?? null, mapY: j.mapY ?? null,
-        code: j.code ?? null,
+        code: codeBySlug.get(slug) ?? null,
         audio: {
           exists: state.sha.has(audioPath),
           url: state.sha.has(audioPath) ? `${baseUrl}/${audioPath}?v=${state.sha.get(audioPath).slice(0, 8)}` : null,
@@ -422,16 +481,23 @@
       if (Number.isFinite(fm.lng)) entry.lng = fm.lng;
       if (payload.mapX != null) entry.mapX = Number(payload.mapX);
       if (payload.mapY != null) entry.mapY = Number(payload.mapY);
-      if (payload.code != null) entry.code = payload.code;
-      else delete entry.code;
 
-      await commitChanges([
+      const changes = [
         { path: `cottages/${slug}.md`, text: mdText },
         { path: 'data/cottages.json', text: serializeCottagesJson(freshJson) },
-      ], `edit: ${slug}`);
+      ];
+      // The plaque code is secret — it goes to private/codes.json (plus the
+      // regenerated public hash file), never into data/cottages.json.
+      const oldCode = state.codesFile.codes.find(e => e.slug === slug)?.code ?? null;
+      const freshCodes = payload.code !== oldCode
+        ? withCode(state.codesFile, slug, payload.code) : null;
+      if (freshCodes) changes.push(...await codeFileChanges(freshCodes));
+
+      await commitChanges(changes, `edit: ${slug}`);
 
       // Update in-memory state to the freshly committed version.
       state.cottagesJson = freshJson;
+      if (freshCodes) state.codesFile = freshCodes;
       Object.assign(state.current, { frontmatter: fm, body: payload.body, mapX: payload.mapX, mapY: payload.mapY, code: payload.code });
 
       // Refresh the dropdown option label to reflect the new title.
@@ -515,8 +581,12 @@
         ...(c.audio?.exists ? [{ path: `assets/stories/${c.slug}.mp3`, delete: true }] : []),
         ...(c.photos || []).map(p => ({ path: `assets/img/cottages/${c.slug}/${p.name}`, delete: true })),
       ];
+      const freshCodes = state.codesFile.codes.some(e => e.slug === c.slug)
+        ? withCode(state.codesFile, c.slug, null) : null;
+      if (freshCodes) changes.push(...await codeFileChanges(freshCodes));
       await commitChanges(changes, `delete: ${c.slug}`);
       state.cottagesJson = freshJson.filter(x => x.slug !== c.slug);
+      if (freshCodes) state.codesFile = freshCodes;
       state.dirty = false; state.current = null;
       await loadAll();
     } catch (e) { setStatus('error', `błąd: ${e.message}`); }
