@@ -7,7 +7,7 @@ virtue: skromność
 
 # Chatynka Zofii z Rabsztyna
 
-> na zamku Rabsztyn jeszcze takich dziwów nie było :) najeżdżano go , plądrowano, palono ....aż tu nagle w 2025 roku zimą stało się coś magicznego :)
+> Na zamku Rabsztyn jeszcze takich dziwów nie było :) Najeżdżano go, plądrowano, palono… aż tu nagle w 2025 roku zimą stało się coś magicznego :)
 
 ## Mieszka tu
 

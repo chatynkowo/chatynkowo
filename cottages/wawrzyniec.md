@@ -1,14 +1,14 @@
 ---
-title: "chatynka Wawrzyńca"
+title: "Chatynka Wawrzyńca"
 slug: wawrzyniec
 occupant: Wawrzyniec
 virtue: "starość to radość"
 ---
 
-# chatynka Wawrzyńca
+# Chatynka Wawrzyńca
 
-> Niedawno, nie wiadomo skąd pojawiły się w okolicy bobry, akurat tutaj postanowiły się osiedlić.
-> Elf Wawrzyniec tylko się ucieszył , bo w końcu ma z kim pływać i nie tylko :)
+> Niedawno, nie wiadomo skąd, pojawiły się w okolicy bobry, akurat tutaj postanowiły się osiedlić.
+> Elf Wawrzyniec tylko się ucieszył, bo w końcu ma z kim pływać i nie tylko :)
 
 ## Mieszka tu
 

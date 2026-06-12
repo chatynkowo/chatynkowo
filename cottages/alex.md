@@ -5,9 +5,9 @@ occupant: "bracia Jędrzej i Franek"
 virtue: wyluzowani
 ---
 
-# Chatynka Elfa Olka
+# Chatynka Elfów Jędrzeja i Franka
 
-> Para elfów Jędrzej i Franek bracia z tej oto chatynki przez długi czas mieszkali przy spiętrzeniu wody w młynie Kacpra Brandysa.
+> Para elfów, Jędrzej i Franek, bracia z tej oto chatynki, przez długi czas mieszkali przy spiętrzeniu wody w młynie Kacpra Brandysa.
 > 
 > Lubili to miejsce. Woda płynęła tam szybko, coś cały czas się działo, a wokół nie brakowało odgłosów pracy młyna i tartaku.
 > Ale któregoś dnia wszystko ucichło.
@@ -16,7 +16,7 @@ virtue: wyluzowani
 > Aż jeden z nich powiedział:
 > — Może nie wszystko, co się zatrzymuje, jest końcem.
 > Spakowali swój dobytek i ruszyli wzdłuż rzeki Będkówki.
-> Nie daleko — tylko tyle, ile potrzeba, żeby znaleźć nowe miejsce.
+> Niedaleko — tylko tyle, ile potrzeba, żeby znaleźć nowe miejsce.
 > Kilkaset metrów dalej dotarli pod wodospad Szum.
 > Usiedli tam tylko na chwilę.
 > Ale kiedy usłyszeli wodę i poczuli spokój tego miejsca, postanowili zostać.

@@ -1,13 +1,13 @@
 ---
-title: "chatynka  Kiry"
+title: "Chatynka Kiry"
 slug: kira
 occupant: Kira
 virtue: niezdecydowanie
 ---
 
-# chatynka Kiry
+# Chatynka Kiry
 
-> czasem wystarczy po prostu być sobą !!!
+> Czasem wystarczy po prostu być sobą!!!
 
 ## Mieszka tu
 

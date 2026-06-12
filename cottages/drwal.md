@@ -1,13 +1,13 @@
 ---
-title: "chatynka drwala Dębomira"
+title: "Chatynka drwala Dębomira"
 slug: drwal
 occupant: Dębomir
 virtue: "siła i wytrzymałość"
 ---
 
-# chatynka drwala
+# Chatynka drwala
 
-Czasem trzeba spojżeć inaczej na to, co dzieje się w około , żeby zrozumieć .
+Czasem trzeba spojrzeć inaczej na to, co dzieje się wokoło, żeby zrozumieć.
 
 ## Mieszka tu
 

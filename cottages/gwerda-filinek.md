@@ -13,7 +13,7 @@ Razem tworzą najlepszą parę w całym Chatynkowie: Gwerda wie, co się dzieje 
 
 ## Mieszka tu
 
-**Gwerda i Filinek**, który uczy wędrowców cnoty: *przyjaźń*.
+**Gwerda i Filinek**, którzy uczą wędrowców cnoty: *przyjaźń*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
