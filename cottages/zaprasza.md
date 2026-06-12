@@ -15,13 +15,13 @@ Mieszka w niej bardzo nieśmiały Elf, który nigdy nie mówi pierwszy. Ale gdy 
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.317941, 19.635328`
-- **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.317941,19.635328)
-- **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.317941&mlon=19.635328#map=16/50.317941/19.635328)
+* **Współrzędne:** `50.317941, 19.635328`
+* **Nawigacja (Google Maps):** [Poprowadź mnie tam](https://www.google.com/maps/dir/?api=1&destination=50.317941,19.635328)
+* **Nawigacja (OpenStreetMap):** [Otwórz w OSM](https://www.openstreetmap.org/?mlat=50.317941&mlon=19.635328#map=16/50.317941/19.635328)
 
 ## Mieszka tu
 
-**Chatynka, która zaprasza**, który uczy wędrowców cnoty: _zaproszenie_.
+**Chatynka, która zaprasza**, który uczy wędrowców cnoty: *zaproszenie*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
