@@ -13,7 +13,7 @@ Mieszka w niej bardzo nieśmiały Elf, który nigdy nie mówi pierwszy. Ale gdy 
 
 ## Mieszka tu
 
-**Chatynka, która zaprasza**, który uczy wędrowców cnoty: *zaproszenie*.
+**Chatynka, która zaprasza**, która uczy wędrowców cnoty: *zaproszenie*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 

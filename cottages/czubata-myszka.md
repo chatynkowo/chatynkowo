@@ -13,7 +13,7 @@ Razem prowadzą małą bibliotekę szeleszczących liści. Każdy liść to jedn
 
 ## Mieszka tu
 
-**Czubata i Myszka**, który uczy wędrowców cnoty: *wyobraźnia*.
+**Czubata i Myszka**, które uczą wędrowców cnoty: *wyobraźnia*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 

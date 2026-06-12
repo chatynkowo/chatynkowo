@@ -7,16 +7,16 @@ virtue: kontemplacja
 
 # Chatynka Samotnego Elfa
 
-> Na skraju cichego lasu, na wysokiej skale czyli tutaj  zamieszkał elf o imieniu Fredek.
+> Na skraju cichego lasu, na wysokiej skale, czyli tutaj, zamieszkał elf o imieniu Fredek.
 > 
-> Całe życie był artystą ale  pewnego dnia poczuł, że zgubił sens tworzenia. Dlatego odizolował się od innych i zamieszkał w małym, minimalistycznym domku na urwisku.
+> Całe życie był artystą, ale pewnego dnia poczuł, że zgubił sens tworzenia. Dlatego odizolował się od innych i zamieszkał w małym, minimalistycznym domku na urwisku.
 > — Za to z jakim widokiem… popatrzcie sami — mówił czasem, patrząc w dal.
 > Fredek często siadał na skale i planował kolejne drobne zmiany w swoim domu, jakby nigdy nie chciał go skończyć.
 > Ale najbardziej lubił malować… drzewa.
 > Jeśli kiedyś widzieliście oczy na pniach — spokojne albo uśmiechnięte — to była jego robota.
 > Czasem pisał też krótkie wiersze na liściach i korze, które znikały razem z wiatrem.
-> I właśnie tu w ciszy, Fredek powoli przypomniał sobie, co naprawdę chce robić.
-> Tworzyć. Po swojemu.Mówi: "Samotność nie boli, kiedy masz las za przyjaciela." Jeśli usiądziesz obok i nic nie powiesz — to będzie najlepsza rozmowa, jaką kiedykolwiek odbyłeś.
+> I właśnie tu, w ciszy, Fredek powoli przypomniał sobie, co naprawdę chce robić.
+> Tworzyć. Po swojemu. Mówi: "Samotność nie boli, kiedy masz las za przyjaciela." Jeśli usiądziesz obok i nic nie powiesz — to będzie najlepsza rozmowa, jaką kiedykolwiek odbyłeś.
 
 ## Mieszka tu
 

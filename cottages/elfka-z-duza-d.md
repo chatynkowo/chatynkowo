@@ -13,7 +13,7 @@ Pod jej chatynką zawsze leży miska mleka dla jeża i garść żołędzi dla wi
 
 ## Mieszka tu
 
-**Elfka z dużą d...ą**, który uczy wędrowców cnoty: *dobroć*.
+**Elfka z dużą d...ą**, która uczy wędrowców cnoty: *dobroć*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 

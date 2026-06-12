@@ -13,7 +13,7 @@ Zostawiają sobie karteczki pod kamieniem. Zna je tylko las. Gdy pewnego dnia je
 
 ## Mieszka tu
 
-**Dwaj Bracia**, który uczy wędrowców cnoty: _braterstwo_.
+**Dwaj Bracia**, którzy uczą wędrowców cnoty: _braterstwo_.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 

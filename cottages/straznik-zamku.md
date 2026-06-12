@@ -1,5 +1,5 @@
 ---
-title: "Chatynka elfa Strzały"
+title: "Chatynka Elfa Strzały"
 slug: straznik-zamku
 occupant: "Strażnik Zamku Bydlin"
 virtue: wierność
