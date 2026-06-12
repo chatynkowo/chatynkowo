@@ -22,6 +22,5 @@
   { "slug": "wawrzyniec",     "lat": 50.33447,   "lng": 19.645387,  "mapX": 84.08, "mapY": 59.08 },
   { "slug": "ogrodniczki",    "lat": 50.322672,  "lng": 19.639401,  "mapX": 74.83, "mapY": 51.11 },
   { "slug": "drwal",          "lat": 50.14275,   "lng": 19.27416,   "mapX": 20,    "mapY": 28.93 },
-  { "slug": "kira",           "lat": 50.307492,  "lng": 19.554178,  "mapX": 43.25, "mapY": 50.29 },
-  { "slug": "anielcia",       "lat": 50.32,      "lng": 19.6,       "mapX": 50,    "mapY": 50 }
+  { "slug": "kira",           "lat": 50.307492,  "lng": 19.554178,  "mapX": 43.25, "mapY": 50.29 }
 ]
