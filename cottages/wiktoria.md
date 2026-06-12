@@ -12,7 +12,7 @@ virtue: zwycięstwo
 
 ## Mieszka tu
 
-(uzupełnij: kto mieszka, jakiej cnoty uczy)
+**Wiktoria**, która uczy wędrowców cnoty: *zwycięstwo*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 

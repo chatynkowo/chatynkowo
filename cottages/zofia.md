@@ -11,7 +11,7 @@ virtue: skromność
 
 ## Mieszka tu
 
-(uzupełnij: kto mieszka, jakiej cnoty uczy)
+**Zofia**, która uczy wędrowców cnoty: *skromność*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
