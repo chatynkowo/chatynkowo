@@ -1,19 +1,19 @@
 ---
 title: "chatynka Mikołaja"
 slug: minizoo
-occupant: ""
-lat: 50.32
-lng: 19.6
-virtue: ""
+occupant: "Mikołaj i krówy Basia i Krysia"
+lat: 50.225208
+lng: 19.730573
+virtue: miłość
 ---
 
 # chatynka Mikołaja
 
-> Krótki opis chatynki.
+Tu zamieszkał Elf Mikołaj , pewnie zastanawiacie się dlaczego ? Odsłuchajcie opowieść , a wszystko stanie się jasne !!!
 
 ## Jak znaleźć Chatynkę
 
-- **Współrzędne:** `50.32, 19.6`
+* **Współrzędne:** `50.32, 19.6`
 
 ## Mieszka tu
 
