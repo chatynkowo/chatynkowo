@@ -2,7 +2,7 @@
   "_comment": "TAJNE pary slug → code (kody z tabliczek na chatynkach). Plik istnieje tylko w private/, które workflow deployu usuwa z artefaktu — kody nigdy nie trafiają na stronę. Publiczna walidacja kodów działa na solonych haszach w data/code_hashes.json; po KAŻDEJ zmianie tego pliku uruchom: node private/build-code-hashes.mjs (edytor /admin/ robi to automatycznie).",
   "salt": "6bbd23916c523969b92a6fca",
   "codes": [
-    { "slug": "fredek",         "code": "2375" },
+    { "slug": "fredek",         "code": "6667" },
     { "slug": "iwo",            "code": "7890" },
     { "slug": "zamczysko",      "code": "2620" },
     { "slug": "teodor",         "code": "1212" },
