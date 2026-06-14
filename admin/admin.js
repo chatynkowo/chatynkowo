@@ -146,6 +146,67 @@
     return `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${path}?v=${sha.slice(0, 8)}`;
   }
 
+  /* ---------- editor freshness ----------
+     The editor is a static page that browsers and the GitHub Pages CDN cache.
+     A stale tab can keep writing an OUTDATED file layout long after the editor
+     was fixed in the repo — exactly how the legacy `title`/`code` fields crept
+     back into data/cottages.json. On the LIVE site we compare every editor
+     asset the page is running against its current repo blob; if the repo moved
+     ahead, we show a non-blocking banner asking the user to reload. Purely
+     informational — no auto-reload, no automatic data repair.
+
+     Production-only: locally you are editing these very files, so a mismatch is
+     expected and would just be noise. */
+  const EDITOR_ASSETS = ['admin/admin.js', 'admin/index.html', 'admin/admin.css'];
+
+  /* git's blob object hash: sha1("blob <byteLength>\0" + bytes). Computing it
+     in-browser lets us compare a loaded asset against the repo blob SHA from the
+     tree, with no manual version stamping to forget to bump. */
+  async function gitBlobSha(buf) {
+    const data = new Uint8Array(buf);
+    const header = new TextEncoder().encode(`blob ${data.length}\0`);
+    const full = new Uint8Array(header.length + data.length);
+    full.set(header, 0);
+    full.set(data, header.length);
+    const digest = await crypto.subtle.digest('SHA-1', full);
+    return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  /* A dev host is anything that ISN'T production. Production = the github.io
+     Pages domain, or the custom domain declared in the repo's CNAME (e.g.
+     www.chatynkowo.pl, read into state.cnameHost at load). Both are matched
+     loosely — github.io as a suffix, the CNAME domain as a substring (with any
+     leading "www." dropped) — so the apex, www, and any subdomain all count as
+     production. Everywhere else — localhost, LAN IPs, previews — you are editing
+     these files, so we skip the freshness check. */
+  function isDevHost() {
+    const h = location.hostname.toLowerCase();
+    if (/\.github\.io$/.test(h)) return false;
+    const base = (state.cnameHost || '').replace(/^www\./, '');
+    if (base && h.includes(base)) return false;
+    return true;
+  }
+
+  async function checkEditorFreshness() {
+    if (isDevHost()) return;                                       // dev host — stay quiet
+    if (!window.isSecureContext || !window.crypto?.subtle) return; // SHA-1 needs a secure context
+    try {
+      for (const path of EDITOR_ASSETS) {
+        const repoSha = state.sha.get(path);
+        if (!repoSha) continue;
+        // The page is served from /admin/, so drop the leading "admin/".
+        // no-store bypasses the HTTP cache to read what the CDN serves now.
+        const res = await fetch(path.replace(/^admin\//, ''), { cache: 'no-store' });
+        if (!res.ok) continue;
+        if (await gitBlobSha(await res.arrayBuffer()) !== repoSha) { showUpdateBanner(); return; }
+      }
+    } catch (_) { /* network/permission hiccup — never block the editor */ }
+  }
+
+  function showUpdateBanner() {
+    if (els.updateBanner) els.updateBanner.hidden = false;
+  }
+
   /* ---------- frontmatter / JSON serialisers ---------- */
 
   function parseFrontmatter(raw) {
@@ -266,6 +327,7 @@
     cottagesJson: [],      // in-memory copy of data/cottages.json
     codesFile: null,       // in-memory copy of private/codes.json ({_comment, salt, codes})
     sha: new Map(),        // path → git blob SHA (for writes)
+    cnameHost: null,       // custom production domain from the repo's CNAME (lowercased)
     current: null,
     dirty: false,
     geo: null,
@@ -294,14 +356,19 @@
     // Fetch file content via blob API — authoritative, no CDN propagation delay.
     const fetchBlob = sha => ghFetch('GET', `git/blobs/${sha}`).then(b => base64ToUtf8(b.content));
     const codesSha = state.sha.get('private/codes.json');
-    const [jsonRaw, codesRaw, ...mdTexts] = await Promise.all([
+    const cnameSha = state.sha.get('CNAME');
+    const [jsonRaw, codesRaw, cnameRaw, ...mdTexts] = await Promise.all([
       fetchBlob(state.sha.get('data/cottages.json')).then(t => JSON.parse(t)),
       // Branches that predate the secret-codes split have no private/codes.json;
       // start empty there and the first code edit will create the file.
       codesSha ? fetchBlob(codesSha).then(t => JSON.parse(t)) : Promise.resolve(null),
+      // The custom production domain (used to decide where the freshness check
+      // runs). Absent on repos served only from *.github.io.
+      cnameSha ? fetchBlob(cnameSha) : Promise.resolve(null),
       ...slugs.map(s => fetchBlob(state.sha.get(`cottages/${s}.md`))),
     ]);
 
+    state.cnameHost = cnameRaw ? cnameRaw.trim().toLowerCase() : null;
     state.cottagesJson = jsonRaw;
     state.codesFile = codesRaw || {
       _comment: 'TAJNE pary slug → code. Nigdy nie publikować — patrz private/build-code-hashes.mjs.',
@@ -350,6 +417,9 @@
 
     if (target) selectCottage(target);
     else { state.current = null; setStatus('clean', 'brak chatynek'); }
+
+    // Fire-and-forget: warn (production only) if the repo has a newer editor.
+    checkEditorFreshness();
   }
 
   /* ---------- select / form ---------- */
@@ -833,6 +903,8 @@
     authConfirm: $('#btn-auth-confirm'),
     authCancel: $('#btn-auth-cancel'),
     editorRoot: $('#editor-root'),
+    updateBanner: $('#update-banner'),
+    reload: $('#btn-reload'),
     select: $('#cottage-select'),
     save: $('#btn-save'),
     discard: $('#btn-discard'),
@@ -923,6 +995,8 @@
       hideModeSwitch: false,
     });
     state.mde.on('change', () => { if (state.mde.getMarkdown() !== state.cleanBody) markDirty(); });
+
+    els.reload?.addEventListener('click', () => location.reload());
 
     els.authConfirm.addEventListener('click', tryAuth);
     els.authCancel.addEventListener('click', hideAuthOverlay);

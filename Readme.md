@@ -65,6 +65,19 @@ It writes directly to this repository through the GitHub API, so no server is ne
 
 The token is stored only in your browser's `localStorage` and is never sent anywhere other than `api.github.com`.
 
+### Staying up to date
+
+The editor is a static page, so a browser or CDN could otherwise keep running an
+outdated copy that writes the old data layout (this is how `title`/`code` once
+crept back into `data/cottages.json`). Two safeguards prevent that:
+
+- Its own assets (`admin.js`, `admin.css`) load with a per-load cache-busting
+  token and the page is marked `no-store`, so the executed code is always fresh.
+- On the live `*.github.io` site the editor compares each loaded asset against
+  the current repository blob and shows a **reload banner** when the repository
+  has a newer version. It never repairs data automatically — it only tells you
+  to refresh the page before editing.
+
 ### Token expired?
 
 Click the **⚙** button in the top-right corner of the editor to open the settings panel and enter a new token.
