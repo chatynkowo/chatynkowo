@@ -17,7 +17,7 @@
   { "slug": "stary-elf",      "lat": 50.306783,  "lng": 19.616489,  "mapX": 65.09, "mapY": 56.58 },
   { "slug": "alex",           "lat": 50.1748269, "lng": 19.743247,  "mapX": 41.95, "mapY": 67.52 },
   { "slug": "12345",          "lat": 50.361228,  "lng": 19.607387,  "mapX": 40.69, "mapY": 62.25 },
-  { "slug": "wiktoria",       "lat": 50.278164,  "lng": 19.558636,  "mapX": 31.72, "mapY": 61.03 },
+  { "slug": "wiktoria",       "lat": 50.27848,   "lng": 19.55906,   "mapX": 31.72, "mapY": 61.03 },
   { "slug": "zofia",          "lat": 50.3008,    "lng": 19.5942,    "mapX": 20.91, "mapY": 42.48 },
   { "slug": "wawrzyniec",     "lat": 50.33447,   "lng": 19.645387,  "mapX": 84.08, "mapY": 59.08 },
   { "slug": "ogrodniczki",    "lat": 50.322672,  "lng": 19.639401,  "mapX": 77.48, "mapY": 54.32 },
