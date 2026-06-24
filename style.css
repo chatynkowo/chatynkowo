@@ -1406,3 +1406,69 @@ a:hover { color: var(--ember); }
   .legal__content { padding: 1.5rem 1.2rem; }
   .legal-header__inner { flex-direction: column; text-align: center; gap: .4rem; }
 }
+
+/* ---------- Ranking: skrzynia (puls), CTA w Skarbcu, baner po komplecie ---------- */
+
+/* Krótki puls skrzyni-trofeów po zdobyciu nowej odznaki. */
+@keyframes trophyPulse {
+  0%   { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(199,154,75,0)); }
+  30%  { transform: scale(1.18); filter: drop-shadow(0 0 14px rgba(245,210,120,.9)); }
+  100% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(199,154,75,0)); }
+}
+.trophies-toggle--pulse { animation: trophyPulse 1.1s ease; }
+
+/* CTA do rankingu w dialogu Skarbca (po komplecie). */
+.trophy-cta {
+  display: block;
+  margin: 1.2rem auto 0;
+  max-width: max-content;
+  padding: .7rem 1.2rem;
+  border-radius: 999px;
+  font-family: 'Cinzel Decorative', serif;
+  font-weight: 700;
+  text-align: center;
+  color: #2a1c08;
+  background: linear-gradient(180deg, #e9c873, var(--gold));
+  box-shadow: 0 6px 18px rgba(199,154,75,.4);
+}
+.trophy-cta:hover { filter: brightness(1.06); }
+
+/* Baner zaproszenia do rankingu po zebraniu kompletu Chatynek. */
+.rank-invite {
+  position: fixed;
+  left: 50%;
+  bottom: 1.2rem;
+  transform: translateX(-50%);
+  z-index: 60;
+  width: min(92vw, 460px);
+  background: linear-gradient(180deg, var(--parchment), var(--parchment-2));
+  color: var(--ink);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.2rem 1rem;
+  text-align: center;
+  animation: trophyPulse .6s ease;
+}
+.rank-invite__close {
+  position: absolute; top: .4rem; right: .55rem;
+  background: none; border: 0; cursor: pointer;
+  font-size: 1.4rem; line-height: 1; color: var(--ink-soft);
+}
+.rank-invite__title {
+  font-family: 'Cinzel Decorative', serif; font-weight: 700;
+  font-size: 1.15rem; margin: 0 0 .3rem; color: var(--ink);
+}
+.rank-invite__lead { margin: 0 0 .9rem; font-size: 1.05rem; }
+.rank-invite__actions { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; }
+.rank-invite__btn {
+  font-family: 'Cinzel Decorative', serif; font-size: .85rem;
+  padding: .55rem 1rem; border-radius: 999px;
+  border: 1px solid var(--gold); background: rgba(199,154,75,.14);
+  color: var(--ink); cursor: pointer;
+}
+.rank-invite__btn--primary {
+  background: linear-gradient(180deg, #e9c873, var(--gold));
+  color: #2a1c08; font-weight: 700; border-color: #f0d894;
+}
+.rank-invite__btn:hover { filter: brightness(1.05); }

@@ -540,6 +540,10 @@
     countEl.textContent = String(earnedIds.length);
     toggle.classList.toggle('trophies-toggle--has', earnedIds.length > 0);
 
+    // Ranking CTA inside the Skarbiec unlocks once the final badge is earned.
+    document.getElementById('trophyRankingCta')
+      ?.toggleAttribute('hidden', !persist.hasBadge('mistrz-chatynkowa'));
+
     // Show every defined badge plus any earned ones we don't have a
     // definition for yet (preserves progress across registry edits).
     const ids = Array.from(new Set([...Object.keys(BADGES), ...earnedIds]));
@@ -626,6 +630,56 @@
     });
   }
 
+  /* Award reward badges whose threshold the seeker has now reached. The final
+     badge (def.final) uses the live cottage total, so it fires on the genuine
+     "all found" moment even if the cottage set changes. awardBadge() is
+     one-shot; returns the ids awarded on THIS call. */
+  function awardProgressBadges(foundCount, total) {
+    const newly = [];
+    for (const [id, def] of Object.entries(BADGES)) {
+      const need = def.final ? total : def.threshold;
+      if (typeof need === 'number' && foundCount >= need && !persist.hasBadge(id)) {
+        if (persist.awardBadge(id, { name: def.name })) newly.push(id);
+      }
+    }
+    return newly;
+  }
+
+  /* Briefly pulse the floating treasure chest when a new badge lands. */
+  function pulseTrophies() {
+    const t = document.getElementById('trophiesOpen');
+    if (!t) return;
+    t.classList.remove('trophies-toggle--pulse');
+    void t.offsetWidth;                 // restart the CSS animation
+    t.classList.add('trophies-toggle--pulse');
+  }
+
+  /* Completion banner: reveal the invite to the Ranking Zdobywców. */
+  function showRankInvite() {
+    document.getElementById('rankInvite')?.removeAttribute('hidden');
+  }
+
+  function wireRankInvite() {
+    const el = document.getElementById('rankInvite');
+    if (!el) return;
+    document.getElementById('rankInviteClose')
+      ?.addEventListener('click', () => el.setAttribute('hidden', ''));
+    const login = document.getElementById('rankInviteLogin');
+    if (login) {
+      if (!window.chatynkowoSync?.configured) {
+        login.hidden = true;            // ranking not set up yet — hide sign-in
+      } else {
+        login.addEventListener('click', async () => {
+          try {
+            // Land on the ranking page after Google sign-in; ranking.js then
+            // syncs the local progress and shows the freshly-minted entry.
+            await window.chatynkowoSync.signInWithGoogle(new URL('ranking.html', location.href).href);
+          } catch (e) { console.error('[ranking] sign-in', e); }
+        });
+      }
+    }
+  }
+
   /* ---------- 4-digit code form ---------- */
   function wireCodeForm() {
     const form = document.getElementById('codeForm');
@@ -657,39 +711,44 @@
       }
       const justFound = persist.markFound(c.slug, { code: v });
       // Repaint pins so the just-uncovered cottage shows in "found" colour
-      // both on the inline map and in the zoom dialog. Also refresh the
-      // trophies pip — future award rules (driven by foundSlugs.length,
-      // for example) may have unlocked a badge.
+      // both on the inline map and in the zoom dialog. Then award any newly
+      // reached reward badges (Skarbiec), sync progress to the ranking, and —
+      // on the very last cottage — invite the seeker to the Ranking Zdobywców.
       if (justFound) {
         drawCottages();
+
+        const foundCount = persist.foundSlugs().length;
+        const total = state.cottages.length || foundCount;
+
+        // Reward badges. awardBadge() is one-shot, so each threshold fires only
+        // on the visit that first crosses it; pulse the chest when something new.
+        const newBadges = awardProgressBadges(foundCount, total);
         renderTrophies();
-        // Anonymous, aggregate counts (never tied to a visitor). Guarded so a
-        // blocked/absent counter never throws. count.js URL-encodes the params
-        // itself, so we pass raw strings (no manual encodeURIComponent).
-        if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+        if (newBadges.length) pulseTrophies();
+
+        // Ranking sync — a no-op unless the seeker is logged in; otherwise their
+        // local progress is synced after they sign in (on the ranking page).
+        const foundAt = persist.data.found[c.slug]?.foundAt;
+        window.chatynkowoSync?.onFound(c.slug, foundAt, foundCount);
+
+        // Komplet → świeżo zdobyta odznaka "Mistrz Chatynkowa" odblokowuje ranking.
+        if (newBadges.includes('mistrz-chatynkowa')) showRankInvite();
+
+        // Anonymous, aggregate counts (never tied to a visitor). Sent through
+        // the localStorage-backed queue (analytics.js) instead of a direct
+        // goatcounter.count(): cottages are found out in the field where the
+        // signal — and the external count.js — may be missing, so a fire-and-
+        // forget beacon would be lost. The queue retries on the next online
+        // page load, so a find made offline still reaches GoatCounter later.
+        const stats = window.chatynkowoStats;
+        if (stats && typeof stats.track === 'function') {
           // Per-cottage breakdown: which cottages get discovered.
-          window.goatcounter.count({
-            path:  'found-' + c.slug,
-            title: 'Cottage found: ' + c.title,
-            event: true,
-          });
+          stats.track('found-' + c.slug, 'Cottage found: ' + c.title);
           // Constant path — its total count = all cottage discoveries combined.
-          window.goatcounter.count({
-            path:  'cottage-found',
-            title: 'Cottage found (any)',
-            event: true,
-          });
-          // Progress distribution: how many cottages this visitor has found so
-          // far (includes the one just uncovered). Hit counts on progress-1,
-          // progress-2, … show how far seekers get — still anonymous, no
-          // per-visitor identity. Bounded by the cottage count, so the path
-          // set stays small.
-          const foundCount = persist.foundSlugs().length;
-          window.goatcounter.count({
-            path:  'progress-' + foundCount,
-            title: 'Reached ' + foundCount + ' found',
-            event: true,
-          });
+          stats.track('cottage-found', 'Cottage found (any)');
+          // Progress distribution: how far seekers get (bounded by the cottage
+          // count so the path set stays small).
+          stats.track('progress-' + foundCount, 'Reached ' + foundCount + ' found');
         }
       }
       out.innerHTML = `✨ Magia ożywa… Elf z <strong>${c.title}</strong> chce Ci coś opowiedzieć.`;
@@ -708,6 +767,7 @@
     wireMapZoom();
     wireAudioPlayer();
     wireTrophies();
+    wireRankInvite();
     renderTrophies();   // initial paint of the count pip
     loadCodeHashes();   // independent of the map — failure only blocks code entry
     try {
