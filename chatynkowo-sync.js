@@ -15,11 +15,16 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 /* ====================================================================
-   KONFIGURACJA — wklej dane ze swojego projektu Supabase
-   (Project Settings → API). Oba pola są publiczne z założenia.
+   KONFIGURACJA — wklej dane ze swojego projektu Supabase.
+   Project URL: BAZOWY adres projektu — https://<ref>.supabase.co
+     ⚠️ BEZ końcówki /rest/v1/ ! Klient sam dokleja /auth/v1/, /rest/v1/ itd.
+     (Strona "Data API" pokazuje URL z /rest/v1/ — NIE kopiuj tej końcówki,
+     inaczej logowanie idzie na /rest/v1/… i dostajesz "No API key found".)
+   Klucz: Project Settings → API Keys → Publishable key (sb_publishable_…),
+     następca starego "anon" key. Oba pola są publiczne z założenia.
    ==================================================================== */
-export const SUPABASE_URL      = 'https://YOUR-PROJECT.supabase.co';
-export const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
+export const SUPABASE_URL      = 'https://jxazxxicgfkxqzkmvqeb.supabase.co';
+export const SUPABASE_ANON_KEY = 'sb_publishable_tgbkpVqjlERZ5b3Hm1t2Qg_g5s_nXkI';
 export const TOTAL_COTTAGES    = 25;   // liczba chatynek (data/cottages.json)
 /* ==================================================================== */
 

@@ -194,13 +194,32 @@ only sign in to **appear in the ranking**. On the last cottage the
 1. Sign in at <https://supabase.com> and **New project** (the free tier is enough).
 2. Pick a name, a strong database password (store it in your password manager), and
    a region close to your users (e.g. *West EU*).
-3. Wait for provisioning, then open **Project Settings → API** and copy two values:
-   - **Project URL** — `https://<PROJECT-REF>.supabase.co`
-   - **anon public** key — a long JWT under *Project API keys*.
+3. Wait for provisioning, then collect two values. The quickest way is the
+   **Connect** button at the top of the dashboard — it shows the URL and the keys
+   together. The per-setting locations (the dashboard was reorganised in 2025, so
+   they are no longer on one "API" page) are:
+   - **Project URL** — the **base** URL `https://<PROJECT-REF>.supabase.co`, under
+     **Project Settings → Data API**. (You can also just read `<PROJECT-REF>`
+     straight from the dashboard URL.) It is *no longer* on the API-keys page.
+     > ⚠️ The Data API page prints the URL **with a `/rest/v1/` suffix** (that is
+     > the REST endpoint, not the project URL). Paste the **base** URL only — *do
+     > not* include `/rest/v1/`. With the suffix, Google sign-in is routed to
+     > PostgREST and fails with `{"message":"No API key found in request"}`.
+     Prototype database → `https://jxazxxicgfkxqzkmvqeb.supabase.co` (**no** `/rest/v1/`).
+   - **Publishable key** — `sb_publishable_...`, under
+     **Project Settings → API Keys**, the **API Keys** tab. This is the modern
+     client-side key and the direct replacement for the old `anon` key.
+     `sb_publishable_tgbkpVqjlERZ5b3Hm1t2Qg_g5s_nXkI`
 
-   Both are **public by design** (the `anon` key is meant to ship in the browser);
-   row-level security, configured by the SQL below, is what actually protects data.
-   Do **not** copy the `service_role` key — it must never reach the site.
+   > Older projects also have a **Legacy API Keys** tab with the classic `anon`
+   > JWT (`eyJ...`). It still works and you may paste it instead, but legacy keys
+   > are **deprecated** (scheduled for removal by the end of 2026, and absent from
+   > projects created/restored after 1 Nov 2025), so prefer the publishable key.
+
+   Both the URL and the publishable/`anon` key are **public by design** (the key is
+   meant to ship in the browser); row-level security, configured by the SQL below,
+   is what actually protects data. Do **not** copy the `secret` (`sb_secret_...`)
+   or `service_role` key — it must never reach the site.
 
 ### 2. Create the database schema
 
@@ -257,9 +276,13 @@ top with the values from step 1:
 
 ```js
 export const SUPABASE_URL      = 'https://<PROJECT-REF>.supabase.co';
-export const SUPABASE_ANON_KEY = '<anon public key>';
+export const SUPABASE_ANON_KEY = '<publishable key (sb_publishable_…) or legacy anon key>';
 export const TOTAL_COTTAGES    = 25;   // keep equal to the number of cottages in data/cottages.json
 ```
+
+The constant is still named `SUPABASE_ANON_KEY` for continuity, but it accepts
+either key — `supabase-js` takes the publishable key exactly where the old `anon`
+key went, so paste whichever one step 1 gave you.
 
 Until both placeholders are replaced the module stays **safely disabled**
 (`configured === false`): the ranking page shows *"Ranking nie jest jeszcze
