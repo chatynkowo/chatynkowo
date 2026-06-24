@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Chatynkowo" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata><name>Chatynkowo — pełna trasa turystyczna</name></metadata>
+  <wpt lat="50.14275" lon="19.27416"><name>undefined</name></wpt>
+  <wpt lat="50.278164" lon="19.558636"><name>undefined</name></wpt>
+  <wpt lat="50.307492" lon="19.554178"><name>undefined</name></wpt>
+  <wpt lat="50.3000097" lon="19.592267"><name>undefined</name></wpt>
+  <wpt lat="50.3008" lon="19.5942"><name>undefined</name></wpt>
+  <wpt lat="50.306783" lon="19.616489"><name>undefined</name></wpt>
+  <wpt lat="50.307728" lon="19.619081"><name>undefined</name></wpt>
+  <wpt lat="50.330968" lon="19.598763"><name>undefined</name></wpt>
+  <wpt lat="50.339095" lon="19.593019"><name>undefined</name></wpt>
+  <wpt lat="50.3344711" lon="19.5720617"><name>undefined</name></wpt>
+  <wpt lat="50.335995" lon="19.561836"><name>undefined</name></wpt>
+  <wpt lat="50.33598" lon="19.555542"><name>undefined</name></wpt>
+  <wpt lat="50.340103" lon="19.55149"><name>undefined</name></wpt>
+  <wpt lat="50.361228" lon="19.607387"><name>undefined</name></wpt>
+  <wpt lat="50.387586" lon="19.645313"><name>undefined</name></wpt>
+  <wpt lat="50.33447" lon="19.645387"><name>undefined</name></wpt>
+  <wpt lat="50.3285202" lon="19.6242689"><name>undefined</name></wpt>
+  <wpt lat="50.324119" lon="19.628782"><name>undefined</name></wpt>
+  <wpt lat="50.324143" lon="19.629747"><name>undefined</name></wpt>
+  <wpt lat="50.322672" lon="19.639401"><name>undefined</name></wpt>
+  <wpt lat="50.317941" lon="19.635328"><name>undefined</name></wpt>
+  <wpt lat="50.307355" lon="19.643231"><name>undefined</name></wpt>
+  <wpt lat="50.193972" lon="19.7745"><name>undefined</name></wpt>
+  <wpt lat="50.1748269" lon="19.743247"><name>undefined</name></wpt>
+  <rte>
+    <name>Chatynkowo — pełna trasa turystyczna</name>
+    <rtept lat="50.14275" lon="19.27416"><name>undefined</name></rtept>
+    <rtept lat="50.278164" lon="19.558636"><name>undefined</name></rtept>
+    <rtept lat="50.307492" lon="19.554178"><name>undefined</name></rtept>
+    <rtept lat="50.3000097" lon="19.592267"><name>undefined</name></rtept>
+    <rtept lat="50.3008" lon="19.5942"><name>undefined</name></rtept>
+    <rtept lat="50.306783" lon="19.616489"><name>undefined</name></rtept>
+    <rtept lat="50.307728" lon="19.619081"><name>undefined</name></rtept>
+    <rtept lat="50.330968" lon="19.598763"><name>undefined</name></rtept>
+    <rtept lat="50.339095" lon="19.593019"><name>undefined</name></rtept>
+    <rtept lat="50.3344711" lon="19.5720617"><name>undefined</name></rtept>
+    <rtept lat="50.335995" lon="19.561836"><name>undefined</name></rtept>
+    <rtept lat="50.33598" lon="19.555542"><name>undefined</name></rtept>
+    <rtept lat="50.340103" lon="19.55149"><name>undefined</name></rtept>
+    <rtept lat="50.361228" lon="19.607387"><name>undefined</name></rtept>
+    <rtept lat="50.387586" lon="19.645313"><name>undefined</name></rtept>
+    <rtept lat="50.33447" lon="19.645387"><name>undefined</name></rtept>
+    <rtept lat="50.3285202" lon="19.6242689"><name>undefined</name></rtept>
+    <rtept lat="50.324119" lon="19.628782"><name>undefined</name></rtept>
+    <rtept lat="50.324143" lon="19.629747"><name>undefined</name></rtept>
+    <rtept lat="50.322672" lon="19.639401"><name>undefined</name></rtept>
+    <rtept lat="50.317941" lon="19.635328"><name>undefined</name></rtept>
+    <rtept lat="50.307355" lon="19.643231"><name>undefined</name></rtept>
+    <rtept lat="50.193972" lon="19.7745"><name>undefined</name></rtept>
+    <rtept lat="50.1748269" lon="19.743247"><name>undefined</name></rtept>
+  </rte>
+</gpx>

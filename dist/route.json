@@ -1,0 +1,180 @@
+{
+  "generatedAt": "2026-06-12T17:30:51.547Z",
+  "stopCount": 24,
+  "distanceKm": 79,
+  "gpxPath": "dist/chatynkowo-trasa.gpx",
+  "stages": [
+    {
+      "index": 1,
+      "count": 10,
+      "slugs": [
+        "drwal",
+        "wiktoria",
+        "kira",
+        "iwo",
+        "zofia",
+        "stary-elf",
+        "dwaj-bracia",
+        "zamczysko",
+        "teodor",
+        "elfka-z-duza-d"
+      ],
+      "google": "https://www.google.com/maps/dir/?api=1&origin=50.14275,19.27416&destination=50.3344711,19.5720617&travelmode=walking&waypoints=50.278164%2C19.558636%7C50.307492%2C19.554178%7C50.3000097%2C19.592267%7C50.3008%2C19.5942%7C50.306783%2C19.616489%7C50.307728%2C19.619081%7C50.330968%2C19.598763%7C50.339095%2C19.593019",
+      "mapy": "https://mapy.com/fnc/v1/route?mapset=outdoor&start=19.27416,50.14275&end=19.5720617,50.3344711&routeType=foot_hiking&waypoints=19.558636,50.278164;19.554178,50.307492;19.592267,50.3000097;19.5942,50.3008;19.616489,50.306783;19.619081,50.307728;19.598763,50.330968;19.593019,50.339095"
+    },
+    {
+      "index": 2,
+      "count": 10,
+      "slugs": [
+        "elfka-z-duza-d",
+        "gwerda-filinek",
+        "czubata-myszka",
+        "zielonowlosy",
+        "12345",
+        "straznik-zamku",
+        "wawrzyniec",
+        "pazurek",
+        "samotny",
+        "skalne-iglice"
+      ],
+      "google": "https://www.google.com/maps/dir/?api=1&origin=50.3344711,19.5720617&destination=50.324143,19.629747&travelmode=walking&waypoints=50.335995%2C19.561836%7C50.33598%2C19.555542%7C50.340103%2C19.55149%7C50.361228%2C19.607387%7C50.387586%2C19.645313%7C50.33447%2C19.645387%7C50.3285202%2C19.6242689%7C50.324119%2C19.628782",
+      "mapy": "https://mapy.com/fnc/v1/route?mapset=outdoor&start=19.5720617,50.3344711&end=19.629747,50.324143&routeType=foot_hiking&waypoints=19.561836,50.335995;19.555542,50.33598;19.55149,50.340103;19.607387,50.361228;19.645313,50.387586;19.645387,50.33447;19.6242689,50.3285202;19.628782,50.324119"
+    },
+    {
+      "index": 3,
+      "count": 6,
+      "slugs": [
+        "skalne-iglice",
+        "ogrodniczki",
+        "zaprasza",
+        "tupak",
+        "fredek",
+        "alex"
+      ],
+      "google": "https://www.google.com/maps/dir/?api=1&origin=50.324143,19.629747&destination=50.1748269,19.743247&travelmode=walking&waypoints=50.322672%2C19.639401%7C50.317941%2C19.635328%7C50.307355%2C19.643231%7C50.193972%2C19.7745",
+      "mapy": "https://mapy.com/fnc/v1/route?mapset=outdoor&start=19.629747,50.324143&end=19.743247,50.1748269&routeType=foot_hiking&waypoints=19.639401,50.322672;19.635328,50.317941;19.643231,50.307355;19.7745,50.193972"
+    }
+  ],
+  "stops": [
+    {
+      "slug": "drwal",
+      "lat": 50.14275,
+      "lng": 19.27416
+    },
+    {
+      "slug": "wiktoria",
+      "lat": 50.278164,
+      "lng": 19.558636
+    },
+    {
+      "slug": "kira",
+      "lat": 50.307492,
+      "lng": 19.554178
+    },
+    {
+      "slug": "iwo",
+      "lat": 50.3000097,
+      "lng": 19.592267
+    },
+    {
+      "slug": "zofia",
+      "lat": 50.3008,
+      "lng": 19.5942
+    },
+    {
+      "slug": "stary-elf",
+      "lat": 50.306783,
+      "lng": 19.616489
+    },
+    {
+      "slug": "dwaj-bracia",
+      "lat": 50.307728,
+      "lng": 19.619081
+    },
+    {
+      "slug": "zamczysko",
+      "lat": 50.330968,
+      "lng": 19.598763
+    },
+    {
+      "slug": "teodor",
+      "lat": 50.339095,
+      "lng": 19.593019
+    },
+    {
+      "slug": "elfka-z-duza-d",
+      "lat": 50.3344711,
+      "lng": 19.5720617
+    },
+    {
+      "slug": "gwerda-filinek",
+      "lat": 50.335995,
+      "lng": 19.561836
+    },
+    {
+      "slug": "czubata-myszka",
+      "lat": 50.33598,
+      "lng": 19.555542
+    },
+    {
+      "slug": "zielonowlosy",
+      "lat": 50.340103,
+      "lng": 19.55149
+    },
+    {
+      "slug": "12345",
+      "lat": 50.361228,
+      "lng": 19.607387
+    },
+    {
+      "slug": "straznik-zamku",
+      "lat": 50.387586,
+      "lng": 19.645313
+    },
+    {
+      "slug": "wawrzyniec",
+      "lat": 50.33447,
+      "lng": 19.645387
+    },
+    {
+      "slug": "pazurek",
+      "lat": 50.3285202,
+      "lng": 19.6242689
+    },
+    {
+      "slug": "samotny",
+      "lat": 50.324119,
+      "lng": 19.628782
+    },
+    {
+      "slug": "skalne-iglice",
+      "lat": 50.324143,
+      "lng": 19.629747
+    },
+    {
+      "slug": "ogrodniczki",
+      "lat": 50.322672,
+      "lng": 19.639401
+    },
+    {
+      "slug": "zaprasza",
+      "lat": 50.317941,
+      "lng": 19.635328
+    },
+    {
+      "slug": "tupak",
+      "lat": 50.307355,
+      "lng": 19.643231
+    },
+    {
+      "slug": "fredek",
+      "lat": 50.193972,
+      "lng": 19.7745
+    },
+    {
+      "slug": "alex",
+      "lat": 50.1748269,
+      "lng": 19.743247
+    }
+  ]
+}
