@@ -67,16 +67,34 @@
     },
   };
 
-  /* Badge registry. Future tickets will fill this in with image paths,
-     human-readable names, and the rules that trigger an award. The
-     awarding logic should call persist.awardBadge(id, ...). */
+  /* Badge registry — nagrody za postęp w odkrywaniu Chatynek.
+     `threshold` to liczba odkrytych Chatynek wymagana do zdobycia odznaki;
+     `final: true` oznacza komplet (próg = łączna liczba Chatynek, liczona
+     dynamicznie w main.js, więc działa nawet gdy liczba się zmieni) i odblokowuje
+     drogę do Rankingu Zdobywców. `image` jest opcjonalny — bez niego renderer
+     pokazuje gwiazdkę (★); pliki można dorzucić później do assets/img/badges/.
+     Award logic (main.js) woła persist.awardBadge(id, …) gdy próg osiągnięty. */
   const BADGES = {
-    // Example shape (uncomment/extend as definitions arrive):
-    // 'first-find': {
-    //   name: 'Pierwsza Chatynka',
-    //   description: 'Odkryto pierwszą Chatynkę.',
-    //   image: 'assets/img/badges/first-find.png',
-    // },
+    'first-find': {
+      name: 'Pierwsza Chatynka',
+      description: 'Odkryto pierwszą Chatynkę.',
+      threshold: 1,
+    },
+    'tropiciel': {
+      name: 'Tropiciel',
+      description: 'Odkryto 5 Chatynek.',
+      threshold: 5,
+    },
+    'polowa-drogi': {
+      name: 'Połowa drogi',
+      description: 'Odkryto połowę wszystkich Chatynek.',
+      threshold: 13,
+    },
+    'mistrz-chatynkowa': {
+      name: 'Mistrz Chatynkowa',
+      description: 'Odkryto wszystkie Chatynki! Czas trafić do Rankingu Zdobywców.',
+      final: true,
+    },
   };
 
   // Expose for main.js and for browser-console debugging. Use Object.assign

@@ -1,0 +1,180 @@
+/* ---------- Chatynkowo — Ranking Zdobywców ----------
+   Korzysta z tokenów motywu zdefiniowanych w style.css (:root --parchment,
+   --gold, --ink, --forest-bg …) oraz z bazowych klas .modal / .stars. */
+
+.rank-page {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--parchment);
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(199,154,75,.18), transparent 60%),
+    linear-gradient(180deg, #14211a 0%, var(--forest-bg) 45%, #0f1813 100%);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+/* ---------- Hero ---------- */
+.rank-hero {
+  position: relative;
+  text-align: center;
+  padding: 2.4rem 1rem 1.4rem;
+  z-index: 1;
+}
+.rank-back {
+  position: absolute;
+  left: 1rem; top: 1rem;
+  font-size: 1.05rem;
+  color: var(--mist);
+}
+.rank-back:hover { color: var(--gold); }
+.rank-hero__mark { width: 64px; height: auto; margin: 0 auto .4rem; display: block; filter: drop-shadow(0 4px 10px rgba(0,0,0,.5)); }
+.rank-hero__title {
+  font-family: 'Cinzel Decorative', serif;
+  font-weight: 900;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  color: var(--gold);
+  margin: .2rem 0;
+  text-shadow: 0 2px 14px rgba(0,0,0,.5);
+}
+.rank-hero__lede { color: var(--mist); max-width: 40ch; margin: .2rem auto 1.2rem; font-size: 1.1rem; }
+
+/* ---------- Account bar ---------- */
+.rank-account {
+  display: flex; flex-wrap: wrap; gap: .6rem;
+  align-items: center; justify-content: center;
+  min-height: 2.6rem;
+}
+.rank-account__actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.rank-hello { color: var(--parchment); font-size: 1.05rem; }
+.rank-note { color: var(--mist); font-style: italic; }
+
+.rank-btn {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: .82rem; letter-spacing: .02em;
+  padding: .5rem .9rem;
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  background: rgba(199,154,75,.12);
+  color: var(--parchment);
+  cursor: pointer;
+  transition: background .2s, transform .1s, box-shadow .2s;
+}
+.rank-btn:hover { background: rgba(199,154,75,.28); }
+.rank-btn:active { transform: translateY(1px); }
+.rank-btn--primary {
+  background: linear-gradient(180deg, #e9c873, var(--gold));
+  color: #2a1c08; border-color: #f0d894; font-weight: 700;
+  box-shadow: 0 6px 18px rgba(199,154,75,.35);
+}
+.rank-btn--ghost { border-color: rgba(217,207,168,.4); background: transparent; color: var(--mist); }
+.rank-btn--fb {
+  background: #1877f2; border-color: #1877f2; color: #fff;
+  font-weight: 900; width: 2.2rem; padding: .5rem 0; text-align: center;
+}
+.rank-toast {
+  display: inline-block; margin-left: .4rem;
+  background: var(--moss-dark); color: var(--parchment);
+  padding: .35rem .7rem; border-radius: 8px; font-size: .9rem;
+}
+
+/* ---------- Main ---------- */
+.rank-main { max-width: 760px; margin: 0 auto; padding: 1rem 1rem 3rem; position: relative; z-index: 1; }
+
+/* ---------- Podium ---------- */
+.podium {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
+  align-items: end;
+  gap: .7rem;
+  margin: 1rem auto 2.2rem;
+}
+.podium__card {
+  position: relative;
+  text-align: center;
+  background: linear-gradient(180deg, var(--parchment), var(--parchment-2));
+  color: var(--ink);
+  border: 1px solid rgba(58,35,8,.25);
+  border-radius: 16px 16px 6px 6px;
+  padding: .9rem .5rem .5rem;
+  box-shadow: var(--shadow);
+}
+.podium__card--p1 { transform: translateY(-18px); border-color: var(--gold); box-shadow: 0 12px 28px rgba(199,154,75,.45); }
+.podium__card--mine { outline: 3px solid var(--ember); outline-offset: 2px; }
+.podium__medal { font-size: 1.8rem; line-height: 1; }
+.podium__card--p1 .podium__medal { font-size: 2.3rem; }
+.podium__name { font-family: 'Cinzel Decorative', serif; font-weight: 700; font-size: .95rem; margin-top: .3rem; word-break: break-word; }
+.podium__found { font-size: 1.25rem; font-weight: 700; color: var(--ink-soft); }
+.podium__metric { font-size: .9rem; min-height: 1.2em; }
+.podium__base {
+  margin: .5rem -0.5rem -0.5rem; padding: .35rem;
+  background: var(--moss-dark); color: var(--gold);
+  font-family: 'Cinzel Decorative', serif; font-weight: 900; font-size: 1.1rem;
+  border-radius: 0 0 6px 6px;
+}
+.podium__card .rank-ava, .podium__card .rank-ava--initials {
+  width: 54px; height: 54px; margin: .3rem auto 0;
+}
+
+/* ---------- List ---------- */
+.rank-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+.rank-row {
+  display: grid;
+  grid-template-columns: 2.2rem 44px 1fr auto auto;
+  align-items: center; gap: .7rem;
+  background: linear-gradient(180deg, var(--parchment), var(--parchment-2));
+  color: var(--ink);
+  border: 1px solid rgba(58,35,8,.18);
+  border-radius: 12px;
+  padding: .55rem .8rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,.18);
+}
+.rank-row--done { border-left: 4px solid var(--gold); }
+.rank-row--mine {
+  outline: 3px solid var(--ember); outline-offset: 1px;
+  background: linear-gradient(180deg, #fff3d6, #f0dcae);
+}
+.rank-pos { font-family: 'Cinzel Decorative', serif; font-weight: 900; font-size: 1.1rem; color: var(--ink-soft); text-align: center; }
+.rank-name { font-size: 1.15rem; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank-you { color: var(--ember); font-style: italic; font-size: .9em; }
+.rank-count { font-size: 1.15rem; font-weight: 700; white-space: nowrap; }
+.rank-count small { color: var(--ink-soft); font-weight: 400; }
+.rank-meta { min-width: 92px; text-align: right; }
+.rank-metric--time { font-weight: 700; color: var(--moss-dark); white-space: nowrap; }
+
+/* Avatar */
+.rank-ava {
+  width: 44px; height: 44px; border-radius: 50%;
+  object-fit: cover; border: 2px solid var(--gold);
+  display: grid; place-items: center;
+  background: var(--moss); color: var(--parchment);
+  font-family: 'Cinzel Decorative', serif; font-weight: 700; font-size: 1rem;
+}
+.rank-ava--initials { background: linear-gradient(180deg, var(--moss), var(--moss-dark)); }
+
+/* Progress bar (dla niedokończonych) */
+.rank-progress {
+  display: inline-block; width: 90px; height: 8px;
+  background: rgba(58,35,8,.18); border-radius: 999px; overflow: hidden; vertical-align: middle;
+}
+.rank-progress__bar { display: block; height: 100%; background: linear-gradient(90deg, var(--moss), var(--gold)); }
+
+.rank-status { text-align: center; color: var(--mist); font-style: italic; margin-top: 1.2rem; }
+
+.rank-foot { text-align: center; color: var(--mist); padding: 1.4rem 1rem 2.4rem; position: relative; z-index: 1; }
+.rank-foot a { color: var(--gold); }
+
+/* ---------- Profile editor ---------- */
+.profile-field { display: block; margin: 1rem 0 .4rem; }
+.profile-field span { display: block; margin-bottom: .3rem; color: var(--ink-soft); font-weight: 600; }
+.profile-field input[type="text"] {
+  width: 100%; box-sizing: border-box; padding: .6rem .7rem;
+  border: 1px solid var(--gold); border-radius: 10px;
+  font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; background: #fffaf0; color: var(--ink);
+}
+.profile-check { display: flex; align-items: center; gap: .5rem; margin: .8rem 0 1.2rem; color: var(--ink); }
+
+@media (max-width: 540px) {
+  .rank-row { grid-template-columns: 1.8rem 38px 1fr auto; }
+  .rank-row .rank-meta { grid-column: 2 / -1; text-align: left; padding-left: .2rem; }
+  .podium { gap: .4rem; }
+  .podium__name { font-size: .82rem; }
+}

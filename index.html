@@ -53,6 +53,12 @@
                 <span class="hub__cap">Mam kod</span>
               </button>
             </li>
+            <li>
+              <a class="hub__btn" href="ranking.html">
+                <span class="hub__icon" aria-hidden="true">🏆</span>
+                <span class="hub__cap">Ranking</span>
+              </a>
+            </li>
           </ul>
         </nav>
       </div>
@@ -217,8 +223,27 @@
         kolekcjonować odznaki.
       </p>
       <ul class="trophy-grid" id="trophyGrid" hidden></ul>
+      <!-- Pojawia się po zdobyciu odznaki "Mistrz Chatynkowa" (komplet). -->
+      <a class="trophy-cta" id="trophyRankingCta" href="ranking.html" hidden>
+        🏆 Zobacz Ranking Zdobywców — pochwal się znajomym!
+      </a>
     </article>
   </dialog>
+
+  <!-- Zaproszenie do Rankingu po zebraniu kompletu Chatynek (pokazywane przez main.js). -->
+  <div class="rank-invite" id="rankInvite" role="dialog"
+       aria-label="Gratulacje — komplet Chatynek" hidden>
+    <button class="rank-invite__close" id="rankInviteClose" type="button" aria-label="Zamknij">×</button>
+    <p class="rank-invite__title">Gratulacje! Odkryłeś wszystkie Chatynki 🎉</p>
+    <p class="rank-invite__lead">
+      Zdobyłeś odznakę <strong>Mistrz Chatynkowa</strong>. Zaloguj się przez Google,
+      by trafić do <strong>Rankingu Zdobywców</strong> i pochwalić się znajomym.
+    </p>
+    <div class="rank-invite__actions">
+      <button class="rank-invite__btn rank-invite__btn--primary" id="rankInviteLogin" type="button">Zaloguj przez Google</button>
+      <a class="rank-invite__btn" id="rankInviteView" href="ranking.html">Zobacz ranking</a>
+    </div>
+  </div>
 
   <!-- Full-size map zoom (opened by clicking the map outside any pin) -->
   <dialog class="map-zoom" id="mapZoom" aria-label="Powiększona mapa Chatynkowa">
@@ -291,7 +316,15 @@
   <!-- App data store + badge registry. Must load BEFORE main.js so the
        window.chatynkowo namespace is ready when main.js runs. -->
   <script src="app_logic.js" defer></script>
+  <!-- Durable analytics queue (window.chatynkowoStats). Before main.js so the
+       queue is ready at the first find; delivers cottage-found events even when
+       the seeker was offline in the field. See analytics.js. -->
+  <script src="analytics.js" defer></script>
   <script src="main.js" defer></script>
+  <!-- Ranking sync (Supabase + logowanie Google). ES module, ładowany po main.js,
+       by nie blokować startu strony na pobieraniu klienta z CDN. Wystawia
+       window.chatynkowoSync; potrzebne dopiero przy znalezisku/kliknięciu. -->
+  <script type="module" src="chatynkowo-sync.js"></script>
 
   <!-- Cookieless, IP-not-stored visit counter (GoatCounter). Public pages
        only — never add this to /admin/. See legal/polityka-prywatnosci.html §4. -->

@@ -157,3 +157,153 @@ WebP encoder. Install it if missing: `sudo apt-get install webp` (Debian/Ubuntu)
 or `brew install webp` (macOS). The GitHub Pages deploy
 ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)) runs this step too,
 so the live map is always rebuilt from the pin-less source before publishing.
+
+## Ranking Zdobywców (Supabase + logowanie Google)
+
+The Ranking page ([`ranking.html`](ranking.html)) is a public leaderboard of
+seekers: how many Chatynki each person found and — for those who collected the
+full set — how long the whole hunt took (fastest full completion on top, seekers
+still in progress below, sorted by count). A leaderboard needs shared, writable
+storage, which a static GitHub Pages site doesn't have. We get it from a fully
+**managed, free backend — no server of our own to run**:
+
+- **Supabase** (hosted Postgres + Auth) stores the entries and serves the public,
+  aggregated leaderboard.
+- **Sign in with Google** (through Supabase Auth) identifies each seeker by their
+  Google account, so the same person ranks consistently across devices.
+
+The seeker keeps playing anonymously (progress in `localStorage` as before); they
+only sign in to **appear in the ranking**. On the last cottage the
+`mistrz-chatynkowa` badge is awarded and a banner invites them to sign in and share.
+
+> **Set-up is a one-time job**, but the steps below are written to be **repeatable**:
+> every step is idempotent or has a verification, so you can re-run any of them if
+> something breaks later. Work top to bottom the first time.
+
+### Files involved
+
+| File | Role |
+|---|---|
+| [`private/supabase/ranking.sql`](private/supabase/ranking.sql) | DB schema: `profiles` + `finds` tables, RLS policies, and the public `leaderboard()` function. **Idempotent** — safe to re-run. |
+| [`chatynkowo-sync.js`](chatynkowo-sync.js) | Supabase client + Google sign-in + progress sync. **The three config constants live at the very top of this file.** |
+| [`ranking.html`](ranking.html) / [`ranking.js`](ranking.js) / [`ranking.css`](ranking.css) | the public ranking page (podium, list, share button, profile editor). |
+| `BADGES` in [`app_logic.js`](app_logic.js) | reward badges; the final `mistrz-chatynkowa` (full set) unlocks the ranking invite. |
+
+### 1. Create the Supabase project
+
+1. Sign in at <https://supabase.com> and **New project** (the free tier is enough).
+2. Pick a name, a strong database password (store it in your password manager), and
+   a region close to your users (e.g. *West EU*).
+3. Wait for provisioning, then open **Project Settings → API** and copy two values:
+   - **Project URL** — `https://<PROJECT-REF>.supabase.co`
+   - **anon public** key — a long JWT under *Project API keys*.
+
+   Both are **public by design** (the `anon` key is meant to ship in the browser);
+   row-level security, configured by the SQL below, is what actually protects data.
+   Do **not** copy the `service_role` key — it must never reach the site.
+
+### 2. Create the database schema
+
+1. In Supabase open **SQL Editor → New query**.
+2. Paste the entire contents of [`private/supabase/ranking.sql`](private/supabase/ranking.sql) and
+   click **Run**.
+3. Verify: **Table Editor** now shows `profiles` and `finds`, and
+   **Database → Functions** lists `leaderboard`.
+
+The script can be pasted again at any time without data loss — it uses
+`create table if not exists`, `create or replace function`, and
+`drop policy if exists` before each `create policy`.
+
+### 3. Create a Google OAuth client
+
+This gives Google the right to issue logins for our app. The redirect lands on
+**Supabase's** callback (not our site) — that is the single most common point of
+confusion, so note it carefully.
+
+1. Go to <https://console.cloud.google.com> → create/select a project.
+2. **APIs & Services → OAuth consent screen**: choose **External**, fill in app
+   name, support email and developer email. While testing you can leave it in
+   *Testing* and add your own Google address under **Test users**; to let *anyone*
+   log in, click **Publish app** (move to *Production*).
+3. **APIs & Services → Credentials → Create credentials → OAuth client ID**:
+   - **Application type:** *Web application*.
+   - **Authorized redirect URIs:** add **exactly** the Supabase callback —
+     `https://<PROJECT-REF>.supabase.co/auth/v1/callback`
+     (Supabase also shows this exact URL on the Google provider screen in step 4 —
+     copy it from there to avoid typos).
+   - Create, then copy the **Client ID** and **Client secret**.
+
+### 4. Enable the Google provider in Supabase
+
+1. Supabase → **Authentication → Providers → Google**.
+2. Toggle **Enable**, paste the **Client ID** and **Client secret** from step 3, save.
+3. The page shows the **callback URL** it expects — confirm it matches the redirect
+   URI you set in Google Cloud (step 3). They must be identical.
+
+### 5. Set the allowed site / redirect URLs
+
+Supabase only completes a login if it returns to an allow-listed URL.
+
+1. Supabase → **Authentication → URL Configuration**.
+2. **Site URL:** `https://www.chatynkowo.pl`
+3. **Redirect URLs:** add both the live site and local dev, e.g.
+   - `https://www.chatynkowo.pl/**`
+   - `http://localhost:8000/**`
+
+### 6. Wire the keys into the site
+
+Open [`chatynkowo-sync.js`](chatynkowo-sync.js) and replace the placeholders at the
+top with the values from step 1:
+
+```js
+export const SUPABASE_URL      = 'https://<PROJECT-REF>.supabase.co';
+export const SUPABASE_ANON_KEY = '<anon public key>';
+export const TOTAL_COTTAGES    = 25;   // keep equal to the number of cottages in data/cottages.json
+```
+
+Until both placeholders are replaced the module stays **safely disabled**
+(`configured === false`): the ranking page shows *"Ranking nie jest jeszcze
+skonfigurowany"* and nothing on the main site breaks.
+
+> `TOTAL_COTTAGES` must match the count in [`data/cottages.json`](data/cottages.json)
+> (currently **25**). It decides when the full-set badge and the completion time
+> kick in. If you add or remove cottages, update this number.
+
+### 7. Deploy and test
+
+1. Commit and push — the Pages workflow publishes the new files automatically.
+2. Open `https://www.chatynkowo.pl/ranking.html`, click **Zaloguj przez Google**,
+   complete the Google consent, and confirm you return signed in.
+3. On the main site enter a few valid codes; on the ranking page your row appears
+   with the right count. Enter all of them to see the completion time and the
+   *Mistrz Chatynkowa* badge + ranking invite.
+4. **Local test:** `python3 -m http.server 8000` then open
+   `http://localhost:8000/ranking.html` (works only if `http://localhost:8000/**`
+   is in the Redirect URLs from step 5).
+
+### Privacy (RODO)
+
+The public name defaults to the seeker's Google **first name** and can be changed
+to any pseudonym in the on-page profile editor. The Google **profile photo is
+opt-in** — hidden until the seeker ticks *"Pokaż moje zdjęcie z konta Google"*.
+The share link uses a random `public_id`, never the Google account id.
+
+### Troubleshooting (repeatable checks)
+
+| Symptom | Cause / fix |
+|---|---|
+| Page says *"Ranking nie jest jeszcze skonfigurowany"* | Placeholders in `chatynkowo-sync.js` not replaced — redo **step 6**. |
+| Google error `redirect_uri_mismatch` | The Authorized redirect URI in Google Cloud must be **exactly** `https://<ref>.supabase.co/auth/v1/callback` — redo **step 3/4**. |
+| Login succeeds but you come back logged out / *"requested path is invalid"* | The return URL isn't allow-listed — add it in **step 5** (don't forget `localhost` for local tests). |
+| Google blocks login / only some accounts work | OAuth consent screen still in *Testing* — add the address as a test user, or **Publish app** (step 2). |
+| Leaderboard empty after completing | Progress only syncs while signed in — open `/ranking.html` once logged in (the completion banner's button does exactly this). |
+| Need to reset / re-apply the schema | Re-paste [`private/supabase/ranking.sql`](private/supabase/ranking.sql) in the SQL Editor — it's idempotent. |
+
+### Optional: personalised share image
+
+When a link is pasted on Facebook, the preview thumbnail is **the same for everyone**
+(the crawler reads raw HTML and doesn't run JS, so the per-seeker highlight from
+`?me=` only appears after opening the link). A thumbnail that shows the seeker's own
+result would need a server-rendered Open Graph image — a small **Supabase Edge
+Function** returning a per-`public_id` PNG/SVG, referenced from `og:image`. Not
+required for the ranking to work; add it only if a personalised FB card matters.
