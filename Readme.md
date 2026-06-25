@@ -161,9 +161,11 @@ so the live map is always rebuilt from the pin-less source before publishing.
 ## Ranking Zdobywców (Supabase + logowanie Google)
 
 The Ranking page ([`ranking.html`](ranking.html)) is a public leaderboard of
-seekers: how many Chatynki each person found and — for those who collected the
-full set — how long the whole hunt took (fastest full completion on top, seekers
-still in progress below, sorted by count). A leaderboard needs shared, writable
+seekers: how many Chatynki each person found and the **total time from their first
+to their most recently discovered cottage** (`elapsed_seconds`), shown for everyone
+— for those who collected the full set that equals the full-hunt time. Order:
+fastest full completion on top, seekers still in progress below sorted by count
+(then by faster pace). A leaderboard needs shared, writable
 storage, which a static GitHub Pages site doesn't have. We get it from a fully
 **managed, free backend — no server of our own to run**:
 

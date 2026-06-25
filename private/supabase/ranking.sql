@@ -49,7 +49,10 @@ create policy "finds_delete_own" on public.finds for delete using (auth.uid() = 
 --  security definer → omija RLS, ale ZWRACA TYLKO bezpieczne, zagregowane
 --  pola (pseudonim, avatar, liczba, czas). Sortowanie: ukończeni (25/25)
 --  najpierw, wg najkrótszego czasu; niżej zbierający wg liczby chatynek.
---  Czas ukończenia = (ostatnie - pierwsze znalezisko) w sekundach.
+--  elapsed_seconds = (ostatnia - pierwsza znaleziona) w sekundach, liczony dla
+--  KAŻDEGO gracza (dla ukończonych = czas zebrania kompletu).
+-- Sygnatura (kolumny OUT) się zmienia, więc najpierw DROP — całość zostaje idempotentna.
+drop function if exists public.leaderboard(int);
 create or replace function public.leaderboard(p_total int default 25)
 returns table (
   public_id          text,
@@ -57,7 +60,7 @@ returns table (
   avatar_url         text,
   found              int,
   completed          boolean,
-  completion_seconds bigint,
+  elapsed_seconds    bigint,
   first_found        timestamptz,
   last_found         timestamptz
 )
@@ -72,9 +75,8 @@ as $$
     pr.avatar_url,
     count(f.slug)::int                                   as found,
     (count(f.slug) >= p_total)                           as completed,
-    case when count(f.slug) >= p_total
-         then extract(epoch from (max(f.found_at) - min(f.found_at)))::bigint
-         else null end                                   as completion_seconds,
+    extract(epoch from (max(f.found_at) - min(f.found_at)))::bigint
+                                                         as elapsed_seconds,
     min(f.found_at)                                       as first_found,
     max(f.found_at)                                       as last_found
   from public.profiles pr
@@ -86,7 +88,8 @@ as $$
     case when count(f.slug) >= p_total                    -- 2) najszybszy komplet
          then extract(epoch from (max(f.found_at) - min(f.found_at))) end asc nulls last,
     count(f.slug) desc,                                   -- 3) niżej: wg liczby
-    min(f.found_at) asc;                                  -- 4) remis: kto wcześniej zaczął
+    extract(epoch from (max(f.found_at) - min(f.found_at))) asc,  -- 4) szybsze tempo wyżej
+    min(f.found_at) asc;                                  -- 5) remis: kto wcześniej zaczął
 $$;
 
 -- Publiczny odczyt rankingu kluczem anon (i dla zalogowanych); blokujemy domyślny grant dla public.

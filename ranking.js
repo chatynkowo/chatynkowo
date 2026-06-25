@@ -46,14 +46,20 @@ function avatarHtml(row) {
   return `<span class="rank-ava rank-ava--initials" aria-hidden="true">${escapeHtml(initials(row.display_name))}</span>`;
 }
 
+/* Czas całkowity od pierwszej do ostatnio odkrytej chatki — pokazywany dla
+   KAŻDEGO gracza (dla ukończonych = czas zebrania kompletu). Przy 1 chatce
+   nie ma jeszcze rozpiętości, więc pokazujemy „—”. */
 function metricHtml(row) {
-  if (row.completed) {
-    return `<span class="rank-metric rank-metric--time" title="Czas zebrania kompletu">⏱ ${escapeHtml(formatDuration(row.completion_seconds))}</span>`;
+  const sec = Number(row.elapsed_seconds);   // bigint bywa zwracany jako string
+  if (!row.found || row.found < 2 || !sec) {
+    return `<span class="rank-metric rank-metric--time rank-metric--partial" title="Czas naliczany od drugiej chatki">⏱ —</span>`;
   }
-  const pct = Math.round((row.found / TOTAL_COTTAGES) * 100);
-  return `<span class="rank-progress" role="img" aria-label="Postęp ${pct}%">
-            <span class="rank-progress__bar" style="width:${pct}%"></span>
-          </span>`;
+  const t = escapeHtml(formatDuration(sec));
+  const label = row.completed
+    ? 'Czas zebrania kompletu (1. → ostatnia chatka)'
+    : 'Czas od 1. do ostatnio znalezionej chatki';
+  const cls = row.completed ? 'rank-metric--time' : 'rank-metric--time rank-metric--partial';
+  return `<span class="rank-metric ${cls}" title="${label}">⏱ ${t}</span>`;
 }
 
 /* ---------- render ---------- */
