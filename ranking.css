@@ -35,7 +35,8 @@
   margin: .2rem 0;
   text-shadow: 0 2px 14px rgba(0,0,0,.5);
 }
-.rank-hero__lede { color: var(--mist); max-width: 40ch; margin: .2rem auto 1.2rem; font-size: 1.1rem; }
+.rank-hero__lede { color: var(--mist); max-width: 44ch; margin: .2rem auto 1.2rem; font-size: 1.1rem; }
+.rank-hero__note { font-size: .92rem; color: var(--gold); opacity: .9; }
 
 /* ---------- Account bar ---------- */
 .rank-account {
@@ -139,6 +140,7 @@
 .rank-count small { color: var(--ink-soft); font-weight: 400; }
 .rank-meta { min-width: 92px; text-align: right; }
 .rank-metric--time { font-weight: 700; color: var(--moss-dark); white-space: nowrap; }
+.rank-metric--partial { font-weight: 600; color: var(--ink-soft); }   /* czas „w toku" (jeszcze nie komplet) */
 
 /* Avatar */
 .rank-ava {
