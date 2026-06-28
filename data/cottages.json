@@ -23,5 +23,6 @@
   { "slug": "ogrodniczki",    "lat": 50.316118,  "lng": 19.628693,  "mapX": 77.48, "mapY": 54.32 },
   { "slug": "drwal",          "lat": 50.240968,  "lng": 19.461557,  "mapX": 20,    "mapY": 28.93 },
   { "slug": "kira",           "lat": 50.30782,   "lng": 19.554764,  "mapX": 43.25, "mapY": 50.29 },
-  { "slug": "minizoo",        "lat": 50.225208,  "lng": 19.730573,  "mapX": 73.09, "mapY": 41.99 }
+  { "slug": "minizoo",        "lat": 50.225208,  "lng": 19.730573,  "mapX": 73.09, "mapY": 41.99 },
+  { "slug": "mrok",           "lat": 50.32,      "lng": 19.6,       "mapX": 50,    "mapY": 50 }
 ]
