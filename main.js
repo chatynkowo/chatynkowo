@@ -638,7 +638,9 @@
     const newly = [];
     for (const [id, def] of Object.entries(BADGES)) {
       const need = def.final ? total : def.threshold;
-      if (typeof need === 'number' && foundCount >= need && !persist.hasBadge(id)) {
+      // need > 0 guards the final badge when the cottage total is unknown
+      // (e.g. data failed to load) — never award "all found" against total 0.
+      if (typeof need === 'number' && need > 0 && foundCount >= need && !persist.hasBadge(id)) {
         if (persist.awardBadge(id, { name: def.name })) newly.push(id);
       }
     }
@@ -773,6 +775,15 @@
     try {
       await loadCottages();
       drawCottages();
+      // Back-fill reward badges "after the fact" for cottages already saved in
+      // localStorage (discovered before this feature shipped, or on another
+      // device): award every badge whose threshold the saved progress already
+      // meets. awardBadge() is one-shot, so this is idempotent and runs
+      // SILENTLY on load — no completion banner here (that fires only on a fresh
+      // find). The Skarbiec CTA + nav still lead a past-completer to the ranking.
+      if (awardProgressBadges(persist.foundSlugs().length, state.cottages.length).length) {
+        renderTrophies();
+      }
     } catch (err) {
       console.error('[Chatynkowo] init failed', err);
       const host = document.getElementById('mapHotspots');
