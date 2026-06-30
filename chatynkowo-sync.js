@@ -1,32 +1,50 @@
 /* ---------- Chatynkowo — Ranking sync (Supabase + Google) ----------
-   Wspólny moduł dla strony głównej (main.js woła go przez window.chatynkowoSync)
-   i strony rankingu (ranking.js importuje funkcje wprost).
+   Shared module for the main page (main.js calls it via window.chatynkowoSync)
+   and the ranking page (ranking.js imports the functions directly).
 
-   Logowanie kontem Google realizuje Supabase Auth (provider Google). Gra dalej
-   działa anonimowo (localStorage); logujesz się dopiero, by trafić do rankingu.
-   Przy logowaniu znaleziska z localStorage są wysyłane na serwer z PRAWDZIWYMI
-   datami foundAt, więc czas ukończenia jest realny i synchronizuje się między
-   urządzeniami.
+   Google sign-in is handled by Supabase Auth (Google provider). Play stays
+   anonymous (localStorage); you only sign in to appear in the ranking. On
+   sign-in, the localStorage finds are pushed to the server with their REAL
+   foundAt dates, so the completion time is genuine and syncs across devices.
 
-   Konfiguracja: uzupełnij trzy stałe poniżej (patrz Readme.md → "Ranking
-   Zdobywców — konfiguracja Supabase"). Bez nich moduł jest bezpiecznie
-   wyłączony (supabase === null) i nic nie psuje. */
+   Config: fill in the two constants below (see Readme.md → "Ranking Zdobywców —
+   Supabase configuration"). Without them the module is safely disabled
+   (supabase === null) and nothing breaks. */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 /* ====================================================================
-   KONFIGURACJA — wklej dane ze swojego projektu Supabase.
-   Project URL: BAZOWY adres projektu — https://<ref>.supabase.co
-     ⚠️ BEZ końcówki /rest/v1/ ! Klient sam dokleja /auth/v1/, /rest/v1/ itd.
-     (Strona "Data API" pokazuje URL z /rest/v1/ — NIE kopiuj tej końcówki,
-     inaczej logowanie idzie na /rest/v1/… i dostajesz "No API key found".)
-   Klucz: Project Settings → API Keys → Publishable key (sb_publishable_…),
-     następca starego "anon" key. Oba pola są publiczne z założenia.
+   CONFIG — paste the values from your Supabase project.
+   Project URL: the BASE project URL — https://<ref>.supabase.co
+     ⚠️ WITHOUT the /rest/v1/ suffix! The client appends /auth/v1/, /rest/v1/,
+     etc. itself. (The "Data API" page shows the URL with /rest/v1/ — do NOT copy
+     that suffix, or sign-in goes to /rest/v1/… and you get "No API key found".)
+   Key: Project Settings → API Keys → Publishable key (sb_publishable_…), the
+     successor to the old "anon" key. Both values are public by design.
    ==================================================================== */
 export const SUPABASE_URL      = 'https://wqlodfnukdjrulcvzvtk.supabase.co';
 export const SUPABASE_ANON_KEY = 'sb_publishable_ASCFENexhyJ0sMopHKJIzQ_WhodJFoc';
-export const TOTAL_COTTAGES    = 26;   // liczba chatynek (data/cottages.json)
 /* ==================================================================== */
+
+/* Cottage count taken DYNAMICALLY from data/cottages.json (the single source of
+   truth) — never hardcoded. Fetched once and cached; works on ranking.html too,
+   where main.js is not loaded. The path is relative to the page (index/ranking
+   live at the root), so it resolves to /data/cottages.json. */
+const COTTAGES_URL = 'data/cottages.json';
+let _totalCottages = null;
+
+export async function totalCottages() {
+  if (_totalCottages != null) return _totalCottages;
+  try {
+    const res = await fetch(COTTAGES_URL, { cache: 'no-cache' });
+    const arr = await res.json();
+    _totalCottages = Array.isArray(arr) ? arr.length : 0;
+  } catch (e) {
+    console.error('[ranking] totalCottages', e);
+    _totalCottages = 0;
+  }
+  return _totalCottages;
+}
 
 export const configured =
   !/YOUR-PROJECT|YOUR-ANON/.test(`${SUPABASE_URL}${SUPABASE_ANON_KEY}`);
@@ -35,16 +53,16 @@ export const supabase = configured
   ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
-const STORAGE_KEY = 'chatynkowo:state:v1';   // ten sam klucz co app_logic.js
+const STORAGE_KEY = 'chatynkowo:state:v1';   // same key as app_logic.js
 
-/* Krótki, niewrażliwy identyfikator do linku ?me= (NIE jest to Google sub). */
+/* Short, non-sensitive id for the ?me= link (NOT the Google sub). */
 function newPublicId() {
   const a = new Uint8Array(9);
   crypto.getRandomValues(a);
   return Array.from(a, (b) => b.toString(36)).join('').slice(0, 12);
 }
 
-/* Odczyt znalezisk z localStorage (działa też na stronie rankingu). */
+/* Read finds from localStorage (works on the ranking page too). */
 export function localFinds() {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -71,9 +89,9 @@ export async function signInWithGoogle(redirectTo = location.href) {
 
 export async function signOut() { if (supabase) await supabase.auth.signOut(); }
 
-/* Profil tworzony leniwie przy pierwszym logowaniu. Domyślny pseudonim =
-   imię z konta Google; zdjęcie NIE jest kopiowane automatycznie (opt-in
-   w edytorze profilu na stronie rankingu). */
+/* Profile created lazily on first sign-in. Default display name = the Google
+   given name; the photo is NOT copied automatically (opt-in in the profile
+   editor on the ranking page). */
 export async function ensureProfile(session) {
   if (!supabase || !session) return null;
   const uid = session.user.id;
@@ -91,7 +109,7 @@ export async function ensureProfile(session) {
   return created;
 }
 
-/* Wysyła komplet znalezisk z localStorage (idempotentnie). */
+/* Push the full set of localStorage finds (idempotent). */
 export async function syncFinds(session, foundMap = localFinds()) {
   if (!supabase || !session) return;
   const rows = Object.entries(foundMap).map(([slug, v]) => ({
@@ -106,7 +124,7 @@ export async function syncFinds(session, foundMap = localFinds()) {
   await maybeMarkCompleted(session, rows.length);
 }
 
-/* Pojedyncze znalezisko (sync na żywo na stronie głównej, gdy zalogowany). */
+/* A single find (live sync on the main page when signed in). */
 export async function recordFind(session, slug, foundAt, foundCount = 0) {
   if (!supabase || !session) return;
   const { error } = await supabase.from('finds').upsert(
@@ -117,7 +135,8 @@ export async function recordFind(session, slug, foundAt, foundCount = 0) {
 }
 
 async function maybeMarkCompleted(session, count) {
-  if (!supabase || count < TOTAL_COTTAGES) return;
+  const total = await totalCottages();
+  if (!supabase || total <= 0 || count < total) return;
   await supabase.from('profiles')
     .update({ completed_at: new Date().toISOString() })
     .eq('id', session.user.id);
@@ -127,7 +146,7 @@ export async function updateProfile(session, patch) {
   if (!supabase || !session) return null;
   const clean = {};
   if (typeof patch.display_name === 'string') clean.display_name = patch.display_name.trim().slice(0, 40);
-  if ('avatar_url' in patch) clean.avatar_url = patch.avatar_url || null;   // null = ukryj zdjęcie
+  if ('avatar_url' in patch) clean.avatar_url = patch.avatar_url || null;   // null = hide the photo
   const { data, error } = await supabase
     .from('profiles').update(clean).eq('id', session.user.id).select('*').single();
   if (error) { console.error('[ranking] updateProfile', error); return null; }
@@ -136,18 +155,20 @@ export async function updateProfile(session, patch) {
 
 export async function fetchLeaderboard() {
   if (!supabase) return [];
-  const { data, error } = await supabase.rpc('leaderboard', { p_total: TOTAL_COTTAGES });
+  const total = await totalCottages();
+  if (!total) return [];   // without a known cottage count we can't judge "completion"
+  const { data, error } = await supabase.rpc('leaderboard', { p_total: total });
   if (error) { console.error('[ranking] fetchLeaderboard', error); return []; }
   return data || [];
 }
 
-/* ---------- Most dla klasycznego main.js (nie-modułowego) ---------- */
+/* ---------- Bridge for the classic (non-module) main.js ---------- */
 window.chatynkowoSync = {
   configured,
   signInWithGoogle,
   getSession,
-  /* Wywoływane przy każdym NOWYM znalezisku na stronie głównej. Nic nie robi,
-     gdy gość nie jest zalogowany — wtedy synchronizacja nastąpi po zalogowaniu. */
+  /* Called on every NEW find on the main page. A no-op when the visitor isn't
+     signed in — the sync then happens after they sign in. */
   async onFound(slug, foundAt, foundCount) {
     const session = await getSession();
     if (!session) return;

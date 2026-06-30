@@ -1,6 +1,6 @@
 /* ---------- Chatynkowo — Ranking Zdobywców ----------
-   Korzysta z tokenów motywu zdefiniowanych w style.css (:root --parchment,
-   --gold, --ink, --forest-bg …) oraz z bazowych klas .modal / .stars. */
+   Uses the theme tokens defined in style.css (:root --parchment, --gold, --ink,
+   --forest-bg …) and the base .modal / .stars classes. */
 
 .rank-page {
   margin: 0;
@@ -140,7 +140,7 @@
 .rank-count small { color: var(--ink-soft); font-weight: 400; }
 .rank-meta { min-width: 92px; text-align: right; }
 .rank-metric--time { font-weight: 700; color: var(--moss-dark); white-space: nowrap; }
-.rank-metric--partial { font-weight: 600; color: var(--ink-soft); }   /* czas „w toku" (jeszcze nie komplet) */
+.rank-metric--partial { font-weight: 600; color: var(--ink-soft); }   /* in-progress time (not a full set yet) */
 
 /* Avatar */
 .rank-ava {
@@ -152,7 +152,7 @@
 }
 .rank-ava--initials { background: linear-gradient(180deg, var(--moss), var(--moss-dark)); }
 
-/* Progress bar (dla niedokończonych) */
+/* Progress bar (for in-progress players) */
 .rank-progress {
   display: inline-block; width: 90px; height: 8px;
   background: rgba(58,35,8,.18); border-radius: 999px; overflow: hidden; vertical-align: middle;

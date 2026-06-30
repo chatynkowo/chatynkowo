@@ -1,9 +1,9 @@
-/* ---------- Chatynkowo — Ranking Zdobywców (widok) ----------
-   Renderuje publiczny ranking, obsługuje logowanie Google, udostępnianie
-   linku z podświetleniem własnego wpisu (?me=) oraz edycję profilu. */
+/* ---------- Chatynkowo — Ranking Zdobywców (view) ----------
+   Renders the public leaderboard, handles Google sign-in, sharing a link with
+   the viewer's own row highlighted (?me=), and profile editing. */
 
 import {
-  TOTAL_COTTAGES, configured,
+  totalCottages, configured,
   getSession, signInWithGoogle, signOut,
   ensureProfile, syncFinds, updateProfile, fetchLeaderboard, localFinds,
 } from './chatynkowo-sync.js';
@@ -14,6 +14,7 @@ const closeModal = (m) => { if (typeof m.close === 'function') m.close(); else m
 let session = null;
 let myProfile = null;
 let myPublicId = new URLSearchParams(location.search).get('me') || null;
+let TOTAL = 0;   // cottage count from data/cottages.json (set in init)
 
 /* ---------- helpers ---------- */
 function escapeHtml(s) {
@@ -25,7 +26,7 @@ function initials(name) {
   return String(name || '?').trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
-/* Czas ukończenia w zwięzłej, bezdeklinacyjnej formie: "3 d 5 h", "5 h 12 min", "12 min". */
+/* Compact, declension-free duration: "3 d 5 h", "5 h 12 min", "12 min". */
 function formatDuration(sec) {
   if (sec == null) return '';
   sec = Number(sec);
@@ -46,11 +47,11 @@ function avatarHtml(row) {
   return `<span class="rank-ava rank-ava--initials" aria-hidden="true">${escapeHtml(initials(row.display_name))}</span>`;
 }
 
-/* Czas całkowity od pierwszej do ostatnio odkrytej chatki — pokazywany dla
-   KAŻDEGO gracza (dla ukończonych = czas zebrania kompletu). Przy 1 chatce
-   nie ma jeszcze rozpiętości, więc pokazujemy „—”. */
+/* Total time from the first to the most recently discovered cottage — shown for
+   EVERY player (for finishers = full-set completion time). With a single cottage
+   there is no span yet, so we show "—". */
 function metricHtml(row) {
-  const sec = Number(row.elapsed_seconds);   // bigint bywa zwracany jako string
+  const sec = Number(row.elapsed_seconds);   // bigint may come back as a string
   if (!row.found || row.found < 2 || !sec) {
     return `<span class="rank-metric rank-metric--time rank-metric--partial" title="Czas naliczany od drugiej chatki">⏱ —</span>`;
   }
@@ -68,7 +69,7 @@ function renderPodium(rows) {
   const top = rows.slice(0, 3);
   if (top.length < 3) { host.setAttribute('hidden', ''); return; }
   host.removeAttribute('hidden');
-  // Kolejność wizualna: 2 — 1 — 3 (jedynka w środku, najwyżej).
+  // Visual order: 2 — 1 — 3 (first place centered and tallest).
   const order = [1, 0, 2];
   host.innerHTML = order.map((i) => {
     const r = top[i];
@@ -79,7 +80,7 @@ function renderPodium(rows) {
       <div class="podium__medal" aria-hidden="true">${medal}</div>
       ${avatarHtml(r)}
       <div class="podium__name">${escapeHtml(r.display_name)}</div>
-      <div class="podium__found">${r.found}/${TOTAL_COTTAGES}</div>
+      <div class="podium__found">${r.found}/${TOTAL}</div>
       <div class="podium__metric">${metricHtml(r)}</div>
       <div class="podium__base">${place}</div>
     </div>`;
@@ -110,11 +111,11 @@ function renderList(rows) {
       <span class="rank-pos">${i + 1}</span>
       ${avatarHtml(r)}
       <span class="rank-name">${escapeHtml(r.display_name)}${isMine(r) ? ' <em class="rank-you">(Ty)</em>' : ''}</span>
-      <span class="rank-count">${r.found}<small>/${TOTAL_COTTAGES}</small></span>
+      <span class="rank-count">${r.found}<small>/${TOTAL}</small></span>
       <span class="rank-meta">${metricHtml(r)}</span>`;
     list.appendChild(li);
   });
-  // Po wejściu z linku ?me= — przewiń do podświetlonego wpisu.
+  // When arriving from a ?me= link, scroll to the highlighted row.
   if (mineSeen && new URLSearchParams(location.search).has('me')) {
     requestAnimationFrame(() => $('myRow')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
   }
@@ -162,7 +163,7 @@ async function share() {
   const url = myShareUrl();
   const text = 'Zobacz mój wynik w Rankingu Zdobywców Chatynkowa!';
   if (navigator.share) {
-    try { await navigator.share({ title: 'Chatynkowo', text, url }); return; } catch (_) { /* anulowano */ }
+    try { await navigator.share({ title: 'Chatynkowo', text, url }); return; } catch (_) { /* cancelled */ }
   }
   try { await navigator.clipboard.writeText(url); toast('Skopiowano link do schowka ✓'); }
   catch (_) { prompt('Skopiuj link do swojego wyniku:', url); }
@@ -206,11 +207,12 @@ function wireProfile() {
 /* ---------- boot ---------- */
 async function init() {
   wireProfile();
+  TOTAL = await totalCottages();   // the single source of the cottage count
   session = await getSession();
   if (session) {
     myProfile = await ensureProfile(session);
     myPublicId = myProfile?.public_id || myPublicId;
-    // Po zalogowaniu (np. po komplecie na stronie głównej) wyślij postęp z localStorage.
+    // After sign-in (e.g. right after completion on the main page) push localStorage progress.
     await syncFinds(session, localFinds());
   }
   renderAccount();

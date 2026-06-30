@@ -281,7 +281,6 @@ top with the values from step 1:
 ```js
 export const SUPABASE_URL      = 'https://<PROJECT-REF>.supabase.co';
 export const SUPABASE_ANON_KEY = '<publishable key (sb_publishable_…) or legacy anon key>';
-export const TOTAL_COTTAGES    = 25;   // keep equal to the number of cottages in data/cottages.json
 ```
 
 The constant is still named `SUPABASE_ANON_KEY` for continuity, but it accepts
@@ -292,9 +291,11 @@ Until both placeholders are replaced the module stays **safely disabled**
 (`configured === false`): the ranking page shows *"Ranking nie jest jeszcze
 skonfigurowany"* and nothing on the main site breaks.
 
-> `TOTAL_COTTAGES` must match the count in [`data/cottages.json`](data/cottages.json)
-> (currently **25**). It decides when the full-set badge and the completion time
-> kick in. If you add or remove cottages, update this number.
+> The total cottage count (used to decide when the full-set badge and the
+> completion time kick in) is **derived automatically** from
+> [`data/cottages.json`](data/cottages.json) at runtime via `totalCottages()` —
+> there is no number to keep in sync. Add or remove a cottage there and the
+> ranking follows.
 
 ### 7. Deploy and test
 

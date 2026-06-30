@@ -1055,8 +1055,8 @@ a:hover { color: var(--ember); }
 
 /* Trophies dialog content */
 .modal--trophies { max-width: min(720px, calc(100% - 2rem)); }
-/* Skarbiec to siatka odznak, nie długi tekst — daj jej więcej pionu niż
-   domyślny limit .modal__content (65vh), żeby nie wymuszać zbędnego scrolla. */
+/* The Skarbiec is a badge grid, not long prose — give it more height than the
+   default .modal__content limit (65vh) so it doesn't force an unnecessary scrollbar. */
 .modal--trophies .modal__content { max-height: 85vh; }
 .modal__intro {
   font-family: 'Cormorant Garamond', serif;
@@ -1071,8 +1071,8 @@ a:hover { color: var(--ember); }
   margin: 0;
   padding: 0;
   display: grid;
-  /* Niższy próg kolumny → cztery odznaki mieszczą się w jednym rzędzie na
-     desktopie (zamiast 3 + 1), więc treść nie przekracza wysokości okna. */
+  /* Lower column min → the four badges fit in one row on desktop (instead of
+     3 + 1), so the content doesn't exceed the window height. */
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 1rem;
 }
@@ -1412,9 +1412,9 @@ a:hover { color: var(--ember); }
   .legal-header__inner { flex-direction: column; text-align: center; gap: .4rem; }
 }
 
-/* ---------- Ranking: skrzynia (puls), CTA w Skarbcu, baner po komplecie ---------- */
+/* ---------- Ranking: trophy chest (pulse), Skarbiec CTA, completion banner ---------- */
 
-/* Krótki puls skrzyni-trofeów po zdobyciu nowej odznaki. */
+/* Brief pulse of the trophy chest when a new badge is earned. */
 @keyframes trophyPulse {
   0%   { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(199,154,75,0)); }
   30%  { transform: scale(1.18); filter: drop-shadow(0 0 14px rgba(245,210,120,.9)); }
@@ -1422,7 +1422,7 @@ a:hover { color: var(--ember); }
 }
 .trophies-toggle--pulse { animation: trophyPulse 1.1s ease; }
 
-/* CTA do rankingu w dialogu Skarbca (po komplecie). */
+/* Ranking CTA in the Skarbiec dialog (after the full set). */
 .trophy-cta {
   display: block;
   margin: 1.2rem auto 0;
@@ -1438,7 +1438,7 @@ a:hover { color: var(--ember); }
 }
 .trophy-cta:hover { filter: brightness(1.06); }
 
-/* Baner zaproszenia do rankingu po zebraniu kompletu Chatynek. */
+/* Invite banner to the ranking after collecting the full set of Chatynki. */
 .rank-invite {
   position: fixed;
   left: 50%;

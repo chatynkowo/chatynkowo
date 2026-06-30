@@ -6,9 +6,9 @@
   <title>Ranking Zdobywców — Chatynkowo</title>
   <meta name="description" content="Ranking Zdobywców Chatynkowa — kto odkrył najwięcej baśniowych chatynek Elfów i kto zebrał komplet najszybciej. Dołącz i pochwal się znajomym!"/>
 
-  <!-- Podgląd przy udostępnianiu (FB / Messenger / Twitter). Miniaturka jest
-       wspólna dla wszystkich — personalizowany obrazek "z Twoim wynikiem"
-       wymagałby generatora OG po stronie serwera (patrz Readme). -->
+  <!-- Share preview (FB / Messenger / Twitter). The thumbnail is the same for
+       everyone — a personalized "your result" image would need a server-side OG
+       generator (see Readme). -->
   <meta property="og:type"        content="website"/>
   <meta property="og:site_name"   content="Chatynkowo"/>
   <meta property="og:title"       content="Ranking Zdobywców — Chatynkowo"/>
@@ -33,15 +33,15 @@
       <br/><span class="rank-hero__note">⏱ czas = od pierwszej do ostatnio odkrytej chatki</span>
     </p>
 
-    <!-- Pasek konta: zaloguj / Twój wynik / udostępnij -->
+    <!-- Account bar: sign in / your result / share -->
     <div class="rank-account" id="rankAccount" aria-live="polite"></div>
   </header>
 
   <main class="rank-main">
-    <!-- Podium top-3 -->
+    <!-- Podium top 3 -->
     <section class="podium" id="podium" aria-label="Najlepsza trójka" hidden></section>
 
-    <!-- Pełna lista -->
+    <!-- Full list -->
     <section class="rank-board" aria-label="Pełny ranking">
       <ol class="rank-list" id="rankList"></ol>
       <p class="rank-status" id="rankStatus">Wczytywanie rankingu…</p>
@@ -52,7 +52,7 @@
     <a href="index.html">Chatynkowo</a> · baśniowe chatynki Elfów
   </footer>
 
-  <!-- Lekki edytor profilu (pseudonim + opcjonalne zdjęcie), pokazywany po zalogowaniu -->
+  <!-- Lightweight profile editor (nickname + optional photo), shown after sign-in -->
   <dialog class="modal modal--profile" id="profileModal" aria-labelledby="profileTitle">
     <button class="modal__close" id="profileClose" type="button" aria-label="Zamknij">×</button>
     <article class="modal__content">

@@ -656,7 +656,7 @@
     t.classList.add('trophies-toggle--pulse');
   }
 
-  /* Completion banner: reveal the invite to the Ranking Zdobywców. */
+  /* Completion banner: reveal the invite to the ranking. */
   function showRankInvite() {
     document.getElementById('rankInvite')?.removeAttribute('hidden');
   }
@@ -715,7 +715,7 @@
       // Repaint pins so the just-uncovered cottage shows in "found" colour
       // both on the inline map and in the zoom dialog. Then award any newly
       // reached reward badges (Skarbiec), sync progress to the ranking, and —
-      // on the very last cottage — invite the seeker to the Ranking Zdobywców.
+      // on the very last cottage — invite the seeker to the ranking.
       if (justFound) {
         drawCottages();
 
@@ -733,7 +733,7 @@
         const foundAt = persist.data.found[c.slug]?.foundAt;
         window.chatynkowoSync?.onFound(c.slug, foundAt, foundCount);
 
-        // Komplet → świeżo zdobyta odznaka "Mistrz Chatynkowa" odblokowuje ranking.
+        // Full set → the freshly earned "Mistrz Chatynkowa" badge unlocks the ranking.
         if (newBadges.includes('mistrz-chatynkowa')) showRankInvite();
 
         // Anonymous, aggregate counts (never tied to a visitor). Sent through

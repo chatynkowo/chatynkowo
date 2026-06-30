@@ -67,13 +67,13 @@
     },
   };
 
-  /* Badge registry — nagrody za postęp w odkrywaniu Chatynek.
-     `threshold` to liczba odkrytych Chatynek wymagana do zdobycia odznaki;
-     `final: true` oznacza komplet (próg = łączna liczba Chatynek, liczona
-     dynamicznie w main.js, więc działa nawet gdy liczba się zmieni) i odblokowuje
-     drogę do Rankingu Zdobywców. `image` jest opcjonalny — bez niego renderer
-     pokazuje gwiazdkę (★); pliki można dorzucić później do assets/img/badges/.
-     Award logic (main.js) woła persist.awardBadge(id, …) gdy próg osiągnięty. */
+  /* Badge registry — rewards for progress in discovering Chatynki.
+     `threshold` is the number of discovered Chatynki required to earn the badge;
+     `final: true` marks the full set (threshold = the total cottage count,
+     computed dynamically in main.js, so it works even when the count changes) and
+     unlocks the way to the ranking. `image` is optional — without it the renderer
+     shows a star (★); files can be added later under assets/img/badges/.
+     The award logic (main.js) calls persist.awardBadge(id, …) when a threshold is met. */
   const BADGES = {
     'first-find': {
       name: 'Pierwsza Chatynka',
