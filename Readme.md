@@ -10,7 +10,7 @@ duplicated, so the files can never disagree:
 | File | Owns | Fields / content |
 |---|---|---|
 | `cottages/<slug>.md` | all **text** (public) | frontmatter: `title`, `slug`, `occupant`, `virtue`; body: the story plus the `## Co zrobić, gdy trafisz pod chatynkę?` section |
-| `data/cottages.json` | all **location/map** data (public) | per cottage: `slug`, `lat`, `lng` (real-world position), `mapX`, `mapY` (symbolic-map pin, % of the image) |
+| `data/cottages.json` | all **location/map** data (public) | per cottage: `slug`, `lat`, `lng` (real-world position), `mapX`, `mapY` (symbolic-map pin, % of the image); optional `pin_custom_img` (path to a custom pin graphic for this cottage) |
 | `private/codes.json` | the **secret** plaque codes | `slug → code` pairs + the hashing `salt`; stripped from every deploy |
 | `data/code_hashes.json` | code **validation** (public, generated) | `sha256(salt:code) → slug`; rebuilt by `private/build-code-hashes.mjs` — never edit by hand |
 | `assets/stories/<slug>.mp3` | the cottage's audio story | played after a correct code |
@@ -107,6 +107,15 @@ The fairytale map (the **Mapa** section) is built from two layers:
   per cottage in `data/cottages.json`, positioned at its `mapX`/`mapY`. This
   overlay is the **single source of pins**, so every pin on the map corresponds
   to a real cottage and moves automatically when the data changes.
+
+> 💡 **Custom pin per cottage.** A cottage may override the default pin graphic
+> by adding an optional `pin_custom_img` field to its entry in
+> `data/cottages.json`, e.g.
+> `{ "slug": "fredek", …, "pin_custom_img": "assets/img/Map_marker.png" }`.
+> The path is resolved relative to the page (same base as other `assets/…`
+> references). When present, that image replaces both `map-pin.svg` and the
+> "found" `map-pin-found.svg` for that one pin. Omit the field for the normal
+> shared pin. The field survives admin edits — it round-trips untouched.
 
 > ⚠️ **Never bake pins into the base image.** A painted-in pin has no cottage
 > behind it, isn't clickable, and stays frozen while the real pins move — a

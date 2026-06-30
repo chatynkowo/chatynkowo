@@ -85,6 +85,20 @@
     if (persist.isFound(c.slug)) btn.classList.add('cottage-hotspot--found');
     btn.dataset.slug  = c.slug;
     btn.dataset.label = c.title;
+    // Optional per-cottage pin override: when data/cottages.json gives a
+    // `pin_custom_img` (path relative to the page, e.g. assets/img/foo.png),
+    // that cottage gets its own pin graphic instead of the shared
+    // map-pin.svg / map-pin-found.svg. CSS reads it from the --pin-img
+    // custom property — see .cottage-hotspot--custom in style.css.
+    const customPin = typeof c.pin_custom_img === 'string' ? c.pin_custom_img.trim() : '';
+    if (customPin) {
+      btn.classList.add('cottage-hotspot--custom');
+      // Resolve against the page URL so the value is an absolute URL —
+      // a relative url() inside a CSS custom property is based
+      // inconsistently across browsers, which can silently 404 the pin.
+      const pinUrl = new URL(customPin, document.baseURI).href;
+      btn.style.setProperty('--pin-img', `url("${pinUrl}")`);
+    }
     const stateLabel = persist.isFound(c.slug) ? ' (odkryta)' : '';
     btn.setAttribute(
       'aria-label',

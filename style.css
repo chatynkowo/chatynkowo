@@ -561,6 +561,13 @@ a:hover { color: var(--ember); }
 .cottage-hotspot--found::before {
   background-image: url("assets/img/map-pin-found.svg");
 }
+/* Per-cottage custom pin — opt-in via the optional `pin_custom_img` field in
+   data/cottages.json. main.js sets the image as the --pin-img custom property;
+   declared AFTER --found so a custom pin keeps its own graphic in both the
+   default and the discovered state. */
+.cottage-hotspot--custom::before {
+  background-image: var(--pin-img);
+}
 
 .cottage-hotspot:hover,
 .cottage-hotspot:focus-visible {
