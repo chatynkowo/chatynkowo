@@ -1055,6 +1055,9 @@ a:hover { color: var(--ember); }
 
 /* Trophies dialog content */
 .modal--trophies { max-width: min(720px, calc(100% - 2rem)); }
+/* Skarbiec to siatka odznak, nie długi tekst — daj jej więcej pionu niż
+   domyślny limit .modal__content (65vh), żeby nie wymuszać zbędnego scrolla. */
+.modal--trophies .modal__content { max-height: 85vh; }
 .modal__intro {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.05rem;
@@ -1068,7 +1071,9 @@ a:hover { color: var(--ember); }
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  /* Niższy próg kolumny → cztery odznaki mieszczą się w jednym rzędzie na
+     desktopie (zamiast 3 + 1), więc treść nie przekracza wysokości okna. */
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 1rem;
 }
 .trophy {
