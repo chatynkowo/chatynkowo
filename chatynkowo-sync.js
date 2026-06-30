@@ -23,9 +23,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
    Klucz: Project Settings → API Keys → Publishable key (sb_publishable_…),
      następca starego "anon" key. Oba pola są publiczne z założenia.
    ==================================================================== */
-export const SUPABASE_URL      = 'https://jxazxxicgfkxqzkmvqeb.supabase.co';
-export const SUPABASE_ANON_KEY = 'sb_publishable_tgbkpVqjlERZ5b3Hm1t2Qg_g5s_nXkI';
-export const TOTAL_COTTAGES    = 25;   // liczba chatynek (data/cottages.json)
+export const SUPABASE_URL      = 'https://wqlodfnukdjrulcvzvtk.supabase.co';
+export const SUPABASE_ANON_KEY = 'sb_publishable_ASCFENexhyJ0sMopHKJIzQ_WhodJFoc';
+export const TOTAL_COTTAGES    = 26;   // liczba chatynek (data/cottages.json)
 /* ==================================================================== */
 
 export const configured =

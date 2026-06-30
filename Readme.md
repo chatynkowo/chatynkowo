@@ -208,11 +208,13 @@ only sign in to **appear in the ranking**. On the last cottage the
      > not* include `/rest/v1/`. With the suffix, Google sign-in is routed to
      > PostgREST and fails with `{"message":"No API key found in request"}`.
      Prototype database → `https://jxazxxicgfkxqzkmvqeb.supabase.co` (**no** `/rest/v1/`).
+     Production database: `https://wqlodfnukdjrulcvzvtk.supabase.co`
+
    - **Publishable key** — `sb_publishable_...`, under
      **Project Settings → API Keys**, the **API Keys** tab. This is the modern
      client-side key and the direct replacement for the old `anon` key.
      `sb_publishable_tgbkpVqjlERZ5b3Hm1t2Qg_g5s_nXkI`
-
+     Prodution key: `sb_publishable_ASCFENexhyJ0sMopHKJIzQ_WhodJFoc`
    > Older projects also have a **Legacy API Keys** tab with the classic `anon`
    > JWT (`eyJ...`). It still works and you may paste it instead, but legacy keys
    > are **deprecated** (scheduled for removal by the end of 2026, and absent from
