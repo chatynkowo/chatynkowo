@@ -25,5 +25,5 @@
   { "slug": "kira",           "lat": 50.30782,   "lng": 19.554764,  "mapX": 43.25, "mapY": 50.29 },
   { "slug": "minizoo",        "lat": 50.225208,  "lng": 19.730573,  "mapX": 73.09, "mapY": 41.99 },
   { "slug": "mrok",           "lat": 50.304618,  "lng": 19.593799,  "mapX": 16.7,  "mapY": 49.92 },
-  { "slug": "konkurs",        "lat": 50.32,      "lng": 19.6,       "mapX": 50,    "mapY": 50 }
+  { "slug": "konkurs",        "lat": 50.325047,  "lng": 19.628238,  "mapX": 75.47, "mapY": 58.34 }
 ]
