@@ -245,7 +245,10 @@
   function serializeCottagesJson(records) {
     // Location/map data ONLY. No 'title' — the .md frontmatter is the single
     // source for text. No 'code' — the secret codes live in private/codes.json.
-    const fields = ['slug', 'lat', 'lng', 'mapX', 'mapY'];
+    // NOTE: every save rewrites the whole file through this whitelist, so any
+    // field missing here is silently dropped from ALL records — when adding a
+    // new optional field to cottages.json, it MUST be listed here too.
+    const fields = ['slug', 'lat', 'lng', 'mapX', 'mapY', 'pin_custom_img'];
     const segMax = {};
     for (const f of fields) {
       let max = 0;
