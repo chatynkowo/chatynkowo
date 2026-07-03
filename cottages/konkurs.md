@@ -21,7 +21,6 @@ virtue: "podróże małe i duże"
 > I chyba dlatego ich chatynka pojawiła się właśnie tutaj. Żeby przypominać wszystkim, że człowiek potrzebuje dwóch rzeczy: odwagi, by odkrywać świat… i wyobraźni, by go naprawdę zobaczyć.
 > Morał?
 > Nie ma znaczenia, czy zdobywasz górskie szczyty, czy liczysz gwiazdy. Najważniejsze, żeby każdego dnia odkryć coś, co sprawi, że wrócisz do domu z uśmiechem.
-> 
 
 (uzupełnij: kto mieszka, jakiej cnoty uczy)
 
