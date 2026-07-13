@@ -2,6 +2,27 @@
 
 Another vision of https://chatynkowo.pl — a magical, fairytale-themed cottage map.
 
+## React frontend
+
+The public home page is a static React application built with Vite. Ranking,
+legal pages and the editor remain static pages and are copied into the same
+`dist/` deployment artifact during the build.
+
+```bash
+npm install
+npm run dev
+```
+
+Create the production artifact with:
+
+```bash
+npm run build
+npm run preview
+```
+
+The generated site lives in `dist/`. GitHub Pages builds this directory in CI;
+do not commit it.
+
 ## Data layout
 
 Every cottage datum has exactly **one** authoritative file — nothing is

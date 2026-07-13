@@ -1,78 +1,126 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Ranking Zdobywców — Chatynkowo</title>
-  <meta name="description" content="Ranking Zdobywców Chatynkowa — kto odkrył najwięcej baśniowych chatynek Elfów i kto zebrał komplet najszybciej. Dołącz i pochwal się znajomym!"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Ranking Zdobywców | Chatynkowo</title>
+  <meta name="description" content="Ranking Zdobywców Chatynkowa: zobacz, kto odkrył najwięcej baśniowych Chatynek i kto zebrał komplet najszybciej."/>
 
-  <!-- Share preview (FB / Messenger / Twitter). The thumbnail is the same for
-       everyone — a personalized "your result" image would need a server-side OG
-       generator (see Readme). -->
-  <meta property="og:type"        content="website"/>
-  <meta property="og:site_name"   content="Chatynkowo"/>
-  <meta property="og:title"       content="Ranking Zdobywców — Chatynkowo"/>
-  <meta property="og:description" content="Kto odkrył najwięcej chatynek Elfów i zebrał komplet najszybciej? Sprawdź ranking i dołącz do zabawy!"/>
-  <meta property="og:url"         content="https://www.chatynkowo.pl/ranking.html"/>
-  <meta property="og:image"       content="https://www.chatynkowo.pl/assets/img/logo.webp"/>
-  <meta name="twitter:card"       content="summary_large_image"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="Chatynkowo"/>
+  <meta property="og:title" content="Ranking Zdobywców | Chatynkowo"/>
+  <meta property="og:description" content="Kto odkrył najwięcej Chatynek i zebrał komplet najszybciej? Sprawdź ranking i ruszaj na szlak."/>
+  <meta property="og:url" content="https://www.chatynkowo.pl/ranking.html"/>
+  <meta property="og:image" content="https://www.chatynkowo.pl/assets/img/logo.webp"/>
+  <meta name="twitter:card" content="summary_large_image"/>
 
   <link rel="icon" href="assets/img/cropped-znacznik-192x192.png"/>
-  <link rel="stylesheet" href="style.css"/>
   <link rel="stylesheet" href="ranking.css"/>
 </head>
 <body class="rank-page">
-  <div class="stars" aria-hidden="true"></div>
+  <a class="skip-link" href="#ranking-main">Przejdź do rankingu</a>
 
-  <header class="rank-hero">
-    <a class="rank-back" href="index.html">← Wróć do Chatynkowa</a>
-    <img src="assets/img/logo.webp" alt="" class="rank-hero__mark" loading="lazy"/>
-    <h1 class="rank-hero__title">Ranking Zdobywców</h1>
-    <p class="rank-hero__lede">
-      Najszybsi zdobywcy kompletu na szczycie, niżej tropiciele wciąż w drodze.
-      <br/><span class="rank-hero__note">⏱ czas = od pierwszej do ostatnio odkrytej chatki</span>
-    </p>
-
-    <!-- Account bar: sign in / your result / share -->
-    <div class="rank-account" id="rankAccount" aria-live="polite"></div>
+  <header class="rank-header">
+    <a class="rank-brand" href="index.html" aria-label="Chatynkowo, strona główna">
+      <img src="assets/img/logo.webp" alt=""/>
+      <span>Chatynkowo</span>
+    </a>
+    <nav class="rank-nav" aria-label="Główna nawigacja">
+      <a class="rank-nav__section" href="index.html#magia">Jak grać</a>
+      <a class="rank-nav__section" href="index.html#mapa">Atlas</a>
+      <a class="rank-nav__section" href="index.html#kod">Wpisz kod</a>
+      <a class="rank-nav__primary" href="index.html"><span aria-hidden="true">←</span> Wróć na stronę</a>
+    </nav>
   </header>
 
-  <main class="rank-main">
-    <!-- Podium top 3 -->
-    <section class="podium" id="podium" aria-label="Najlepsza trójka" hidden></section>
+  <main class="rank-main" id="ranking-main">
+    <section class="rank-intro" aria-labelledby="ranking-title">
+      <div class="rank-intro__copy">
+        <p class="rank-eyebrow">Kronika jurajskich wypraw</p>
+        <h1 id="ranking-title">Ranking Zdobywców</h1>
+        <p class="rank-intro__lede">Każde odkrycie przybliża Cię do szczytu. Zobacz tropicieli, którzy poznali najwięcej opowieści Chatynkowa.</p>
+        <div class="rank-account" id="rankAccount" aria-live="polite"></div>
+      </div>
 
-    <!-- Full list -->
-    <section class="rank-board" aria-label="Pełny ranking">
-      <ol class="rank-list" id="rankList"></ol>
-      <p class="rank-status" id="rankStatus">Wczytywanie rankingu…</p>
+      <aside class="rank-method" aria-label="Zasady rankingu">
+        <p class="rank-method__title">Jak liczymy wynik?</p>
+        <div>
+          <span class="rank-method__index">01</span>
+          <p><strong>Najpierw odkrycia</strong>Wyżej jest osoba, która znalazła więcej Chatynek.</p>
+        </div>
+        <div>
+          <span class="rank-method__index">02</span>
+          <p><strong>Potem czas wyprawy</strong>Czas mierzymy od pierwszego do ostatniego odkrycia.</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="rank-results" aria-labelledby="results-title">
+      <header class="rank-results__header">
+        <div>
+          <p class="rank-eyebrow">Najlepsi tropiciele</p>
+          <h2 id="results-title">Szczyt rankingu</h2>
+        </div>
+        <p>Wyniki aktualizują się po zapisaniu odkryć na zalogowanym koncie.</p>
+      </header>
+
+      <section class="podium" id="podium" aria-label="Najlepsza trójka" hidden></section>
+
+      <section class="rank-board" aria-labelledby="full-ranking-title">
+        <header class="rank-board__header">
+          <h2 id="full-ranking-title">Wszyscy zdobywcy</h2>
+          <span>Odkrycia i czas wyprawy</span>
+        </header>
+        <ol class="rank-list" id="rankList"></ol>
+        <div class="rank-status is-loading" id="rankStatus" role="status">
+          <span>Wczytuję kronikę wypraw...</span>
+          <i aria-hidden="true"></i>
+          <i aria-hidden="true"></i>
+          <i aria-hidden="true"></i>
+        </div>
+      </section>
+
+      <aside class="rank-continue" aria-labelledby="continue-title">
+        <div>
+          <p class="rank-eyebrow">Twoja wyprawa trwa dalej</p>
+          <h2 id="continue-title">Wróć na szlak</h2>
+          <p>Wybierz kolejną Chatynkę na mapie albo wpisz kod znaleziony podczas wędrówki.</p>
+        </div>
+        <div class="rank-continue__actions">
+          <a class="rank-btn rank-btn--primary" href="index.html#mapa">Otwórz mapę</a>
+          <a class="rank-btn" href="index.html#kod">Mam kod</a>
+        </div>
+      </aside>
     </section>
   </main>
 
   <footer class="rank-foot">
-    <a href="index.html">Chatynkowo</a> · baśniowe chatynki Elfów
+    <a class="rank-foot__brand" href="index.html"><img src="assets/img/logo.webp" alt=""/><span>Chatynkowo</span></a>
+    <p>Baśniowe Chatynki Elfów na jurajskim szlaku.</p>
+    <nav aria-label="Dokumenty">
+      <a href="legal/regulamin.html">Regulamin</a>
+      <a href="legal/polityka-prywatnosci.html">Prywatność</a>
+    </nav>
   </footer>
 
-  <!-- Lightweight profile editor (nickname + optional photo), shown after sign-in -->
   <dialog class="modal modal--profile" id="profileModal" aria-labelledby="profileTitle">
     <button class="modal__close" id="profileClose" type="button" aria-label="Zamknij">×</button>
-    <article class="modal__content">
+    <div class="modal__content">
+      <p class="rank-eyebrow">Profil zdobywcy</p>
       <h2 class="modal__title" id="profileTitle">Twój wpis w rankingu</h2>
+      <p class="modal__lede">Te dane zobaczą pozostali tropiciele na liście wyników.</p>
       <label class="profile-field">
-        <span>Pseudonim (widoczny publicznie)</span>
+        <span>Pseudonim</span>
         <input id="profileName" type="text" maxlength="40" autocomplete="off"/>
       </label>
       <label class="profile-check">
         <input id="profileAvatar" type="checkbox"/>
-        <span>Pokaż moje zdjęcie z konta Google</span>
+        <span>Pokaż zdjęcie z konta Google</span>
       </label>
-      <button class="rank-btn rank-btn--primary" id="profileSave" type="button">Zapisz</button>
-    </article>
+      <button class="rank-btn rank-btn--primary" id="profileSave" type="button">Zapisz zmiany</button>
+    </div>
   </dialog>
 
-  <!-- Durable analytics queue (window.chatynkowoStats). No events are fired
-       here; loading it just drains any cottage-found events queued offline in
-       the field, since completers usually land on the ranking next. The count
-       endpoint falls back to its default when this page omits count.js. -->
   <script src="analytics.js" defer></script>
   <script type="module" src="ranking.js"></script>
 </body>

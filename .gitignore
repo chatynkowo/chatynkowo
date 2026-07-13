@@ -9,3 +9,5 @@ Thumbs.db
 
 # Local only
 /scrape/
+node_modules
+dist
