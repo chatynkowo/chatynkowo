@@ -4,6 +4,7 @@
 
   const COTTAGES_URL = 'data/cottages.json';
   const CODE_HASHES_URL = 'data/code_hashes.json';
+  const REWARDS_URL  = 'data/rewards.json';
   const MD_DIR       = 'cottages';
   const AUDIO_DIR    = 'assets/stories';
 
@@ -15,6 +16,11 @@
   const state = {
     cottages: [],
     codeHashes: null,   // { salt, entries: { sha256(salt:code) → slug } }
+    // Reward/Skarbiec config, editable in the admin panel and published as
+    // data/rewards.json. Shape: { treasury:{title,intro,image},
+    // levels:[{id,name,threshold,final,image,body}] }. Falls back to the
+    // hardcoded BADGES registry (app_logic.js) when the file can't be loaded.
+    rewards: null,
   };
 
   /* ---------- Load cottages ---------- */
@@ -49,6 +55,75 @@
       const res = await fetch(CODE_HASHES_URL);
       if (res.ok) state.codeHashes = await res.json();
     } catch (_) { /* offline / missing file — handled at submit time */ }
+  }
+
+  /* ---------- Rewards / Skarbiec config ----------
+     The reward levels (herbal collectible cards) and the treasury intro are
+     authored in the admin panel and published as data/rewards.json. Both the
+     award thresholds and the displayed text/images come from there, so a
+     non-programmer can add levels or rewrite descriptions without touching
+     code. If the file is missing (older deploy) we fall back to the built-in
+     BADGES registry, so awarding and the Skarbiec keep working. */
+  async function loadRewards() {
+    try {
+      const res = await fetch(REWARDS_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      state.rewards = normalizeRewards(await res.json());
+    } catch (_) {
+      state.rewards = rewardsFromBadges();
+    }
+  }
+
+  /* Coerce a parsed rewards.json into the shape the renderer/award logic
+     expect, tolerating missing keys so a half-filled file never throws. */
+  function normalizeRewards(raw) {
+    const t = (raw && raw.treasury) || {};
+    const levels = Array.isArray(raw && raw.levels) ? raw.levels : [];
+    return {
+      treasury: {
+        title: t.title || 'Twój Skarbiec',
+        intro: t.intro || '',
+        image: t.image || '',
+      },
+      levels: levels.filter(l => l && l.id).map(l => ({
+        id: String(l.id),
+        name: l.name || String(l.id),
+        threshold: (l.threshold == null || l.threshold === '') ? null : Number(l.threshold),
+        final: Boolean(l.final),
+        image: l.image || '',
+        body: l.body || '',
+      })),
+    };
+  }
+
+  /* Fallback config derived from the hardcoded registry (app_logic.js). */
+  function rewardsFromBadges() {
+    return {
+      treasury: {
+        title: 'Twój Skarbiec',
+        intro: 'Tu pojawiają się odznaki, które zdobywasz odkrywając kolejne Chatynki.',
+        image: '',
+      },
+      levels: Object.entries(BADGES).map(([id, def]) => ({
+        id,
+        name: def.name || id,
+        threshold: def.final ? null : def.threshold,
+        final: Boolean(def.final),
+        image: def.image || '',
+        body: def.description || '',
+      })),
+    };
+  }
+
+  /* The ordered reward levels currently in effect (loaded config or fallback). */
+  function rewardLevels() {
+    return (state.rewards && state.rewards.levels) || rewardsFromBadges().levels;
+  }
+
+  /* Id of the "full set" level (default 'mistrz-chatynkowa'), so renaming the
+     final reward in the editor doesn't break the ranking unlock. */
+  function finalLevelId() {
+    return rewardLevels().find(l => l.final)?.id || 'mistrz-chatynkowa';
   }
 
   async function sha256Hex(text) {
@@ -536,12 +611,14 @@
   }
 
   /* ---------- Trophies (Skarbiec) ----------
-     Renders the union of (defined badges in BADGES) ∪ (earned badges in
-     persist.data.badges) as cards inside #trophyGrid. Earned badges get
-     full colour + the date; not-yet-earned defined badges show locked.
-     Earned-but-undefined badges (a future definition arrived later? a
-     console-awarded test?) still render so progress isn't hidden. The
-     numeric pip on the floating button mirrors the earned count. */
+     Renders the reward levels from data/rewards.json (loaded config or the
+     BADGES fallback) as a grid of collectible-card thumbnails inside
+     #trophyGrid. Earned levels show full colour + the herb name; not-yet-earned
+     ones show locked. Earned levels without a matching definition (a level was
+     renamed/removed after being earned) still render from the stored meta so
+     progress is never hidden. Clicking a card opens the detail dialog with the
+     full textual description. The count pip on the floating button mirrors the
+     earned count; the treasury title + intro come from the config too. */
   function renderTrophies() {
     const grid    = document.getElementById('trophyGrid');
     const empty   = document.getElementById('trophyEmpty');
@@ -549,21 +626,35 @@
     const countEl = document.getElementById('trophiesCount');
     if (!grid || !empty || !toggle || !countEl) return;
 
+    const cfg = state.rewards || rewardsFromBadges();
+    const titleEl = document.getElementById('trophiesTitle');
+    if (titleEl) titleEl.textContent = cfg.treasury.title || 'Twój Skarbiec';
+    const introEl = document.getElementById('trophiesIntro');
+    if (introEl) introEl.innerHTML = mdToHtml(cfg.treasury.intro || '');
+
     const earnedIds = persist.earnedBadges();
     const earnedSet = new Set(earnedIds);
     countEl.textContent = String(earnedIds.length);
     toggle.classList.toggle('trophies-toggle--has', earnedIds.length > 0);
 
-    // Ranking CTA inside the Skarbiec unlocks once the final badge is earned.
+    // Ranking CTA inside the Skarbiec unlocks once the final level is earned.
     document.getElementById('trophyRankingCta')
-      ?.toggleAttribute('hidden', !persist.hasBadge('mistrz-chatynkowa'));
+      ?.toggleAttribute('hidden', !persist.hasBadge(finalLevelId()));
 
-    // Show every defined badge plus any earned ones we don't have a
-    // definition for yet (preserves progress across registry edits).
-    const ids = Array.from(new Set([...Object.keys(BADGES), ...earnedIds]));
+    // Every defined level, plus any earned level we no longer have a definition
+    // for (synthesised from the stored meta so it still shows as collected).
+    const defined = rewardLevels();
+    const definedIds = new Set(defined.map(l => l.id));
+    const levels = [
+      ...defined,
+      ...earnedIds.filter(id => !definedIds.has(id)).map(id => ({
+        id, name: persist.data.badges[id]?.name || id,
+        threshold: null, final: false, image: '', body: '',
+      })),
+    ];
     grid.replaceChildren();
 
-    if (ids.length === 0) {
+    if (levels.length === 0) {
       empty.removeAttribute('hidden');
       grid.setAttribute('hidden', '');
       return;
@@ -571,21 +662,25 @@
     empty.setAttribute('hidden', '');
     grid.removeAttribute('hidden');
 
-    for (const id of ids) {
-      const def = BADGES[id] || {};
-      const meta = persist.data.badges[id];
-      const isEarned = earnedSet.has(id);
+    for (const def of levels) {
+      const isEarned = earnedSet.has(def.id);
 
       const li = document.createElement('li');
       li.className = 'trophy ' + (isEarned ? 'trophy--earned' : 'trophy--locked');
-      li.dataset.badge = id;
+      li.dataset.badge = def.id;
+
+      // The whole card is a button — clicking it opens the detail dialog.
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'trophy__btn';
+      btn.addEventListener('click', () => openRewardDetail(def));
 
       const art = document.createElement('div');
       art.className = 'trophy__art';
       if (def.image) {
         const img = document.createElement('img');
         img.src = def.image;
-        img.alt = def.name || id;
+        img.alt = def.name || def.id;
         img.loading = 'lazy';
         img.decoding = 'async';
         art.appendChild(img);
@@ -593,37 +688,61 @@
         art.textContent = isEarned ? '★' : '?';
       }
 
-      const body = document.createElement('div');
-      body.className = 'trophy__body';
-
       const h3 = document.createElement('h3');
       h3.className = 'trophy__name';
-      h3.textContent = def.name || id;
-      body.appendChild(h3);
+      h3.textContent = def.name || def.id;
 
-      if (def.description) {
-        const p = document.createElement('p');
-        p.className = 'trophy__desc';
-        p.textContent = def.description;
-        body.appendChild(p);
-      }
+      const status = document.createElement('p');
+      status.className = 'trophy__status';
+      status.textContent = isEarned ? '✓ zdobyto' : '🔒 do zdobycia';
 
-      if (isEarned && meta && meta.earnedAt) {
-        const p = document.createElement('p');
-        p.className = 'trophy__date';
-        let when = meta.earnedAt;
-        try {
-          when = new Date(meta.earnedAt)
-            .toLocaleDateString('pl-PL', { dateStyle: 'long' });
-        } catch (_) {}
-        p.innerHTML = `Zdobyto: <time datetime="${meta.earnedAt}">${escapeHtml(when)}</time>`;
-        body.appendChild(p);
-      }
-
-      li.appendChild(art);
-      li.appendChild(body);
+      btn.appendChild(art);
+      btn.appendChild(h3);
+      btn.appendChild(status);
+      li.appendChild(btn);
       grid.appendChild(li);
     }
+  }
+
+  /* Detail dialog for a single reward level: the collectible illustration plus
+     its full textual description (markdown → HTML) and the earned date. Opened
+     on top of the Skarbiec grid; closing it returns to the grid. */
+  function openRewardDetail(def) {
+    const modal   = document.getElementById('rewardDetailModal');
+    const content = document.getElementById('rewardDetailContent');
+    if (!modal || !content) { return; }
+
+    const isEarned = persist.hasBadge(def.id);
+    const meta = persist.data.badges[def.id];
+    const parts = [];
+
+    parts.push(`<h2 class="reward-detail__name">${escapeHtml(def.name || def.id)}</h2>`);
+
+    if (def.image) {
+      parts.push(`<div class="reward-detail__art">
+        <img src="${escapeHtml(def.image)}" alt="${escapeHtml(def.name || def.id)}" decoding="async">
+      </div>`);
+    }
+
+    if (isEarned && meta && meta.earnedAt) {
+      let when = meta.earnedAt;
+      try { when = new Date(meta.earnedAt).toLocaleDateString('pl-PL', { dateStyle: 'long' }); } catch (_) {}
+      parts.push(`<p class="reward-detail__date">Zdobyto: <time datetime="${escapeHtml(meta.earnedAt)}">${escapeHtml(when)}</time></p>`);
+    } else {
+      const need = def.final ? state.cottages.length : def.threshold;
+      const hint = (typeof need === 'number' && need > 0)
+        ? `Odkryj ${need} ${need === 1 ? 'Chatynkę' : need < 5 ? 'Chatynki' : 'Chatynek'}, aby zdobyć tę nagrodę.`
+        : 'Nagroda jeszcze nie zdobyta.';
+      parts.push(`<p class="reward-detail__locked">🔒 ${escapeHtml(hint)}</p>`);
+    }
+
+    if (def.body) {
+      parts.push(`<div class="reward-detail__body">${mdToHtml(def.body)}</div>`);
+    }
+
+    content.innerHTML = parts.join('\n');
+    modal.classList.toggle('reward-detail--earned', isEarned);
+    showDialog(modal);
   }
 
   function wireTrophies() {
@@ -642,6 +761,19 @@
                      e.clientY >= r.top  && e.clientY <= r.bottom;
       if (!inside) closeDialog(modal);
     });
+
+    // Reward detail dialog (opened from a grid card).
+    const detail = document.getElementById('rewardDetailModal');
+    const detailClose = document.getElementById('rewardDetailClose');
+    if (detail) {
+      detailClose?.addEventListener('click', () => closeDialog(detail));
+      detail.addEventListener('click', (e) => {
+        const r = detail.getBoundingClientRect();
+        const inside = e.clientX >= r.left && e.clientX <= r.right &&
+                       e.clientY >= r.top  && e.clientY <= r.bottom;
+        if (!inside) closeDialog(detail);
+      });
+    }
   }
 
   /* Award reward badges whose threshold the seeker has now reached. The final
@@ -650,12 +782,12 @@
      one-shot; returns the ids awarded on THIS call. */
   function awardProgressBadges(foundCount, total) {
     const newly = [];
-    for (const [id, def] of Object.entries(BADGES)) {
+    for (const def of rewardLevels()) {
       const need = def.final ? total : def.threshold;
       // need > 0 guards the final badge when the cottage total is unknown
       // (e.g. data failed to load) — never award "all found" against total 0.
-      if (typeof need === 'number' && need > 0 && foundCount >= need && !persist.hasBadge(id)) {
-        if (persist.awardBadge(id, { name: def.name })) newly.push(id);
+      if (typeof need === 'number' && need > 0 && foundCount >= need && !persist.hasBadge(def.id)) {
+        if (persist.awardBadge(def.id, { name: def.name })) newly.push(def.id);
       }
     }
     return newly;
@@ -747,8 +879,8 @@
         const foundAt = persist.data.found[c.slug]?.foundAt;
         window.chatynkowoSync?.onFound(c.slug, foundAt, foundCount);
 
-        // Full set → the freshly earned "Mistrz Chatynkowa" badge unlocks the ranking.
-        if (newBadges.includes('mistrz-chatynkowa')) showRankInvite();
+        // Full set → the freshly earned final badge unlocks the ranking.
+        if (newBadges.includes(finalLevelId())) showRankInvite();
 
         // Anonymous, aggregate counts (never tied to a visitor). Sent through
         // the localStorage-backed queue (analytics.js) instead of a direct
@@ -784,7 +916,11 @@
     wireAudioPlayer();
     wireTrophies();
     wireRankInvite();
-    renderTrophies();   // initial paint of the count pip
+    // Reward config (treasury text, level thresholds, images, descriptions)
+    // drives both the Skarbiec display and the award thresholds, so load it
+    // before the first paint. Failure falls back to the built-in registry.
+    await loadRewards();
+    renderTrophies();   // initial paint of the count pip + treasury text
     loadCodeHashes();   // independent of the map — failure only blocks code entry
     try {
       await loadCottages();

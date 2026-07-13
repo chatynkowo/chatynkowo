@@ -1,0 +1,41 @@
+{
+  "treasury": {
+    "title": "Twój Skarbiec",
+    "intro": "Zbierasz to, co daje las – zioła, liście, kwiaty i inne skarby natury. Nie po to, by mieć więcej, ale by wiedzieć, że kiedyś mogą się przydać Tobie lub innym. Każda odznaka to mały krok w stronę leśnej mądrości. Zbieraj dalej i twórz własny zielony skarbniczek!",
+    "image": ""
+  },
+  "levels": [
+    {
+      "id": "first-find",
+      "name": "Buk",
+      "threshold": 1,
+      "final": false,
+      "image": "assets/img/rewards/first-find/card.webp",
+      "body": "**Jadalny** · Występuje w lesie\n\n**Sezon:** kwiecień – maj\n\n## Co i jak można leczyć?\n\n* **Działa przeciwzapalnie** — łagodzi dolegliwości skóry, stany zapalne jamy ustnej, gardła i dziąseł.\n* **Wspomaga oczyszczanie** — wspiera funkcje wątroby i żołądka, pomaga w usuwaniu toksyn z organizmu.\n* **Łagodzi dolegliwości** — przy problemach trawiennych, wzdęciach, uczuciu ciężkości.\n* **Wspomaga trawienie** — napar z kory lub liści pobudza trawienie, działa łagodząco na jelita.\n* **Wzmacnia organizm** — działa ściągająco i wzmacniająco, wspiera odporność.\n\n*Dostojny strażnik lasu – cień daje, siłę ma, szeptem wspiera, gdy trzeba.*"
+    },
+    {
+      "id": "tropiciel",
+      "name": "Lipa",
+      "threshold": 5,
+      "final": false,
+      "image": "assets/img/rewards/tropiciel/card.webp",
+      "body": "**Jadalna** · Występuje w lesie\n\n**Sezon:** czerwiec – sierpień\n\n## Co i jak można leczyć?\n\n* **Działa napotnie** — pomaga przy przeziębieniach, gorączce, infekcjach, stanach grypopodobnych.\n* **Łagodzi kaszel i chrypkę** — działa kojąco na podrażnione gardło, ułatwia odkrztuszanie.\n* **Wycisza i uspokaja** — pomaga przy stresie, napięciu, bezsenności.\n* **Wspomaga trawienie** — łagodzi wzdęcia, skurcze jelit, wspiera pracę żołądka.\n* **Wspiera serce i ciśnienie** — działa lekko rozszerzająco na naczynia, korzystnie wpływa na ciśnienie.\n\n*Słodka jak letni oddech – ale pełna mocy!*\n\n*Leśny lek ukryty w kwiatach – delikatny dla ciała, balsam dla duszy.*"
+    },
+    {
+      "id": "polowa-drogi",
+      "name": "Brzoza",
+      "threshold": 13,
+      "final": false,
+      "image": "assets/img/rewards/polowa-drogi/card.webp",
+      "body": "**Jadalna** · Występuje w lesie\n\n**Sezon:** kwiecień – maj\n\n## Co i jak można leczyć?\n\n* **Działa oczyszczająco** — wspomaga usuwanie toksyn z organizmu, wspiera pracę nerek i dróg moczowych.\n* **Działa przeciwzapalnie** — pomaga w stanach zapalnych skóry, przy reumatyzmie, artretyzmie.\n* **Wspomaga trawienie** — łagodzi dolegliwości żołądkowe, wzdęcia, niestrawność.\n* **Wzmacnia włosy i skórę** — napar z liści używany do płukania włosów i jako tonik do skóry.\n\n*Słodka jak leśna tajemnica – ale pełna mocy!*"
+    },
+    {
+      "id": "mistrz-chatynkowa",
+      "name": "Krwawnik",
+      "threshold": null,
+      "final": true,
+      "image": "assets/img/rewards/mistrz-chatynkowa/card.webp",
+      "body": "**Jadalny** · Występuje w lesie\n\n**Sezon:** maj – wrzesień (najlepszy czas na zbiór ziela w kwitnieniu: czerwiec – sierpień)\n\n## Co i jak można leczyć?\n\n* **Działa przeciwzapalnie** — pomaga przy stanach zapalnych gardła, jamy ustnej, dziąseł.\n* **Zatrzymuje krwawienia** — przy drobnych ranach, skaleczeniach, krwotokach z nosa – przykładany w postaci okładu.\n* **Wspomaga trawienie** — łagodzi wzdęcia, bóle brzucha, brak apetytu.\n* **Pomaga kobietom** — łagodzi bóle menstruacyjne, reguluje cykl.\n* **Wzmacnia odporność** — działa napotnie, wspiera organizm w przeziębieniach.\n\n*Niepozorna, ale pełna mocy – leśna tajemnica ukryta w drobnych kwiatach.*"
+    }
+  ]
+}

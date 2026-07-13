@@ -1085,15 +1085,30 @@ a:hover { color: var(--ember); }
 }
 .trophy {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: .6rem;
-  padding: .9rem .9rem 1rem;
   border-radius: 14px;
   background: rgba(245,234,209,.65);
   border: 1px solid rgba(90,69,35,.3);
   text-align: center;
 }
+/* The whole card is a button opening the reward detail dialog. */
+.trophy__btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: .55rem;
+  padding: .9rem .9rem 1rem;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: inherit;
+  transition: transform .15s ease;
+}
+.trophy__btn:hover,
+.trophy__btn:focus-visible { outline: none; transform: translateY(-2px); }
+.trophy__btn:focus-visible { box-shadow: 0 0 0 2px #2a6cd4; }
 .trophy__art {
   aspect-ratio: 1 / 1;
   border-radius: 10px;
@@ -1115,20 +1130,12 @@ a:hover { color: var(--ember); }
   color: var(--ink);
   letter-spacing: .02em;
 }
-.trophy__desc {
+.trophy__status {
   margin: 0;
   font-family: 'Cormorant Garamond', serif;
-  font-size: .95rem;
+  font-size: .9rem;
   color: var(--ink-soft);
-  line-height: 1.35;
 }
-.trophy__date {
-  margin: .2rem 0 0;
-  font-size: .85rem;
-  color: var(--ink-soft);
-  font-style: italic;
-}
-.trophy__date time { font-style: normal; color: var(--ink); }
 
 /* Earned: blue + gold ring like the discovered-pin colour pair. */
 .trophy--earned {
@@ -1137,6 +1144,7 @@ a:hover { color: var(--ember); }
   box-shadow: 0 4px 12px rgba(13,45,107,.25), inset 0 0 0 1px rgba(243,210,122,.5);
 }
 .trophy--earned .trophy__name { color: #0d2d6b; }
+.trophy--earned .trophy__status { color: #0d6b2d; }
 
 /* Locked: greyscale + dashed parchment border. */
 .trophy--locked {
@@ -1144,6 +1152,53 @@ a:hover { color: var(--ember); }
   filter: grayscale(.7);
   border-style: dashed;
 }
+
+/* ---------- Reward detail dialog ----------
+   Opened from a Skarbiec card: the collectible illustration + the full
+   textual description (the content that used to live only inside the JPEG). */
+.modal--reward-detail { max-width: min(640px, calc(100% - 2rem)); }
+.reward-detail__name {
+  margin: 0 0 .6rem;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.5rem;
+  color: var(--ink);
+  text-align: center;
+}
+.modal--reward-detail.reward-detail--earned .reward-detail__name { color: #0d2d6b; }
+.reward-detail__art {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(90,69,35,.3);
+  margin: 0 auto 1rem;
+  max-width: 420px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.2);
+}
+.reward-detail__art img { width: 100%; height: auto; display: block; }
+.reward-detail__date,
+.reward-detail__locked {
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  margin: 0 0 1rem;
+  color: var(--ink-soft);
+}
+.reward-detail__date { color: #0d6b2d; }
+.reward-detail__date time { font-style: normal; }
+.reward-detail__body {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.reward-detail__body h2 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.15rem;
+  margin: 1rem 0 .5rem;
+  color: var(--ink);
+}
+.reward-detail__body ul { margin: .4rem 0; padding-left: 1.2rem; }
+.reward-detail__body li { margin: .35rem 0; }
+.reward-detail__body em { color: var(--ink-soft); }
 
 .trophy-empty {
   text-align: center;
@@ -1156,9 +1211,9 @@ a:hover { color: var(--ember); }
 
 @media (max-width: 560px) {
   .trophy-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .75rem; }
-  .trophy { padding: .7rem .7rem .9rem; }
+  .trophy__btn { padding: .7rem .7rem .9rem; }
   .trophy__name { font-size: .95rem; }
-  .trophy__desc { font-size: .9rem; }
+  .trophy__status { font-size: .85rem; }
 }
 
 /* ---------- Modal ---------- */

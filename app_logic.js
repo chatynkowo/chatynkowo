@@ -67,12 +67,17 @@
     },
   };
 
-  /* Badge registry — rewards for progress in discovering Chatynki.
+  /* Badge registry — FALLBACK reward definitions.
+     The live reward levels (herb cards) and the treasury text are authored in
+     the admin panel and published as data/rewards.json; main.js loads that at
+     startup and it drives both the Skarbiec display and the award thresholds.
+     This registry is only used when rewards.json can't be loaded (older deploy
+     / offline), so awarding and the Skarbiec keep working. The ids here are the
+     same ones seeded into rewards.json, so earned progress (stored by id in
+     localStorage) matches whichever source is in effect.
      `threshold` is the number of discovered Chatynki required to earn the badge;
      `final: true` marks the full set (threshold = the total cottage count,
-     computed dynamically in main.js, so it works even when the count changes) and
-     unlocks the way to the ranking. `image` is optional — without it the renderer
-     shows a star (★); files can be added later under assets/img/badges/.
+     computed dynamically in main.js) and unlocks the way to the ranking.
      The award logic (main.js) calls persist.awardBadge(id, …) when a threshold is met. */
   const BADGES = {
     'first-find': {

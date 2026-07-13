@@ -215,7 +215,9 @@
     <button class="modal__close" id="trophiesClose" type="button" aria-label="Zamknij">×</button>
     <article class="modal__content">
       <h2 class="modal__title" id="trophiesTitle">Twój Skarbiec</h2>
-      <p class="modal__intro">
+      <!-- Treść (tytuł + wstęp) pochodzi z data/rewards.json i jest edytowalna
+           w panelu admina; poniższy tekst to tylko wartość zapasowa. -->
+      <p class="modal__intro" id="trophiesIntro">
         Tu pojawiają się odznaki, które zdobywasz odkrywając kolejne Chatynki.
       </p>
       <p class="trophy-empty" id="trophyEmpty" hidden>
@@ -223,11 +225,19 @@
         kolekcjonować odznaki.
       </p>
       <ul class="trophy-grid" id="trophyGrid" hidden></ul>
-      <!-- Pojawia się po zdobyciu odznaki "Mistrz Chatynkowa" (komplet). -->
+      <!-- Pojawia się po zdobyciu odznaki finałowej (komplet). -->
       <a class="trophy-cta" id="trophyRankingCta" href="ranking.html" hidden>
         🏆 Zobacz Ranking Zdobywców — pochwal się znajomym!
       </a>
     </article>
+  </dialog>
+
+  <!-- Szczegóły pojedynczej nagrody (kolekcjonerska karta zioła): otwierane
+       po kliknięciu miniatury w Skarbcu. Obrazek + opis tekstowy (markdown
+       renderowany przez main.js z data/rewards.json). -->
+  <dialog class="modal modal--reward-detail" id="rewardDetailModal" aria-label="Szczegóły nagrody">
+    <button class="modal__close" id="rewardDetailClose" type="button" aria-label="Zamknij">×</button>
+    <article class="modal__content" id="rewardDetailContent"></article>
   </dialog>
 
   <!-- Zaproszenie do Rankingu po zebraniu kompletu Chatynek (pokazywane przez main.js). -->
