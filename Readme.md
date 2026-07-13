@@ -15,6 +15,8 @@ duplicated, so the files can never disagree:
 | `data/code_hashes.json` | code **validation** (public, generated) | `sha256(salt:code) → slug`; rebuilt by `private/build-code-hashes.mjs` — never edit by hand |
 | `assets/stories/<slug>.mp3` | the cottage's audio story | played after a correct code |
 | `assets/img/cottages/<slug>/` | the cottage's photos | shown in the story dialog |
+| `data/rewards.json` | the **Skarbiec** (treasury) reward config (public) | `treasury` (`title`, `intro`, optional `image`) + ordered `levels`, each with `id`, `name`, `threshold` (or `final: true` for the full set), `image`, and a markdown `body` (the description that used to be baked into the card image) |
+| `assets/img/rewards/<id>/` | a reward level's collectible illustration | shown as a thumbnail in the Skarbiec and full-size in its detail dialog |
 
 Derived content is **rendered, not stored**:
 
@@ -96,6 +98,20 @@ On first load, open the **⚙** settings panel and enter your **owner**, **repo*
 and **PAT** (repo auto-detection only works on the live `*.github.io` URL). The
 editor then reads and writes the live repository through the GitHub API, exactly
 as on the deployed site.
+
+### Editing rewards (Skarbiec)
+
+The **Nagrody** tab in the editor's top bar switches to the reward editor, which
+writes `data/rewards.json`. Pick **🏛 Skarbiec (wstęp)** to edit the treasury
+title and intro, or a level to edit its **name**, **threshold** (how many
+cottages unlock it — or tick *Nagroda finałowa* for the full set), its
+**illustration**, and its **description** (a markdown editor, just like a
+cottage story). Use **+ Dodaj poziom** / **Usuń poziom** and the **↑/↓** buttons
+to manage and order levels; a live preview shows how the card looks in the
+Skarbiec. Everything is committed to `data/rewards.json` (plus any uploaded
+images under `assets/img/rewards/<id>/`) in a single commit on **Zapisz**. This
+is what lets a non-programmer define reward levels and rewrite the descriptions
+that used to be baked into the card images.
 
 ## Map generation
 
@@ -198,7 +214,7 @@ only sign in to **appear in the ranking**. On the last cottage the
 | [`private/supabase/ranking.sql`](private/supabase/ranking.sql) | DB schema: `profiles` + `finds` tables, RLS policies, and the public `leaderboard()` function. **Idempotent** — safe to re-run. |
 | [`chatynkowo-sync.js`](chatynkowo-sync.js) | Supabase client + Google sign-in + progress sync. **The three config constants live at the very top of this file.** |
 | [`ranking.html`](ranking.html) / [`ranking.js`](ranking.js) / [`ranking.css`](ranking.css) | the public ranking page (podium, list, share button, profile editor). |
-| `BADGES` in [`app_logic.js`](app_logic.js) | reward badges; the final `mistrz-chatynkowa` (full set) unlocks the ranking invite. |
+| [`data/rewards.json`](data/rewards.json) | reward levels (Skarbiec) + treasury text, edited in `/admin/` → **Nagrody**; the final level (`final: true`, default `mistrz-chatynkowa`) unlocks the ranking invite. `BADGES` in [`app_logic.js`](app_logic.js) is only the offline fallback. |
 
 ### 1. Create the Supabase project
 
