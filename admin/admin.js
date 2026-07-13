@@ -335,6 +335,15 @@
     dirty: false,
     geo: null,
     cleanBody: '',         // markdown snapshot at last load/save — for dirty detection
+    // ---- Rewards / Skarbiec mode ----
+    mode: 'cottages',      // active editor mode: 'cottages' | 'rewards'
+    rewards: null,         // in-memory data/rewards.json ({ treasury, levels })
+    rewardsLoaded: null,   // snapshot from last load/save — for discard
+    rwCurrent: 'treasury', // current reward selection: 'treasury' | level id
+    rwDirty: false,
+    rwMde: null,           // toastui editor for treasury intro / level body (lazy)
+    rwFilling: false,      // suppress dirty/preview while programmatically filling
+    rwPendingImages: new Map(), // path → { buffer, type, url } staged image uploads
   };
 
   /* ---------- load all ---------- */
@@ -420,6 +429,25 @@
 
     if (target) selectCottage(target);
     else { state.current = null; setStatus('clean', 'brak chatynek'); }
+
+    // ---- Rewards / Skarbiec config (data/rewards.json) ----
+    // Absent on branches that predate this feature; start from a default so the
+    // first save creates the file.
+    const rewardsSha = state.sha.get('data/rewards.json');
+    const rewardsRaw = rewardsSha
+      ? await fetchBlob(rewardsSha).then(t => JSON.parse(t)).catch(() => null)
+      : null;
+    state.rewards = normalizeRewardsEditor(rewardsRaw);
+    state.rewardsLoaded = cloneRewards(state.rewards);
+    state.rwPendingImages.clear();
+    rwMarkClean();
+    renderRewardSelect();
+    // If the rewards editor is already open, re-fill its current view (no
+    // harvest — the freshly loaded config replaces any stale form values).
+    if (state.rwMde) {
+      const key = rewardHas(state.rwCurrent) ? state.rwCurrent : 'treasury';
+      rwFill(key);
+    }
 
     // Fire-and-forget: warn (production only) if the repo has a newer editor.
     checkEditorFreshness();
@@ -892,6 +920,392 @@
     }
   }
 
+  /* ---------- Rewards / Skarbiec editor ----------
+     Edits data/rewards.json — the treasury intro and the ordered reward levels
+     (herb "collectible cards"): name, threshold (or the final full-set flag),
+     an illustration, and a markdown description. Mirrors the cottage editor:
+     one selection at a time, one shared markdown editor, staged image uploads,
+     everything committed to GitHub in a single commit on Save.
+
+     All edits accumulate in state.rewards (in memory) until Save, so switching
+     between the treasury and the levels never loses work and never prompts —
+     Discard is the only thing that reloads from the repository. */
+
+  function normalizeRewardsEditor(raw) {
+    const t = (raw && raw.treasury) || {};
+    const levels = Array.isArray(raw && raw.levels) ? raw.levels : [];
+    return {
+      treasury: {
+        title: t.title || 'Twój Skarbiec',
+        intro: t.intro || '',
+        image: t.image || '',
+      },
+      levels: levels.filter(l => l && l.id).map(l => ({
+        id: String(l.id),
+        name: l.name || '',
+        threshold: (l.threshold == null || l.threshold === '') ? null : Number(l.threshold),
+        final: Boolean(l.final),
+        image: l.image || '',
+        body: l.body || '',
+      })),
+    };
+  }
+
+  function cloneRewards(rw) { return JSON.parse(JSON.stringify(rw)); }
+
+  /* Pretty, stable JSON so diffs stay readable in git. Keys in a fixed order. */
+  function serializeRewardsJson(rw) {
+    const out = {
+      treasury: {
+        title: rw.treasury.title || '',
+        intro: rw.treasury.intro || '',
+        image: rw.treasury.image || '',
+      },
+      levels: rw.levels.map(l => ({
+        id: l.id,
+        name: l.name || '',
+        threshold: l.final ? null : (l.threshold == null || l.threshold === '' ? null : Number(l.threshold)),
+        final: Boolean(l.final),
+        image: l.image || '',
+        body: l.body || '',
+      })),
+    };
+    return JSON.stringify(out, null, 2) + '\n';
+  }
+
+  function rewardHas(id) {
+    return Boolean(state.rewards && state.rewards.levels.some(l => l.id === id));
+  }
+
+  function rwCurrentObj() {
+    if (!state.rewards) return null;
+    return state.rwCurrent === 'treasury'
+      ? state.rewards.treasury
+      : state.rewards.levels.find(l => l.id === state.rwCurrent) || null;
+  }
+
+  /* All reward-image paths under assets/img/rewards/ referenced by a config. */
+  function rewardImagePaths(rw) {
+    if (!rw) return [];
+    const out = [];
+    if (rw.treasury && rw.treasury.image) out.push(rw.treasury.image);
+    for (const l of rw.levels || []) if (l.image) out.push(l.image);
+    return out.filter(p => p.startsWith('assets/img/rewards/'));
+  }
+
+  /* Preview URL for an image path: a staged blob if freshly picked, else the
+     committed raw.githubusercontent.com URL. */
+  function rewardImageUrl(path) {
+    if (!path) return '';
+    const pending = state.rwPendingImages.get(path);
+    return pending ? pending.url : rawUrl(path);
+  }
+
+  /* ---------- mode switching ---------- */
+
+  function setMode(mode) {
+    if (mode === state.mode) return;
+    state.mode = mode;
+    const rewards = mode === 'rewards';
+    els.tabCottages.classList.toggle('is-active', !rewards);
+    els.tabRewards.classList.toggle('is-active', rewards);
+    els.tabCottages.setAttribute('aria-selected', String(!rewards));
+    els.tabRewards.setAttribute('aria-selected', String(rewards));
+    els.cottageToolbar.hidden = rewards;
+    els.rewardsToolbar.hidden = !rewards;
+    els.cottageView.hidden = rewards;
+    els.rewardsView.hidden = !rewards;
+    if (rewards) ensureRewardsEditor();
+  }
+
+  /* Create the markdown editor the first time the rewards view is shown (so
+     toastui measures a visible container), then fill the current selection. */
+  function ensureRewardsEditor() {
+    if (state.rwMde) { rwRenderPreview(); rwUpdateToolbarButtons(); return; }
+    state.rwMde = new toastui.Editor({
+      el: els.rwBodyEditor,
+      height: 'auto',
+      minHeight: '320px',
+      initialEditType: 'wysiwyg',
+      previewStyle: 'tab',
+      toolbarItems: [['heading', 'bold', 'italic'], ['ul', 'ol'], ['link']],
+      hideModeSwitch: false,
+    });
+    state.rwMde.on('change', () => { if (!state.rwFilling) rwOnEdit(); });
+    renderRewardSelect();
+    const key = (state.rwCurrent === 'treasury' || rewardHas(state.rwCurrent)) ? state.rwCurrent : 'treasury';
+    rwFill(key);
+  }
+
+  /* ---------- select / fill / harvest ---------- */
+
+  function renderRewardSelect() {
+    if (!state.rewards || !els.rwSelect) return;
+    const opts = ['<option value="treasury">🏛 Skarbiec (wstęp)</option>'];
+    state.rewards.levels.forEach((l, idx) => {
+      const thr = l.final ? 'komplet' : (l.threshold != null ? `próg ${l.threshold}` : 'próg —');
+      opts.push(`<option value="${escapeHtml(l.id)}">${idx + 1}. ${escapeHtml(l.name || l.id)} — ${thr}</option>`);
+    });
+    els.rwSelect.innerHTML = opts.join('');
+    els.rwSelect.value = (state.rwCurrent === 'treasury' || rewardHas(state.rwCurrent)) ? state.rwCurrent : 'treasury';
+  }
+
+  // User-initiated selection change: keep the outgoing edits, then fill.
+  function rwSelect(key) {
+    rwHarvestCurrent();
+    rwFill(key);
+  }
+
+  // Programmatic fill (no harvest) — used after loads, adds, deletes, reorders.
+  function rwFill(key) {
+    if (!state.rewards) return;
+    if (key !== 'treasury' && !rewardHas(key)) key = 'treasury';
+    state.rwCurrent = key;
+    els.rwSelect.value = key;
+    state.rwFilling = true;
+    if (key === 'treasury') {
+      els.rwTreasuryFields.hidden = false;
+      els.rwLevelFields.hidden = true;
+      els.rwTreTitle.value = state.rewards.treasury.title || '';
+      els.rwBodyLabel.textContent = 'Wstęp do Skarbca (markdown)';
+      els.rwBodyHint.textContent = 'Tekst pokazywany pod tytułem „Twój Skarbiec".';
+      state.rwMde.setMarkdown(state.rewards.treasury.intro || '');
+    } else {
+      const l = state.rewards.levels.find(x => x.id === key);
+      els.rwTreasuryFields.hidden = true;
+      els.rwLevelFields.hidden = false;
+      els.rwName.value = l.name || '';
+      els.rwThreshold.value = (l.threshold == null ? '' : l.threshold);
+      els.rwFinal.checked = Boolean(l.final);
+      els.rwBodyLabel.textContent = 'Opis nagrody (markdown)';
+      els.rwBodyHint.textContent = 'Treść, która wcześniej była wypalona w obrazku — teraz zwykły tekst.';
+      state.rwMde.setMarkdown(l.body || '');
+      rwUpdateFinalUI();
+    }
+    state.rwFilling = false;
+    rwRefreshImage();
+    rwUpdateToolbarButtons();
+    rwRenderPreview();
+  }
+
+  function rwHarvestCurrent() {
+    if (!state.rwMde || !state.rewards) return;
+    const md = state.rwMde.getMarkdown();
+    if (state.rwCurrent === 'treasury') {
+      state.rewards.treasury.title = els.rwTreTitle.value;
+      state.rewards.treasury.intro = md;
+    } else {
+      const l = state.rewards.levels.find(x => x.id === state.rwCurrent);
+      if (l) {
+        l.name = els.rwName.value;
+        l.threshold = numOrNull(els.rwThreshold.value);
+        l.final = els.rwFinal.checked;
+        l.body = md;
+      }
+    }
+  }
+
+  function rwOnEdit() {
+    rwHarvestCurrent();
+    rwMarkDirty();
+    renderRewardSelect();   // keep the dropdown label in sync (name/threshold)
+    rwRenderPreview();
+  }
+
+  function rwUpdateFinalUI() {
+    const final = els.rwFinal.checked;
+    els.rwThreshold.disabled = final;
+    els.rwFinalHint.hidden = !final;
+  }
+
+  function rwUpdateToolbarButtons() {
+    const isLevel = state.rwCurrent !== 'treasury';
+    els.rwDelete.disabled = !isLevel;
+    const arr = (state.rewards && state.rewards.levels) || [];
+    const i = arr.findIndex(l => l.id === state.rwCurrent);
+    els.rwMoveUp.disabled = !isLevel || i <= 0;
+    els.rwMoveDown.disabled = !isLevel || i < 0 || i >= arr.length - 1;
+  }
+
+  /* ---------- image ---------- */
+
+  function rwRefreshImage() {
+    const obj = rwCurrentObj();
+    const src = obj && obj.image ? rewardImageUrl(obj.image) : '';
+    if (src) {
+      els.rwImagePreview.src = src;
+      els.rwImagePreview.hidden = false;
+      els.rwImageEmpty.hidden = true;
+      els.rwImageDelete.disabled = false;
+    } else {
+      els.rwImagePreview.removeAttribute('src');
+      els.rwImagePreview.hidden = true;
+      els.rwImageEmpty.hidden = false;
+      els.rwImageDelete.disabled = true;
+    }
+  }
+
+  async function rwImageChosen(file) {
+    const obj = rwCurrentObj();
+    if (!file || !obj) return;
+    if (file.size > MAX_PHOTO_BYTES) { rwSetStatus('error', `${file.name} za duży (maks. 10 MB)`); return; }
+    const ext = (file.name.match(/\.([a-z0-9]+)$/i)?.[1] || 'jpg').toLowerCase();
+    const path = state.rwCurrent === 'treasury'
+      ? `assets/img/rewards/treasury/cover.${ext}`
+      : `assets/img/rewards/${state.rwCurrent}/card.${ext}`;
+    const buffer = await file.arrayBuffer();
+    const url = URL.createObjectURL(new Blob([buffer], { type: file.type }));
+    // Drop a stale staged blob if the previous pick used a different extension.
+    if (obj.image && obj.image !== path && state.rwPendingImages.has(obj.image)) {
+      URL.revokeObjectURL(state.rwPendingImages.get(obj.image).url);
+      state.rwPendingImages.delete(obj.image);
+    }
+    state.rwPendingImages.set(path, { buffer, type: file.type, url });
+    obj.image = path;
+    rwMarkDirty();
+    rwRefreshImage();
+    rwRenderPreview();
+  }
+
+  function rwDeleteImage() {
+    const obj = rwCurrentObj();
+    if (!obj || !obj.image) return;
+    if (state.rwPendingImages.has(obj.image)) {
+      URL.revokeObjectURL(state.rwPendingImages.get(obj.image).url);
+      state.rwPendingImages.delete(obj.image);
+    }
+    // The committed file (if any) is removed as an orphan on the next Save.
+    obj.image = '';
+    rwMarkDirty();
+    rwRefreshImage();
+    rwRenderPreview();
+  }
+
+  /* ---------- add / delete / reorder level ---------- */
+
+  function rwOpenAddDialog() {
+    els.rwAddId.value = ''; els.rwAddName.value = ''; els.rwAddError.hidden = true;
+    els.rwAddDialog.showModal();
+    setTimeout(() => els.rwAddId.focus(), 0);
+  }
+
+  function rwAddErr(msg) { els.rwAddError.textContent = msg; els.rwAddError.hidden = false; }
+
+  function rwConfirmAddLevel() {
+    const id = els.rwAddId.value.trim();
+    const name = els.rwAddName.value.trim();
+    if (!/^[a-z0-9-]+$/.test(id)) { rwAddErr('Identyfikator: małe litery, cyfry, myślniki.'); return; }
+    if (!name) { rwAddErr('Podaj nazwę.'); return; }
+    if (rewardHas(id)) { rwAddErr(`Poziom „${id}" już istnieje.`); return; }
+    rwHarvestCurrent();
+    const maxThr = Math.max(0, ...state.rewards.levels.map(l => Number(l.threshold) || 0));
+    state.rewards.levels.push({ id, name, threshold: maxThr + 1, final: false, image: '', body: '' });
+    els.rwAddDialog.close();
+    rwMarkDirty();
+    renderRewardSelect();
+    rwFill(id);
+  }
+
+  function rwDeleteLevel() {
+    if (state.rwCurrent === 'treasury') return;
+    const l = state.rewards.levels.find(x => x.id === state.rwCurrent);
+    if (!l) return;
+    if (!confirm(`Usunąć poziom nagrody „${l.name || l.id}"?\n\n`
+      + 'Gracze, którzy już go zdobyli, zachowają nagrodę w swoim Skarbcu.')) return;
+    state.rewards.levels = state.rewards.levels.filter(x => x.id !== state.rwCurrent);
+    rwMarkDirty();
+    renderRewardSelect();
+    rwFill('treasury');
+  }
+
+  function rwMove(dir) {
+    if (state.rwCurrent === 'treasury') return;
+    const arr = state.rewards.levels;
+    const i = arr.findIndex(l => l.id === state.rwCurrent);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= arr.length) return;
+    rwHarvestCurrent();
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    rwMarkDirty();
+    renderRewardSelect();
+    rwFill(state.rwCurrent);
+  }
+
+  /* ---------- preview ---------- */
+
+  function rwRenderPreview() {
+    if (!els.rwPreview) return;
+    const md = window.marked ? (s) => window.marked.parse(s || '') : (s) => escapeHtml(s || '');
+    const obj = rwCurrentObj();
+    if (!obj) { els.rwPreview.innerHTML = '<p class="rp-empty">—</p>'; return; }
+    const isTre = state.rwCurrent === 'treasury';
+    const name = isTre ? (obj.title || 'Twój Skarbiec') : (obj.name || state.rwCurrent);
+    const text = isTre ? obj.intro : obj.body;
+    const art = obj.image
+      ? `<div class="rp-art"><img src="${escapeHtml(rewardImageUrl(obj.image))}" alt=""></div>`
+      : '';
+    const bodyHtml = text ? `<div class="rp-body">${md(text)}</div>` : '<p class="rp-empty">(brak opisu)</p>';
+    els.rwPreview.innerHTML = `<p class="rp-name">${escapeHtml(name)}</p>${art}${bodyHtml}`;
+  }
+
+  /* ---------- status / dirty ---------- */
+
+  function rwSetStatus(s, text) { els.rwStatus.dataset.state = s; els.rwStatus.textContent = text; }
+  function rwMarkDirty() { state.rwDirty = true; els.rwSave.disabled = false; els.rwDiscard.disabled = false; rwSetStatus('dirty', 'niezapisane'); }
+  function rwMarkClean() { state.rwDirty = false; els.rwSave.disabled = true; els.rwDiscard.disabled = true; rwSetStatus('clean', 'zapisane'); }
+
+  /* ---------- save / discard ---------- */
+
+  async function rwSave() {
+    if (!state.rewards) return;
+    rwHarvestCurrent();
+    const ids = state.rewards.levels.map(l => l.id);
+    if (new Set(ids).size !== ids.length) { rwSetStatus('error', 'zduplikowane identyfikatory poziomów'); return; }
+    rwSetStatus('saving', 'zapisuję…');
+    els.rwSave.disabled = true;
+    try {
+      const changes = [{ path: 'data/rewards.json', text: serializeRewardsJson(state.rewards) }];
+      for (const [path, img] of state.rwPendingImages) changes.push({ path, binary: img.buffer });
+      // Orphan cleanup: reward images referenced before but not now (extension
+      // changed, image cleared, or level deleted) are removed in this commit.
+      const newPaths = new Set(rewardImagePaths(state.rewards));
+      const staged = new Set(state.rwPendingImages.keys());
+      for (const oldPath of rewardImagePaths(state.rewardsLoaded)) {
+        if (!newPaths.has(oldPath) && !staged.has(oldPath) && state.sha.has(oldPath)) {
+          changes.push({ path: oldPath, delete: true });
+        }
+      }
+      await commitChanges(changes, 'rewards: edytuj Skarbiec');
+      for (const [, img] of state.rwPendingImages) URL.revokeObjectURL(img.url);
+      state.rwPendingImages.clear();
+      state.rewardsLoaded = cloneRewards(state.rewards);
+      rwMarkClean();
+      renderRewardSelect();
+      rwRefreshImage();
+      rwRenderPreview();
+    } catch (e) {
+      rwSetStatus('error', `błąd: ${e.message}`);
+      els.rwSave.disabled = false;
+    }
+  }
+
+  async function rwDiscard() {
+    if (!state.rwDirty) return;
+    if (!confirm('Odrzucić niezapisane zmiany w nagrodach i wczytać wersję z repozytorium?')) return;
+    for (const [, img] of state.rwPendingImages) URL.revokeObjectURL(img.url);
+    state.rwPendingImages.clear();
+    state.rwDirty = false;
+    els.rwDiscard.disabled = true;
+    rwSetStatus('saving', 'wczytuję z repozytorium…');
+    try {
+      await loadAll();   // reloads cottages + rewards and re-fills the view
+    } catch (e) {
+      rwSetStatus('error', `błąd: ${e.message}`);
+      state.rwDirty = true;
+      els.rwDiscard.disabled = false;
+    }
+  }
+
   /* ---------- auth / settings ---------- */
 
   const $ = sel => document.querySelector(sel);
@@ -926,6 +1340,22 @@
     geoMap: $('#geo-map'),
     addDialog: $('#add-dialog'), addSlug: $('#add-slug'), addTitle: $('#add-title'),
     addError: $('#add-error'), addConfirm: $('#btn-add-confirm'),
+    // ---- Rewards mode ----
+    tabCottages: $('#tab-cottages'), tabRewards: $('#tab-rewards'),
+    cottageToolbar: $('#cottage-toolbar'), rewardsToolbar: $('#rewards-toolbar'),
+    cottageView: $('#cottage-view'), rewardsView: $('#rewards-view'),
+    rwSelect: $('#rw-select'), rwAdd: $('#rw-add'), rwDelete: $('#rw-delete'),
+    rwStatus: $('#rw-status'), rwDiscard: $('#rw-discard'), rwSave: $('#rw-save'),
+    rwTreasuryFields: $('#rw-treasury-fields'), rwLevelFields: $('#rw-level-fields'),
+    rwTreTitle: $('#rw-tre-title'),
+    rwName: $('#rw-name'), rwThreshold: $('#rw-threshold'), rwFinal: $('#rw-final'),
+    rwFinalHint: $('#rw-final-hint'), rwMoveUp: $('#rw-move-up'), rwMoveDown: $('#rw-move-down'),
+    rwImage: $('#rw-image'), rwImagePreview: $('#rw-image-preview'), rwImageEmpty: $('#rw-image-empty'),
+    rwImageFile: $('#rw-image-file'), rwImageDelete: $('#rw-image-delete'),
+    rwBodyLabel: $('#rw-body-label'), rwBodyHint: $('#rw-body-hint'), rwBodyEditor: $('#rw-body-editor'),
+    rwPreview: $('#rw-preview'),
+    rwAddDialog: $('#rw-add-dialog'), rwAddId: $('#rw-add-id'), rwAddName: $('#rw-add-name'),
+    rwAddError: $('#rw-add-error'), rwAddConfirm: $('#rw-add-confirm'),
   };
 
   function prefillAuthForm() {
@@ -1042,10 +1472,42 @@
       if (btn) { const fig = btn.closest('.photo-thumb'); if (fig?.dataset.name) deletePhoto(fig.dataset.name); }
     });
 
-    window.addEventListener('keydown', ev => {
-      if ((ev.ctrlKey || ev.metaKey) && ev.key === 's') { ev.preventDefault(); if (!els.save.disabled) save(); }
+    /* ---- Rewards mode ---- */
+    els.tabCottages.addEventListener('click', () => setMode('cottages'));
+    els.tabRewards.addEventListener('click', () => setMode('rewards'));
+    els.rwSelect.addEventListener('change', () => rwSelect(els.rwSelect.value));
+    els.rwSave.addEventListener('click', rwSave);
+    els.rwDiscard.addEventListener('click', rwDiscard);
+    els.rwAdd.addEventListener('click', rwOpenAddDialog);
+    els.rwDelete.addEventListener('click', rwDeleteLevel);
+    els.rwAddConfirm.addEventListener('click', rwConfirmAddLevel);
+    els.rwAddId.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); els.rwAddName.focus(); } });
+    els.rwAddName.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); rwConfirmAddLevel(); } });
+    els.rwMoveUp.addEventListener('click', () => rwMove(-1));
+    els.rwMoveDown.addEventListener('click', () => rwMove(1));
+    for (const el of [els.rwTreTitle, els.rwName, els.rwThreshold]) {
+      el.addEventListener('input', () => { if (!state.rwFilling) rwOnEdit(); });
+    }
+    els.rwFinal.addEventListener('change', () => {
+      if (state.rwFilling) return;
+      rwUpdateFinalUI();
+      rwOnEdit();
     });
-    window.addEventListener('beforeunload', ev => { if (state.dirty) { ev.preventDefault(); ev.returnValue = ''; } });
+    els.rwImageFile.addEventListener('change', ev => {
+      const f = ev.target.files?.[0]; if (f) rwImageChosen(f); ev.target.value = '';
+    });
+    els.rwImageDelete.addEventListener('click', rwDeleteImage);
+
+    window.addEventListener('keydown', ev => {
+      if ((ev.ctrlKey || ev.metaKey) && ev.key === 's') {
+        ev.preventDefault();
+        if (state.mode === 'rewards') { if (!els.rwSave.disabled) rwSave(); }
+        else if (!els.save.disabled) save();
+      }
+    });
+    window.addEventListener('beforeunload', ev => {
+      if (state.dirty || state.rwDirty) { ev.preventDefault(); ev.returnValue = ''; }
+    });
   }
 
   /* ---------- boot ---------- */
