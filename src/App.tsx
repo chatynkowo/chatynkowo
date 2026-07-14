@@ -4,15 +4,11 @@ import {
   BookOpenText,
   CheckCircle,
   Crown,
-  FacebookLogo,
   Footprints,
-  InstagramLogo,
   Key,
-  List,
   LockKeyOpen,
   MapTrifold,
   ShieldCheck,
-  Sparkle,
   SpeakerHigh,
   Trophy,
   X,
@@ -20,7 +16,12 @@ import {
 import { marked } from 'marked'
 import { loadCottages, resolveCode } from './lib/content'
 import { BADGES, discoverCottage, loadStoredState } from './lib/persistence'
+import { initializeAnalytics, track } from './lib/analytics'
+import { syncNewFind } from './lib/sync'
 import type { Cottage, StoredState } from './types'
+import { SiteFooter } from './components/SiteFooter'
+import { SiteHeader } from './components/SiteHeader'
+import { AudioPlayer } from './components/AudioPlayer'
 
 const STORY_IMAGES = [
   'assets/img/WhatsApp-Image-2026-01-26-at-23.08.00-1.webp',
@@ -51,32 +52,15 @@ function discoveryCountLabel(count: number) {
   return `${count} odkryć`
 }
 
-function discoveredCottagesLabel(count: number) {
-  if (count === 1) return '1 odkrytą Chatynkę'
-  const lastTwo = count % 100
-  const last = count % 10
-  if ((lastTwo < 12 || lastTwo > 14) && last >= 2 && last <= 4) return `${count} odkryte Chatynki`
-  return `${count} odkrytych Chatynek`
-}
-
-function loadExternalScript(src: string, module = false) {
-  if (document.querySelector(`script[src="${src}"]`)) return
-  const script = document.createElement('script')
-  script.src = src
-  script.async = true
-  if (module) script.type = 'module'
-  document.head.append(script)
-}
-
 function App() {
   const [cottages, setCottages] = useState<Cottage[]>([])
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading')
   const [stored, setStored] = useState<StoredState>(() => loadStoredState())
-  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [codeDigits, setCodeDigits] = useState<string[]>(() => [...EMPTY_PIN])
   const [codeState, setCodeState] = useState<'idle' | 'checking' | 'error'>('idle')
   const [codeMessage, setCodeMessage] = useState('')
   const [story, setStory] = useState<Cottage | null>(null)
+  const [storyPreviouslyFound, setStoryPreviouslyFound] = useState(false)
   const [treasuryOpen, setTreasuryOpen] = useState(false)
   const [achievement, setAchievement] = useState('')
   const codeInputRefs = useRef<Array<HTMLInputElement | null>>([])
@@ -99,10 +83,10 @@ function App() {
       .catch(() => {
         if (current) setLoadState('error')
       })
-    loadExternalScript('analytics.js')
-    loadExternalScript('chatynkowo-sync.js', true)
+    const cleanupAnalytics = initializeAnalytics()
     return () => {
       current = false
+      cleanupAnalytics()
     }
   }, [])
 
@@ -147,9 +131,21 @@ function App() {
   }, [story, treasuryOpen])
 
   const openCode = useCallback(() => {
-    document.getElementById('kod')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    window.setTimeout(() => codeInputRefs.current[0]?.focus(), 450)
-  }, [])
+    const mobile = window.matchMedia('(max-width: 760px)').matches
+    const firstEmpty = codeDigits.findIndex((digit) => !digit)
+    const input = codeInputRefs.current[firstEmpty < 0 ? 0 : firstEmpty]
+
+    // Mobile browsers only open the numeric keyboard when focus is requested
+    // directly from the user's click, not from a delayed callback.
+    input?.focus({ preventScroll: true })
+    input?.select()
+    window.requestAnimationFrame(() => {
+      document.getElementById('kod')?.scrollIntoView({
+        behavior: 'smooth',
+        block: mobile ? 'start' : 'center',
+      })
+    })
+  }, [codeDigits])
 
   function clearCodeFeedback() {
     if (codeState !== 'idle') setCodeState('idle')
@@ -246,16 +242,17 @@ function App() {
       const result = discoverCottage(stored, cottage.slug, normalized, cottages.length)
       setStored(result.next)
       setCodeState('idle')
-      setCodeMessage('Opowieść została odblokowana.')
+      setCodeMessage(result.isNew ? 'Nowa opowieść została odblokowana.' : 'Ta Chatynka jest już w Twojej Kronice. Otwieram opowieść ponownie.')
       setCodeDigits([...EMPTY_PIN])
+      setStoryPreviouslyFound(!result.isNew)
       setStory(cottage)
 
       if (result.isNew) {
         const count = Object.keys(result.next.found).length
-        window.chatynkowoStats?.track(`found-${cottage.slug}`, `Odkryto: ${cottage.title}`)
-        window.chatynkowoStats?.track(`progress-${count}`, `Postęp: ${count}`)
+        track(`found-${cottage.slug}`, `Odkryto: ${cottage.title}`)
+        track(`progress-${count}`, `Postęp: ${count}`)
         const foundAt = result.next.found[cottage.slug].foundAt
-        void window.chatynkowoSync?.onFound(cottage.slug, foundAt, count)
+        void syncNewFind(cottage.slug, foundAt, count)
       }
       if (result.newlyEarned.length) {
         const latest = BADGES.find((badge) => badge.id === result.newlyEarned.at(-1))
@@ -269,62 +266,59 @@ function App() {
   }
 
   function navigateTo(id: string) {
-    setMobileNavOpen(false)
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
     <div className="site-shell">
       <a className="skip-link" href="#main">Przejdź do treści</a>
-      <header className="site-header">
-        <a className="brand" href="#top" aria-label="Chatynkowo, strona główna">
-          <img src="assets/img/logo.webp" alt="" />
-          <span>Chatynkowo</span>
-        </a>
-        <nav className={`main-nav${mobileNavOpen ? ' is-open' : ''}`} aria-label="Główna nawigacja">
-          <button type="button" onClick={() => navigateTo('magia')}>Jak grać</button>
-          <button type="button" onClick={() => navigateTo('mapa')}>Atlas</button>
-          <button type="button" onClick={openCode}>Wpisz kod</button>
-          <a href="ranking.html">Ranking</a>
-        </nav>
-        <button
-          type="button"
-          className="nav-toggle icon-button"
-          onClick={() => setMobileNavOpen((open) => !open)}
-          aria-expanded={mobileNavOpen}
-          aria-label={mobileNavOpen ? 'Zamknij menu' : 'Otwórz menu'}
-        >
-          {mobileNavOpen ? <X size={24} /> : <List size={24} />}
-        </button>
-      </header>
+      <SiteHeader items={[
+        { label: 'Mapa wyprawy', onClick: () => navigateTo('mapa') },
+        { label: 'Wpisz kod', onClick: openCode },
+        { label: 'Notatnik', onClick: () => navigateTo('magia') },
+        { label: 'Ranking', href: 'ranking.html' },
+      ]} />
 
       <main id="main">
-        <section className={`hero${foundCount ? ' is-returning' : ' is-new'}`} id="top">
-          <div className="hero-copy">
-            <p className="eyebrow"><Sparkle size={16} weight="fill" /> {foundCount ? 'Kronika rozpoznała Twój ślad' : 'Baśniowa gra terenowa w Jurze'}</p>
-            <h1>{foundCount ? 'Witaj ponownie, Tropicielu' : 'Chatynkowo czeka na Twój pierwszy krok'}</h1>
-            <p className="hero-lead">
-              {foundCount
-                ? `Masz już ${discoveredCottagesLabel(foundCount)}. Wybierz kolejny trop albo obudź opowieść kodem z tabliczki.`
-                : 'W prawdziwych lasach i skałach Jury ukryto domy Elfów. Odszukaj je, zdobywaj pieczęcie i otwieraj opowieści, których nie da się poznać z domu.'}
-            </p>
-            <div className="hero-actions">
-              <button className="button button-primary" type="button" onClick={() => navigateTo('mapa')}>
-                <MapTrifold size={21} weight="fill" /> {foundCount ? 'Kontynuuj wyprawę' : 'Rozpocznij wyprawę'}
-              </button>
-              <button className="button button-ghost" type="button" onClick={() => foundCount ? setTreasuryOpen(true) : navigateTo('magia')}>
-                {foundCount ? <Crown size={21} /> : <BookOpenText size={21} />}
-                {foundCount ? 'Otwórz Kronikę' : 'Poznaj zasady'}
-              </button>
+        <section className="expedition-board" id="top" aria-label="Plansza wyprawy">
+          <div className="map-section" id="mapa">
+            <div className="section-heading atlas-heading">
+              <div>
+                <p className="eyebrow"><MapTrifold size={16} weight="fill" /> Atlas Chatynkowa</p>
+                <h2>{foundCount ? 'Wybierz kolejny trop' : 'Gdzie ruszysz najpierw?'}</h2>
+              </div>
+              <p>Dotknij znaku, poznaj wskazówkę i wyznacz swoją wyprawę w prawdziwym świecie.</p>
+              <nav className="atlas-mobile-actions" aria-label="Szybkie akcje wyprawy">
+                <button type="button" onClick={openCode}><Key size={19} weight="fill" /> Wpisz kod</button>
+                <button type="button" onClick={() => setTreasuryOpen(true)}><Crown size={19} weight="fill" /> Kronika{foundCount > 0 && <strong>{foundCount}</strong>}</button>
+              </nav>
             </div>
-            <p className="hero-world-note"><Footprints size={18} weight="duotone" /> Gra toczy się na prawdziwym szlaku. Dbaj o las i nie schodź z bezpiecznych ścieżek.</p>
+            {loadState === 'loading' && <div className="map-skeleton" role="status" aria-label="Ładowanie mapy"><div /><span>Rozwijam baśniową mapę...</span></div>}
+            {loadState === 'error' && <div className="map-error" role="alert"><ShieldCheck size={34} /><h3>Mapa nie mogła się otworzyć</h3><p>Sprawdź połączenie i odśwież stronę. Twoje odkrycia są bezpieczne.</p><button className="button button-primary" type="button" onClick={() => window.location.reload()}>Odśwież</button></div>}
+            {loadState === 'ready' && cottages.length === 0 && <div className="map-error"><MapTrifold size={34} /><h3>Kraina czeka na pierwszą Chatynkę</h3></div>}
+            {loadState === 'ready' && cottages.length > 0 && (
+              <Suspense fallback={<div className="map-skeleton"><div /><span>Rozwijam baśniową mapę...</span></div>}>
+                <MapExplorer cottages={cottages} foundSlugs={foundSlugs} onOpenCode={openCode} />
+              </Suspense>
+            )}
           </div>
 
-          <aside className="discovery-gate" id="kod" aria-labelledby="gate-title">
+          <aside className="quest-panel" aria-label="Ekwipunek i cel wyprawy">
+            <div className="quest-panel-head">
+              <span>Etap {foundCount + 1} · Aktualne zadanie</span>
+              <strong>{foundCount ? 'Odnajdź kolejną pieczęć' : 'Wybierz trop na mapie'}</strong>
+              <p>{nextBadge ? `${nextBadge.name}: jeszcze ${discoveryCountLabel(discoveriesToNextBadge)}.` : 'Wszystkie opowieści odnalezione.'}</p>
+              <button type="button" className="quest-progress-mini" onClick={() => setTreasuryOpen(true)}>
+                <span><Crown size={15} weight="fill" /> Kronika</span>
+                <strong>{foundCount} / {cottages.length || 26}</strong>
+                <i aria-hidden="true"><b style={{ width: `${progressPercent}%` }} /></i>
+              </button>
+            </div>
+            <div className="discovery-gate" id="kod" aria-labelledby="gate-title">
             <div className="gate-seal" aria-hidden="true"><LockKeyOpen size={28} weight="duotone" /></div>
             <p className="gate-kicker">Pieczęć Chatynki</p>
-            <h2 id="gate-title">{foundCount ? 'Obudź kolejną opowieść' : 'Stoisz przy Chatynce?'}</h2>
-            <p className="gate-lead">Wpisz cztery cyfry z tabliczki. Jeśli pieczęć jest prawdziwa, Elf otworzy przed Tobą swoją historię.</p>
+            <h2 id="gate-title">Jesteś na miejscu?</h2>
+            <p className="gate-lead">Wpisz cztery cyfry z tabliczki i sprawdź, kogo udało Ci się odnaleźć.</p>
             <form className="code-form code-form--gate" onSubmit={submitCode} noValidate>
               <label id="code-label" htmlFor="discovery-code-0">Kod z tabliczki</label>
               <div
@@ -359,98 +353,37 @@ function App() {
               </button>
               {codeMessage && <p id="code-result" className={`code-result ${codeState}`} role="status">{codeMessage}</p>}
             </form>
-            <p className="gate-memory"><ShieldCheck size={17} weight="duotone" /> Twój ślad i odkrycia zapiszą się na tym urządzeniu.</p>
+            </div>
+            <button className="quest-kronika" type="button" onClick={() => setTreasuryOpen(true)}>
+              <Crown size={22} weight="duotone" /><span><strong>Otwórz Kronikę</strong>Zobacz pieczęcie i odznaki</span><ArrowRight size={18} />
+            </button>
+            <div className="quest-notes" aria-label="Ważne informacje o wyprawie">
+              <p><Footprints size={18} /> <span><strong>Wyprawa odbywa się w terenie</strong>Dbaj o las i trzymaj się bezpiecznych ścieżek.</span></p>
+              <p><ShieldCheck size={18} weight="duotone" /> <span><strong>Postęp zapisuje się automatycznie</strong>Pieczęcie pozostaną na tym urządzeniu.</span></p>
+            </div>
           </aside>
-
-          <div className="hero-progress" aria-label={`Odkryto ${foundCount} z ${cottages.length || 26} Chatynek`}>
-            <div className="quest-progress-copy">
-              <span>Twoja Kronika</span>
-              <strong>{foundCount ? `${foundCount} z ${cottages.length || 26} pieczęci` : 'Jeszcze nie rozpoczęta'}</strong>
-            </div>
-            <div className="quest-progress-track" aria-hidden="true"><i style={{ width: `${progressPercent}%` }} /></div>
-            <div className="quest-next-goal">
-              <span>{nextBadge ? 'Następny cel' : 'Kronika ukończona'}</span>
-              <strong>{nextBadge ? `${nextBadge.name} · ${discoveryCountLabel(discoveriesToNextBadge)}` : 'Wszystkie opowieści odnalezione'}</strong>
-            </div>
-          </div>
         </section>
 
-        <section className="magic-section" id="magia">
-          <figure className="magic-image-wrap">
+        <section className="field-guide" id="magia">
+          <div className="field-guide-intro">
+            <p className="eyebrow"><BookOpenText size={16} weight="fill" /> Notatnik Tropiciela</p>
+            <h2>Jeśli to Twoja pierwsza wyprawa</h2>
+            <p>Nie musisz czytać instrukcji od deski do deski. Zapamiętaj cztery ruchy — resztę podpowie Ci Atlas i sam szlak.</p>
+          </div>
+          <ol className="field-guide-steps">
+            <li><span>01</span><MapTrifold size={28} weight="duotone" /><strong>Wybierz znak</strong><p>Otwórz punkt w Atlasie i poznaj trop.</p></li>
+            <li><span>02</span><Footprints size={28} weight="duotone" /><strong>Rusz w teren</strong><p>Chatynki czekają w prawdziwych miejscach Jury.</p></li>
+            <li><span>03</span><Key size={28} weight="duotone" /><strong>Znajdź kod</strong><p>Cztery cyfry są na tabliczce przy Chatynce.</p></li>
+            <li><span>04</span><BookOpenText size={28} weight="duotone" /><strong>Obudź historię</strong><p>Zapisz opowieść i pieczęć w Kronice.</p></li>
+          </ol>
+          <div className="field-guide-photo">
             <img src="assets/img/chatynkowo-trail.webp" alt="Leśny szlak prowadzący do rozświetlonej Chatynki" loading="lazy" decoding="async" />
-            <figcaption>„Chatynki pokazują się tylko tym, którzy patrzą uważnie.”</figcaption>
-          </figure>
-          <div className="magic-copy">
-            <p className="eyebrow"><BookOpenText size={16} weight="fill" /> Zasady krainy</p>
-            <h2>26 domów. 26 opowieści. Jeden prawdziwy szlak.</h2>
-            <p>To nie jest gra do przejścia przed ekranem. Atlas prowadzi do prawdziwych miejsc, a każda odnaleziona Chatynka zostawia ślad w Twojej Kronice.</p>
-            <ol className="journey-steps">
-              <li><MapTrifold size={26} weight="duotone" /><span><strong>Wybierz trop w Atlasie</strong>Mapa wskaże prawdziwe miejsce ukrycia.</span></li>
-              <li><Footprints size={26} weight="duotone" /><span><strong>Dotrzyj na miejsce</strong>Idź uważnie i pozwól, by to las podpowiadał drogę.</span></li>
-              <li><Key size={26} weight="duotone" /><span><strong>Odszukaj pieczęć</strong>Cztery cyfry znajdziesz dopiero przy Chatynce.</span></li>
-              <li><BookOpenText size={26} weight="duotone" /><span><strong>Obudź opowieść</strong>Głos Elfa i zdobyta pieczęć zostaną w Twojej Kronice.</span></li>
-            </ol>
-          </div>
-        </section>
-
-        <section className="map-section" id="mapa">
-          <div className="section-heading">
-            <p className="eyebrow"><MapTrifold size={16} weight="fill" /> Atlas Chatynkowa</p>
-            <h2>{foundCount ? 'Dokąd prowadzi następny trop?' : 'Wybierz pierwszą Chatynkę'}</h2>
-            <p>Każdy znak prowadzi do miejsca istniejącego naprawdę. Wybierz Chatynkę, poznaj wskazówkę i ruszaj w drogę.</p>
-          </div>
-          {loadState === 'loading' && (
-            <div className="map-skeleton" role="status" aria-label="Ładowanie mapy">
-              <div /><span>Rozwijam baśniową mapę...</span>
-            </div>
-          )}
-          {loadState === 'error' && (
-            <div className="map-error" role="alert">
-              <ShieldCheck size={34} />
-              <h3>Mapa nie mogła się otworzyć</h3>
-              <p>Sprawdź połączenie i odśwież stronę. Twoje dotychczasowe odkrycia są bezpieczne w tym urządzeniu.</p>
-              <button className="button button-primary" type="button" onClick={() => window.location.reload()}>Odśwież</button>
-            </div>
-          )}
-          {loadState === 'ready' && cottages.length === 0 && (
-            <div className="map-error"><MapTrifold size={34} /><h3>Kraina czeka na pierwszą Chatynkę</h3><p>Dodaj punkt w edytorze, aby pojawił się na mapie.</p></div>
-          )}
-          {loadState === 'ready' && cottages.length > 0 && (
-            <Suspense fallback={<div className="map-skeleton"><div /><span>Rozwijam baśniową mapę...</span></div>}>
-              <MapExplorer cottages={cottages} foundSlugs={foundSlugs} onOpenCode={openCode} />
-            </Suspense>
-          )}
-        </section>
-
-        <section className="treasury-banner">
-          <div className="treasury-copy">
-            <p className="eyebrow"><Crown size={16} weight="fill" /> Kronika Tropiciela</p>
-            <h2>{foundCount ? 'Twój ślad w Chatynkowie rośnie' : 'Pierwsza karta wciąż jest pusta'}</h2>
-            <p>{foundCount ? `Odnalezione opowieści: ${foundCount}. Zdobyte odznaki: ${Object.keys(stored.badges).length}.` : 'Odnajdź pierwszą Chatynkę, a Kronika zapamięta jej opowieść i przyzna Ci pierwszą pieczęć.'}</p>
-          </div>
-          <div className="treasury-stats" aria-label="Postęp wyprawy">
-            <span><strong>{foundCount}</strong> odkryć</span>
-            <span><strong>{Object.keys(stored.badges).length}</strong> odznak</span>
-            <span><strong>{cottages.length || 26}</strong> opowieści</span>
-          </div>
-          <div className="treasury-actions">
-            <button className="button button-primary" type="button" onClick={() => setTreasuryOpen(true)}>Otwórz Kronikę</button>
-            <a className="button button-ghost" href="ranking.html">Ranking Tropicieli</a>
+            <blockquote>„Chatynki pokazują się tylko tym, którzy patrzą uważnie.”</blockquote>
           </div>
         </section>
       </main>
 
-      <footer className="site-footer">
-        <a className="footer-brand" href="#top"><img src="assets/img/logo.webp" alt="" /><span>Chatynkowo</span></a>
-        <nav aria-label="Dokumenty">
-          <a href="legal/regulamin.html">Regulamin</a>
-          <a href="legal/polityka-prywatnosci.html">Polityka prywatności</a>
-        </nav>
-        <nav aria-label="Media społecznościowe">
-          <a href="https://www.instagram.com/chatynkowo.pl/" rel="noreferrer" target="_blank"><InstagramLogo size={20} /> Instagram</a>
-          <a href="https://www.facebook.com/chatynkowo/" rel="noreferrer" target="_blank"><FacebookLogo size={20} /> Facebook</a>
-        </nav>
-      </footer>
+      <SiteFooter />
 
       {foundCount > 0 && (
         <button
@@ -463,6 +396,7 @@ function App() {
           <span>{Object.keys(stored.badges).length}</span>
         </button>
       )}
+
 
       {achievement && <div className="achievement-toast" role="status"><Crown size={21} weight="fill" />{achievement}</div>}
 
@@ -495,13 +429,16 @@ function App() {
             <button className="icon-button modal-close" type="button" onClick={() => setStory(null)} aria-label="Zamknij opowieść"><X size={22} /></button>
             <div className="story-photo"><img src={storyImage(story)} alt={`Leśna Chatynka, opowieść: ${story.title}`} /></div>
             <div className="story-body">
-              <p className="story-unlocked"><CheckCircle size={18} weight="fill" /> Opowieść odblokowana</p>
+              <p className={`story-unlocked${storyPreviouslyFound ? ' is-returning' : ''}`}>
+                <CheckCircle size={18} weight="fill" />
+                {storyPreviouslyFound ? 'Chatynka odkryta wcześniej' : 'Nowa opowieść odblokowana'}
+              </p>
               <h2 id="story-title">{story.title}</h2>
               {story.virtue && <p className="story-virtue">Mądrość tej historii: <strong>{story.virtue}</strong></p>}
               <div className="markdown" dangerouslySetInnerHTML={{ __html: marked.parse(story.storyMarkdown) as string }} />
               <div className="audio-card">
                 <SpeakerHigh size={28} weight="duotone" />
-                <div><strong>Posłuchaj baśni Elfa</strong><audio src={`assets/stories/${story.slug}.mp3`} controls preload="none" /></div>
+                <div><strong>Posłuchaj baśni Elfa</strong><AudioPlayer src={`assets/stories/${story.slug}.mp3`} title={story.title} /></div>
               </div>
             </div>
           </article>

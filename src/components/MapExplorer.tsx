@@ -3,7 +3,6 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import {
   ArrowCounterClockwise,
   CheckCircle,
-  Compass,
   HouseLine,
   MagnifyingGlass,
   MapPin,
@@ -106,6 +105,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
   const [canZoomOut, setCanZoomOut] = useState(false)
   const [query, setQuery] = useState('')
   const [searchMessage, setSearchMessage] = useState('')
+  const [touchMapActive, setTouchMapActive] = useState(() => !window.matchMedia('(max-width: 760px)').matches)
   const bounds = useMemo(
     () => L.latLngBounds(cottages.map((cottage) => [cottage.lat, cottage.lng] as L.LatLngTuple)).pad(0.24),
     [cottages],
@@ -273,6 +273,23 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
     }
   }, [bounds, chooseCottage, cottages, foundSlugs])
 
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !window.matchMedia('(max-width: 760px)').matches) return
+    const method = touchMapActive ? 'enable' : 'disable'
+    map.dragging[method]()
+    map.touchZoom[method]()
+    map.doubleClickZoom[method]()
+    map.scrollWheelZoom.disable()
+  }, [touchMapActive])
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 760px)')
+    const handleBreakpoint = (event: MediaQueryListEvent) => setTouchMapActive(!event.matches)
+    query.addEventListener('change', handleBreakpoint)
+    return () => query.removeEventListener('change', handleBreakpoint)
+  }, [])
+
   function submitSearch(event: React.FormEvent) {
     event.preventDefault()
     const normalized = query.trim().toLocaleLowerCase('pl')
@@ -286,15 +303,19 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
   }
 
   return (
-    <div className={`map-explorer${selected ? ' has-selection' : ''}`}>
+    <div className={`map-explorer${selected ? ' has-selection' : ''}${touchMapActive ? '' : ' is-touch-locked'}`}>
       <div ref={containerRef} className="fantasy-map" aria-label="Interaktywna mapa Chatynkowa" />
       <div className="map-vignette" aria-hidden="true" />
 
+      {!touchMapActive && (
+        <button className="map-touch-shield" type="button" onClick={() => setTouchMapActive(true)}>
+          <span><MapPin size={24} weight="fill" /> Włącz mapę</span>
+          <small>Wtedy możesz ją przesuwać i wybierać tropy</small>
+        </button>
+      )}
+      {touchMapActive && <button className="map-touch-exit" type="button" onClick={() => setTouchMapActive(false)}>Zakończ sterowanie mapą</button>}
+
       <div className="map-topbar">
-        <div className="map-title">
-          <Compass size={26} weight="duotone" aria-hidden />
-          <span>Baśniowa mapa <strong>Chatynkowa</strong></span>
-        </div>
         <div className="map-level" aria-live="polite">
           <span>Poziom mapy</span>
           <strong>{LEVEL_LABELS[level]}</strong>

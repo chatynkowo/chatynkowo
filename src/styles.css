@@ -222,7 +222,7 @@ h2 {
   overflow: clip;
   background:
     linear-gradient(180deg, rgb(5 16 13 / 0.32), var(--page) 31%),
-    url('/assets/img/background.webp') top center / min(1600px, 132vw) auto no-repeat,
+    url('/assets/img/background.webp') top center / max(1600px, 100vw) auto no-repeat,
     var(--page);
 }
 
@@ -866,6 +866,11 @@ h2 {
   border: 1px solid rgb(230 195 122 / 0.25);
   border-radius: calc(var(--radius) - 10px);
 }
+
+.map-touch-shield,
+.map-touch-exit { display: none; }
+
+.atlas-mobile-actions { display: none; }
 
 .leaflet-control-attribution {
   margin-bottom: 10px !important;
@@ -1683,6 +1688,16 @@ h2 {
   text-transform: uppercase;
 }
 
+.story-unlocked.is-returning {
+  color: var(--accent-strong);
+}
+
+.story-unlocked.is-returning::after {
+  content: '· ponowna wizyta';
+  color: var(--ink-faint);
+  font-weight: 600;
+}
+
 .story-body h2 {
   margin-bottom: 12px;
   font-size: clamp(1.9rem, 3vw, 3rem);
@@ -1725,6 +1740,85 @@ h2 {
   width: 100%;
   height: 36px;
   margin-top: 8px;
+}
+
+.custom-audio {
+  display: grid;
+  grid-template-columns: 38px minmax(90px, 1fr) auto 34px 82px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border: 1px solid rgb(210 166 77 / .22);
+  border-radius: 10px;
+  background: rgb(6 22 17 / .66);
+  box-shadow: inset 0 1px rgb(255 230 166 / .035);
+}
+
+.custom-audio audio { display: none; }
+.audio-play,
+.audio-mute {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: rgb(210 166 77 / .09);
+  color: var(--accent-strong);
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.audio-mute { width: 32px; height: 32px; border-color: transparent; background: transparent; }
+.audio-time { color: var(--ink); font-size: .82rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.audio-time span { color: var(--ink-faint); }
+.audio-seek,
+.audio-volume { display: flex; align-items: center; }
+
+.custom-audio input[type='range'] {
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  appearance: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.custom-audio input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent) var(--range-progress), rgb(238 224 190 / .16) var(--range-progress));
+}
+
+.custom-audio input[type='range']::-moz-range-track { height: 4px; border-radius: 4px; background: rgb(238 224 190 / .16); }
+.custom-audio input[type='range']::-moz-range-progress { height: 4px; border-radius: 4px; background: var(--accent); }
+.custom-audio input[type='range']::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  appearance: none;
+  border: 2px solid #f5d789;
+  border-radius: 50%;
+  background: #6f4d20;
+  box-shadow: 0 2px 8px rgb(0 0 0 / .4);
+}
+.custom-audio input[type='range']::-moz-range-thumb { width: 11px; height: 11px; border: 2px solid #f5d789; border-radius: 50%; background: #6f4d20; }
+.custom-audio input[type='range']:focus-visible { outline: 0; }
+.custom-audio input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgb(235 198 111 / .22); }
+
+@media (hover: hover) and (pointer: fine) {
+  .audio-play:hover,
+  .audio-mute:hover { border-color: var(--accent); background: rgb(210 166 77 / .17); color: #ffe09a; transform: translateY(-1px); }
+}
+
+@media (max-width: 560px) {
+  .custom-audio { grid-template-columns: 38px minmax(0, 1fr) auto; }
+  .audio-mute,
+  .audio-volume { display: none; }
 }
 
 @media (max-width: 1100px) {
@@ -2054,6 +2148,7 @@ h2 {
   .story-modal {
     display: block;
   }
+  .story-modal .modal-close { align-self: flex-end; flex: 0 0 42px; margin: 10px 10px -52px auto; }
 
   .story-photo {
     min-height: 230px;
@@ -2113,7 +2208,7 @@ h2 {
   .site-shell {
     background:
       linear-gradient(180deg, rgb(225 235 224 / 0.68), var(--page) 31%),
-      url('/assets/img/background.webp') top center / min(1600px, 132vw) auto no-repeat,
+      url('/assets/img/background.webp') top center / max(1600px, 100vw) auto no-repeat,
       var(--page);
   }
 
@@ -2174,3 +2269,592 @@ h2 {
     backdrop-filter: none;
   }
 }
+
+/* The main screen is a playable expedition board, not a landing-page funnel. */
+.game-intro {
+  display: grid;
+  max-width: 1380px;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: center;
+  gap: clamp(36px, 7vw, 100px);
+  margin: 0 auto;
+  padding: clamp(42px, 5.5vw, 70px) 24px 30px;
+}
+
+.game-intro h1 {
+  max-width: 850px;
+  margin-bottom: 16px;
+  color: #f3e6be;
+  font-family: 'Cinzel Decorative', Georgia, serif;
+  font-size: clamp(2.35rem, 4.15vw, 4.1rem);
+  font-weight: 900;
+  line-height: 1.02;
+}
+
+.game-intro > div > p:last-child {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 1.08rem;
+}
+
+.game-intro-status {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px 18px 4px 18px;
+  background: linear-gradient(135deg, rgb(210 166 77 / .07), transparent 52%), rgb(11 35 27 / .9);
+  box-shadow: 0 18px 45px rgb(2 13 9 / .24), inset 0 1px rgb(255 226 158 / .06);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.game-intro-status span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--accent-strong);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.game-intro-status strong { display: flex; align-items: baseline; gap: 7px; font-family: 'Cinzel Decorative', Georgia, serif; font-size: 1.5rem; }
+.game-intro-status strong small { color: var(--ink-soft); font-family: 'Cormorant Garamond', Georgia, serif; font-size: .78rem; font-weight: 600; }
+.game-intro-status i { height: 4px; overflow: hidden; border-radius: 4px; background: rgb(235 213 163 / .1); }
+.game-intro-status b { display: block; min-width: 3px; height: 100%; background: var(--accent); }
+.game-intro-status em { display: flex; align-items: center; justify-content: space-between; margin-top: 2px; color: var(--ink-faint); font-size: .7rem; font-style: normal; }
+
+.expedition-board {
+  display: grid;
+  max-width: 1420px;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: stretch;
+  gap: 16px;
+  margin: 0 auto;
+  padding: clamp(22px, 3vw, 38px) 18px clamp(68px, 7vw, 96px);
+}
+
+.expedition-board .map-section {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.atlas-heading {
+  display: grid;
+  max-width: none;
+  grid-template-columns: minmax(390px, 1.25fr) minmax(250px, .75fr);
+  align-items: end;
+  gap: 30px;
+  margin: 0;
+  padding: 22px 25px 20px;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 18px 18px 0 0;
+  background: rgb(18 40 32 / .82);
+}
+
+.atlas-heading h2 { margin: 0; font-size: clamp(1.75rem, 2.45vw, 2.35rem); }
+.atlas-heading .eyebrow { margin-bottom: 8px; }
+.atlas-heading > p { font-size: .84rem; line-height: 1.45; }
+.expedition-board .map-explorer,
+.expedition-board .map-skeleton,
+.expedition-board .map-error { border-radius: 0 0 18px 18px; }
+.expedition-board .map-explorer { height: auto; min-height: 590px; flex: 1 1 auto; }
+
+.quest-panel {
+  position: sticky;
+  top: calc(var(--header-height) + 16px);
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px 5px 18px 5px;
+  background: var(--page-raised);
+  box-shadow: var(--shadow);
+  height: 100%;
+}
+
+.quest-panel-head { padding: 21px 23px 18px; border-bottom: 1px solid var(--line); }
+.quest-panel-head > span { color: var(--accent); font-size: .68rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+.quest-panel-head strong { display: block; margin-top: 5px; font-size: 1.18rem; }
+.quest-panel-head p { margin: 3px 0 0; color: var(--ink-faint); font-size: .78rem; }
+
+.quest-progress-mini {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 15px;
+  padding: 12px 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  text-align: left;
+}
+
+.quest-progress-mini span { display: flex; align-items: center; gap: 6px; color: var(--accent-strong); font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.quest-progress-mini strong { margin: 0; font-family: 'Cinzel Decorative', Georgia, serif; font-size: .8rem; }
+.quest-progress-mini i { grid-column: 1 / -1; height: 3px; overflow: hidden; border-radius: 3px; background: rgb(235 213 163 / .1); }
+.quest-progress-mini b { display: block; min-width: 3px; height: 100%; background: var(--accent); }
+
+.quest-panel .discovery-gate {
+  width: 100%;
+  padding: 24px 23px 21px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.quest-panel .discovery-gate::before,
+.quest-panel .discovery-gate::after { display: none; }
+
+.quest-panel .gate-seal { width: 42px; height: 42px; margin-bottom: 15px; border-radius: 50%; transform: none; }
+.quest-panel .discovery-gate h2 { font-size: 1.4rem; }
+.quest-panel .gate-lead { margin-bottom: 16px; }
+.quest-panel .code-form--gate .pin-input { gap: 7px; }
+.quest-panel .code-form--gate .pin-input input { min-width: 0; min-height: 55px; font-size: 1.5rem; }
+.quest-panel .code-form--gate .button { width: 100%; }
+
+.quest-kronika {
+  display: grid;
+  width: calc(100% - 32px);
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin: 16px;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgb(210 166 77 / .07);
+  color: var(--accent-strong);
+  cursor: pointer;
+  text-align: left;
+}
+
+.quest-kronika span { display: grid; color: var(--ink-faint); font-size: .72rem; }
+.quest-kronika strong { color: var(--ink); font-size: .9rem; }
+.quest-notes {
+  display: grid;
+  gap: 0;
+  margin: 0 16px 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgb(6 25 18 / .28);
+}
+
+.quest-notes p {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 13px;
+  color: var(--ink-faint);
+  font-size: .78rem;
+  line-height: 1.35;
+}
+
+.quest-notes p + p { border-top: 1px solid var(--line); }
+.quest-notes svg { flex: none; margin-top: 2px; color: var(--accent); }
+.quest-notes span { display: grid; gap: 2px; }
+.quest-notes strong { color: var(--ink-soft); font-size: .8rem; font-weight: 600; }
+
+.field-guide {
+  display: grid;
+  width: 100%;
+  max-width: 1420px;
+  grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+  grid-template-areas:
+    'photo intro'
+    'photo steps';
+  grid-template-rows: auto 1fr;
+  gap: 0;
+  overflow: hidden;
+  margin: 0 auto;
+  padding: 0 18px clamp(78px, 9vw, 120px);
+}
+
+.field-guide-intro {
+  grid-area: intro;
+  display: block;
+  padding: 34px 38px 30px;
+  border: 1px solid var(--line-strong);
+  border-bottom: 0;
+  border-left: 0;
+  border-radius: 0 18px 0 0;
+  background: var(--page-raised);
+}
+.field-guide-intro .eyebrow { margin-bottom: 13px; }
+.field-guide-intro h2 { max-width: 12ch; margin: 0 0 14px; font-size: clamp(1.85rem, 2.65vw, 2.65rem); }
+.field-guide-intro > p:last-child { max-width: 49ch; margin: 0; color: var(--ink-soft); font-size: .92rem; }
+.field-guide-steps { grid-area: steps; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 0; padding: 0; list-style: none; background: var(--line); border: 1px solid var(--line-strong); border-top-color: var(--line); border-left: 0; border-radius: 0 0 18px 0; }
+.field-guide-steps li { position: relative; display: grid; min-height: 155px; align-content: end; padding: 21px 23px; background: var(--page-raised); }
+.field-guide-steps li > span { position: absolute; top: 15px; right: 17px; color: var(--line-strong); font-family: 'Cinzel Decorative'; font-size: 1.3rem; }
+.field-guide-steps svg { margin-bottom: 15px; color: var(--accent-strong); }
+.field-guide-steps strong { font-size: 1.12rem; }
+.field-guide-steps p { margin: 3px 0 0; color: var(--ink-faint); font-size: .84rem; }
+.field-guide-photo { position: relative; grid-area: photo; min-height: 560px; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 180px 0 0 18px; }
+.field-guide-photo img { width: 100%; height: 100%; object-fit: cover; }
+.field-guide-photo blockquote { position: absolute; right: 20px; bottom: 20px; left: 20px; margin: 0; padding: 13px 16px; border: 1px solid var(--line); border-radius: 10px; background: rgb(9 25 20 / .86); font-style: italic; text-align: center; backdrop-filter: blur(10px); }
+
+/* Map controls support the playfield instead of competing with it. */
+.expedition-board .map-topbar { grid-template-columns: 124px minmax(280px, 390px); }
+.expedition-board .map-level { justify-self: start; }
+.expedition-board .map-search { justify-self: end; width: 100%; }
+.expedition-board .map-title { display: none; }
+
+@media (max-width: 1050px) {
+  .expedition-board { grid-template-columns: 1fr; }
+  .quest-panel { position: static; display: grid; height: auto; grid-template-columns: .75fr 1.25fr; }
+  .expedition-board .map-explorer { height: min(72dvh, 720px); min-height: 590px; flex: none; }
+  .quest-panel-head { border-right: 1px solid var(--line); }
+  .quest-panel .discovery-gate { grid-row: span 3; }
+  .quest-kronika { align-self: end; }
+  .expedition-board .map-topbar { grid-template-columns: 124px minmax(250px, 390px); }
+  .field-guide { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); }
+}
+
+@media (max-width: 760px) {
+  .game-intro { width: 100vw; max-width: 100vw; grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 38px 18px 24px; }
+  .game-intro > div { min-width: 0; }
+  .game-intro h1 { width: calc(100vw - 36px); max-width: calc(100vw - 36px); font-size: clamp(1.9rem, 8vw, 2.25rem); overflow-wrap: anywhere; text-wrap: wrap; }
+  .game-intro > div > p:last-child { font-size: 1rem; }
+  .game-intro-status { grid-template-columns: 1fr; width: 100%; min-width: 0; }
+  .game-intro-status strong { font-size: 1.35rem; }
+  .game-intro-status i { grid-column: 1 / -1; }
+  .game-intro-status em { grid-column: 1 / -1; }
+  .expedition-board { width: 100%; max-width: 100%; grid-template-columns: minmax(0, 1fr); overflow: hidden; padding: 18px 0 72px; }
+  .expedition-board .map-section { width: 100%; max-width: 100%; overflow: hidden; }
+  .atlas-heading { width: calc(100vw - 24px); max-width: calc(100vw - 24px); grid-template-columns: minmax(0, 1fr); gap: 7px; margin: 0 12px; padding: 16px 17px 15px; }
+  .atlas-heading .eyebrow { margin-bottom: 5px; font-size: .7rem; }
+  .atlas-heading h2 { max-width: 100%; font-size: clamp(1.42rem, 6.5vw, 1.75rem); overflow-wrap: anywhere; text-wrap: wrap; }
+  .atlas-heading > p { display: -webkit-box; overflow: hidden; font-size: .82rem; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .expedition-board .map-explorer {
+    width: calc(100% - 24px);
+    min-height: 570px;
+    margin: 0 12px;
+    border: 1px solid var(--line-strong);
+    border-top-color: var(--line);
+    border-radius: 0 0 18px 18px;
+    box-shadow: 0 22px 55px rgb(2 12 8 / .34);
+  }
+  .quest-panel { display: block; margin: 18px 12px 0; }
+  .field-guide { grid-template-columns: 1fr; grid-template-areas: 'intro' 'steps' 'photo'; grid-template-rows: auto; gap: 0; padding: 0 18px 90px; }
+  .field-guide-intro { padding: 26px 24px 24px; border: 1px solid var(--line-strong); border-bottom: 0; border-radius: 18px 18px 0 0; }
+  .field-guide-intro .eyebrow { margin-bottom: 10px; }
+  .field-guide-intro h2 { font-size: clamp(1.8rem, 9vw, 2.4rem); }
+  .field-guide-steps { grid-template-columns: 1fr; }
+  .field-guide-steps li { min-height: 150px; }
+  .field-guide-steps { border-left: 1px solid var(--line-strong); border-radius: 0; }
+  .field-guide-photo { min-height: 290px; height: 42dvh; border-top: 0; border-radius: 0 0 18px 18px; }
+  .field-guide-photo blockquote { right: 12px; bottom: 12px; left: 12px; text-align: center; }
+  .expedition-board .map-topbar { grid-template-columns: 104px minmax(0, 1fr); }
+  .expedition-board .map-search { min-width: 0; }
+
+  .map-touch-shield {
+    position: absolute;
+    z-index: 680;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 5px;
+    padding: 150px 24px 90px;
+    border: 0;
+    background: linear-gradient(rgb(24 26 18 / .16), rgb(24 26 18 / .3));
+    color: #fff0c5;
+    cursor: pointer;
+    text-align: center;
+    backdrop-filter: blur(1.5px) saturate(.75);
+  }
+
+  .map-touch-shield span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 170px;
+    justify-content: center;
+    padding: 13px 18px;
+    border: 1px solid #d5aa54;
+    border-radius: 12px;
+    background: rgb(40 32 23 / .94);
+    box-shadow: 0 10px 28px rgb(20 13 7 / .38);
+    font-weight: 700;
+  }
+
+  .map-touch-shield small { max-width: 28ch; padding: 5px 9px; border-radius: 8px; background: rgb(40 32 23 / .82); color: #d1c29f; font-size: .75rem; }
+
+  .map-explorer.is-touch-locked .map-topbar,
+  .map-explorer.is-touch-locked .map-controls,
+  .map-explorer.is-touch-locked .map-legend,
+  .map-explorer.is-touch-locked .map-tip {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .map-topbar,
+  .map-controls,
+  .map-legend,
+  .map-tip { transition: opacity 160ms ease; }
+
+  .map-controls {
+    top: auto;
+    bottom: 14px;
+    left: 10px;
+  }
+
+  .map-controls button:nth-child(1),
+  .map-controls button:nth-child(2) { display: none; }
+
+  .map-controls button:last-child { border-bottom: 0; }
+  .map-legend { display: none; }
+
+  .map-touch-exit {
+    position: absolute;
+    z-index: 690;
+    right: 10px;
+    bottom: 14px;
+    display: block;
+    min-height: 42px;
+    padding: 8px 12px;
+    border: 1px solid #d5aa54;
+    border-radius: 10px;
+    background: rgb(40 32 23 / .94);
+    color: #f3d88f;
+    font-size: .76rem;
+    font-weight: 700;
+  }
+
+  .atlas-mobile-actions {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+    margin-top: 5px;
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    background: rgb(210 166 77 / .055);
+  }
+
+  .atlas-mobile-actions button {
+    position: relative;
+    display: flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .atlas-mobile-actions button + button { border-left: 1px solid var(--line); }
+  .atlas-mobile-actions svg { color: var(--accent-strong); }
+  .atlas-mobile-actions strong { display: grid; min-width: 19px; height: 19px; place-items: center; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font-size: .67rem; }
+  .treasury-toggle { display: none; }
+
+  .modal-backdrop { align-items: end; padding: 10px max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
+  .modal-card { width: 100%; max-height: calc(100dvh - 20px); border-radius: 20px 20px 12px 12px; }
+  .modal-close { position: sticky; z-index: 5; top: 10px; float: right; margin: 10px 10px -52px 0; background: rgb(16 39 31 / .94); }
+  .story-modal {
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .story-photo {
+    width: 100%;
+    height: clamp(190px, 28dvh, 240px);
+    min-height: 0;
+    max-height: none;
+    flex: 0 0 auto;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .story-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 45%; }
+  .story-body {
+    position: relative;
+    z-index: 1;
+    overflow: visible;
+    flex: 0 0 auto;
+    padding: 25px 18px 28px;
+    background: var(--page-raised);
+    box-shadow: 0 -14px 30px rgb(2 12 8 / .2);
+  }
+  .story-body h2 { font-size: clamp(1.7rem, 8vw, 2.35rem); }
+  .story-unlocked { align-items: flex-start; line-height: 1.35; }
+  .story-unlocked.is-returning::after { display: none; }
+  .audio-card { grid-template-columns: 1fr; padding: 15px; }
+  .audio-card > svg { display: none; }
+  .custom-audio { margin-right: -4px; margin-left: -4px; }
+}
+
+@media (prefers-color-scheme: light) {
+  .game-intro h1 { color: var(--ink); }
+  .game-intro-status,
+  .atlas-heading { background: rgb(228 235 222 / .9); }
+  .quest-panel { background: #e4eadf; }
+  .field-guide-steps li { background: #e4eadf; }
+}
+
+/* Consistent interaction feedback and readable game UI. */
+.brand,
+.footer-brand,
+.icon-button,
+.game-intro-status,
+.quest-progress-mini,
+.quest-kronika,
+.map-search button,
+.map-controls button,
+.treasury-toggle,
+.site-footer nav a {
+  transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease,
+    box-shadow 180ms ease, filter 180ms ease, opacity 180ms ease, transform 180ms ease;
+}
+
+.brand img,
+.footer-brand img {
+  transition: filter 180ms ease, transform 180ms ease;
+}
+
+.icon-button {
+  min-width: 42px;
+  min-height: 42px;
+}
+
+.gate-memory { font-size: .81rem; }
+.quest-panel-head > span { font-size: .74rem; }
+.quest-panel-head p { font-size: .84rem; }
+.quest-progress-mini span { font-size: .73rem; }
+.quest-progress-mini strong { font-size: .88rem; }
+.quest-notes p { font-size: .78rem; }
+.map-level span { font-size: 10px; }
+.map-level strong { font-size: 16px; }
+.map-search button { min-width: 58px; min-height: 40px; font-size: 13px; }
+.map-search-error { font-size: 13px; }
+.map-legend { font-size: 12px; }
+.map-tip { font-size: 13px; }
+.region-label span { font-size: 12px; }
+.cottage-region { font-size: 12px; }
+.found-notice,
+.cottage-clue,
+.arrival-guide { font-size: 14px; }
+.badge-item p { font-size: .86rem; }
+
+.map-search input:hover::placeholder { color: #e0cfa6; }
+.map-search:focus-within {
+  border-color: #e7be68;
+  box-shadow: 0 0 0 3px rgb(210 166 77 / .16), 0 10px 26px rgb(22 15 9 / .3);
+}
+
+.pin-input input:hover:not(:focus) {
+  border-color: rgb(235 198 112 / .78);
+  background: rgb(11 34 26 / .94);
+}
+
+.leaflet-marker-icon:focus-visible .cottage-marker,
+.leaflet-marker-icon:focus-visible .region-label {
+  outline: 3px solid #f2ca70;
+  outline-offset: 5px;
+  filter: brightness(1.12);
+}
+
+.main-nav button:focus-visible,
+.main-nav a:focus-visible,
+.quest-progress-mini:focus-visible,
+.quest-kronika:focus-visible,
+.map-search button:focus-visible,
+.map-controls button:focus-visible,
+.treasury-toggle:focus-visible {
+  position: relative;
+  z-index: 2;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .brand:hover,
+  .footer-brand:hover { color: var(--accent-strong); }
+
+  .brand:hover img,
+  .footer-brand:hover img {
+    filter: drop-shadow(0 0 8px rgb(235 198 111 / .42));
+    transform: rotate(-3deg) scale(1.05);
+  }
+
+  .icon-button:hover {
+    border-color: var(--line-strong);
+    background: rgb(210 166 77 / .12);
+    color: var(--accent-strong);
+    transform: translateY(-1px);
+  }
+
+  .main-nav button:hover,
+  .main-nav a:hover {
+    box-shadow: inset 0 -1px var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .game-intro-status:hover,
+  .quest-progress-mini:hover {
+    border-color: var(--line-strong);
+    color: var(--ink);
+  }
+
+  .quest-progress-mini:hover span { color: #f1ca70; }
+  .quest-progress-mini:hover i { background: rgb(235 213 163 / .18); }
+
+  .quest-kronika:hover {
+    border-color: var(--accent);
+    background: rgb(210 166 77 / .13);
+    box-shadow: 0 8px 22px rgb(2 12 8 / .2);
+    transform: translateY(-2px);
+  }
+
+  .quest-kronika:hover > svg:last-child { transform: translateX(3px); }
+
+  .map-search button:hover {
+    background: var(--accent-strong);
+    box-shadow: 0 5px 14px rgb(38 25 10 / .28);
+    transform: translateY(-1px);
+  }
+
+  .map-controls button:hover:not(:disabled) {
+    background: rgb(225 184 99 / .2);
+    color: #ffe09a;
+    transform: scale(1.06);
+  }
+
+  .region-label:hover {
+    box-shadow: 0 12px 22px rgb(44 30 17 / .32), inset 0 1px rgb(245 226 174 / .82);
+  }
+
+  .treasury-toggle:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 16px 34px rgb(5 16 12 / .52), 0 0 0 5px rgb(210 166 77 / .13);
+    transform: translateY(-3px) rotate(-3deg);
+  }
+
+  .site-footer nav a:hover {
+    color: var(--accent-strong);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+.quest-kronika > svg:last-child { transition: transform 180ms ease; }
+.game-intro-status:active,
+.quest-progress-mini:active,
+.quest-kronika:active,
+.map-search button:active,
+.map-controls button:active:not(:disabled),
+.treasury-toggle:active { transform: translateY(1px) scale(.98); }
