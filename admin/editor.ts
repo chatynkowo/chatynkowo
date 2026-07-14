@@ -1,3 +1,8 @@
+import L from 'leaflet'
+import Editor from '@toast-ui/editor'
+import 'leaflet/dist/leaflet.css'
+import '@toast-ui/editor/dist/toastui-editor.css'
+
 /* Chatynkowo internal editor — GitHub Pages edition.
    Reads/writes files directly through the GitHub Contents & Git Data APIs.
    Authentication: GitHub Personal Access Token stored in localStorage.
@@ -199,7 +204,7 @@
 
      Production-only: locally you are editing these very files, so a mismatch is
      expected and would just be noise. */
-  const EDITOR_ASSETS = ['admin/admin.js', 'admin/index.html', 'admin/admin.css'];
+  const EDITOR_ASSETS = ['admin/editor.ts', 'admin/index.html', 'admin/admin.css'];
 
   /* git's blob object hash: sha1("blob <byteLength>\0" + bytes). Computing it
      in-browser lets us compare a loaded asset against the repo blob SHA from the
@@ -1619,7 +1624,7 @@
   function wire() {
     initGeoMap();
 
-    state.mde = new toastui.Editor({
+    state.mde = new Editor({
       el: els.bodyEditor,
       height: 'auto',
       minHeight: '360px',
