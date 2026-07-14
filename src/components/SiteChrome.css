@@ -1,0 +1,216 @@
+.site-header {
+  position: sticky;
+  z-index: 1000;
+  top: 0;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  height: var(--header-height, 72px);
+  align-items: center;
+  gap: 28px;
+  padding: 0 max(24px, calc((100vw - 1320px) / 2));
+  border-bottom: 1px solid rgb(225 195 127 / 0.13);
+  background: rgb(9 25 20 / 0.82);
+  box-shadow: 0 8px 28px rgb(2 11 8 / 0.2);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+
+.brand,
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-family: 'Cinzel Decorative', Georgia, serif;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.brand img,
+.footer-brand img { width: 42px; height: 42px; object-fit: contain; transition: filter 180ms ease, transform 180ms ease; }
+
+.main-nav { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.main-nav button,
+.main-nav a {
+  padding: 9px 13px;
+  border: 0;
+  border-radius: var(--radius-small, 12px);
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: .94rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 180ms ease, box-shadow 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.main-nav .nav-primary { border: 1px solid var(--line-strong); background: rgb(210 166 77 / .08); color: var(--ink); }
+.main-nav .nav-primary span { margin-right: 5px; color: var(--accent-strong); }
+.nav-toggle { display: none; }
+
+.burger-icon {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 16px;
+}
+
+.burger-icon i {
+  position: absolute;
+  left: 0;
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transform-origin: center;
+  transition: top 180ms ease, opacity 120ms ease, transform 180ms ease;
+}
+
+.burger-icon i:nth-child(1) { top: 0; }
+.burger-icon i:nth-child(2) { top: 7px; }
+.burger-icon i:nth-child(3) { top: 14px; }
+.burger-icon.is-open i:nth-child(1) { top: 7px; transform: rotate(45deg); }
+.burger-icon.is-open i:nth-child(2) { opacity: 0; transform: scaleX(.3); }
+.burger-icon.is-open i:nth-child(3) { top: 7px; transform: rotate(-45deg); }
+
+.site-footer {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 42px;
+  padding: 34px max(24px, calc((100vw - 1240px) / 2));
+  border-top: 1px solid var(--line);
+  background: #091712;
+  color: var(--ink-soft);
+  font-size: .86rem;
+}
+
+.site-footer nav { display: flex; gap: 18px; }
+.site-footer nav a { display: inline-flex; align-items: center; gap: 6px; color: inherit; text-decoration: none; transition: color 180ms ease; }
+
+@media (hover: hover) and (pointer: fine) {
+  .brand:hover,
+  .footer-brand:hover,
+  .site-footer nav a:hover { color: var(--accent-strong); }
+  .brand:hover img,
+  .footer-brand:hover img { filter: drop-shadow(0 0 8px rgb(235 198 111 / .42)); transform: rotate(-3deg) scale(1.05); }
+  .main-nav button:hover,
+  .main-nav a:hover { background: rgb(210 166 77 / .11); box-shadow: inset 0 -1px var(--accent); color: var(--ink); transform: translateY(-1px); }
+}
+
+@media (max-width: 760px) {
+  .site-header {
+    display: flex;
+    width: 100%;
+    height: 68px;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 14px;
+    border-bottom-color: rgb(225 195 127 / .22);
+    background: linear-gradient(90deg, rgb(7 27 20 / .98), rgb(8 34 26 / .96));
+    box-shadow: 0 8px 26px rgb(2 11 8 / .38), inset 0 -1px rgb(210 166 77 / .05);
+  }
+
+  .brand { min-width: 0; gap: 10px; font-size: 1rem; letter-spacing: -.015em; }
+  .brand img {
+    width: 40px;
+    height: 40px;
+    padding: 4px;
+    border: 1px solid rgb(210 166 77 / .28);
+    border-radius: 50%;
+    background: rgb(210 166 77 / .06);
+  }
+  .main-nav {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 10px;
+    left: 10px;
+    display: none;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    justify-content: stretch;
+    gap: 0;
+    overflow: hidden;
+    padding: 7px;
+    border: 1px solid var(--line-strong);
+    border-radius: 16px;
+    background:
+      linear-gradient(145deg, rgb(210 166 77 / .045), transparent 45%),
+      rgb(7 29 21 / .985);
+    box-shadow: 0 24px 55px rgb(1 10 7 / .62), inset 0 1px rgb(255 225 156 / .06);
+    backdrop-filter: blur(20px) saturate(130%);
+  }
+
+  .main-nav::before {
+    content: 'Nawigacja wyprawy';
+    padding: 9px 13px 10px;
+    border-bottom: 1px solid var(--line);
+    color: var(--accent);
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .main-nav.is-open {
+    display: grid;
+    animation: mobile-menu-in 180ms cubic-bezier(.2, .8, .2, 1) both;
+  }
+
+  .main-nav button,
+  .main-nav a {
+    display: flex;
+    width: 100%;
+    min-height: 50px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border-radius: 9px;
+    color: var(--ink);
+    font-size: 1rem;
+    text-align: left;
+  }
+
+  .main-nav button + button,
+  .main-nav button + a,
+  .main-nav a + button,
+  .main-nav a + a { border-top: 1px solid rgb(211 177 100 / .13); }
+
+  .main-nav button::after,
+  .main-nav a::after {
+    content: '→';
+    color: var(--accent);
+    font-size: 1rem;
+    transition: transform 160ms ease;
+  }
+
+  .main-nav .nav-primary { border: 0; border-top: 1px solid rgb(211 177 100 / .13); background: rgb(210 166 77 / .08); }
+  .main-nav .nav-primary > span { display: none; }
+
+  @keyframes mobile-menu-in {
+    from { opacity: 0; transform: translateY(-8px) scale(.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .nav-toggle {
+    display: inline-grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    place-items: center;
+    margin-left: auto;
+    padding: 0;
+    border-color: rgb(210 166 77 / .5);
+    border-radius: 14px;
+    background: linear-gradient(145deg, rgb(210 166 77 / .14), rgb(210 166 77 / .05));
+    box-shadow: inset 0 1px rgb(255 228 164 / .08);
+    color: var(--accent-strong);
+  }
+  .site-footer { grid-template-columns: 1fr; gap: 22px; padding: 32px 20px 90px; }
+  .site-footer nav { flex-wrap: wrap; }
+}
+
+@media (prefers-color-scheme: light) {
+  .site-header { background: rgb(233 239 229 / .88); }
+  .site-footer { background: #dbe3d6; }
+}

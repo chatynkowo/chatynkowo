@@ -8,14 +8,7 @@ const staticEntries = [
   'data',
   'cottages',
   'legal',
-  'admin',
   'CNAME',
-  'ranking.html',
-  'ranking.css',
-  'ranking.js',
-  'app_logic.js',
-  'analytics.js',
-  'chatynkowo-sync.js',
 ]
 
 function copyStaticSite(): Plugin {
@@ -41,5 +34,12 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: true,
+    rollupOptions: {
+      input: {
+        main: resolve(import.meta.dirname, 'index.html'),
+        ranking: resolve(import.meta.dirname, 'ranking.html'),
+        admin: resolve(import.meta.dirname, 'admin/index.html'),
+      },
+    },
   },
 })

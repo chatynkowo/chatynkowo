@@ -32,13 +32,3 @@ export type StoredState = {
   found: Record<string, StoredFind>
   badges: Record<string, { earnedAt: string }>
 }
-
-declare global {
-  interface Window {
-    chatynkowoStats?: { track: (path: string, title?: string) => void }
-    chatynkowoSync?: {
-      onFound: (slug: string, foundAt: string, foundCount: number) => Promise<void>
-      signInWithGoogle: (redirectTo?: string) => Promise<unknown>
-    }
-  }
-}
