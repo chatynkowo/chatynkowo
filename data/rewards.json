@@ -15,11 +15,11 @@
     },
     {
       "id": "tropiciel",
-      "name": "Lipa",
+      "name": "Ogień",
       "threshold": 5,
       "final": false,
       "image": "assets/img/rewards/tropiciel/card.webp",
-      "body": "**Jadalna** · Występuje w lesie\n\n**Sezon:** czerwiec – sierpień\n\n## Co i jak można leczyć?\n\n* **Działa napotnie** — pomaga przy przeziębieniach, gorączce, infekcjach, stanach grypopodobnych.\n* **Łagodzi kaszel i chrypkę** — działa kojąco na podrażnione gardło, ułatwia odkrztuszanie.\n* **Wycisza i uspokaja** — pomaga przy stresie, napięciu, bezsenności.\n* **Wspomaga trawienie** — łagodzi wzdęcia, skurcze jelit, wspiera pracę żołądka.\n* **Wspiera serce i ciśnienie** — działa lekko rozszerzająco na naczynia, korzystnie wpływa na ciśnienie.\n\n*Słodka jak letni oddech – ale pełna mocy!*\n\n*Leśny lek ukryty w kwiatach – delikatny dla ciała, balsam dla duszy.*"
+      "body": ""
     },
     {
       "id": "polowa-drogi",
