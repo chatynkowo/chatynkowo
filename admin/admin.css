@@ -113,6 +113,9 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-si
   max-width: 1400px;
   margin: 0 auto;
 }
+/* See the note by .toolbar-group[hidden] — `display: grid` above would
+   otherwise override `hidden` and show both mode views at the same time. */
+.layout[hidden] { display: none; }
 @media (max-width: 1000px) {
   .layout { grid-template-columns: 1fr; }
 }
@@ -420,6 +423,18 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-si
   gap: 0.75rem;
   flex: 1;
 }
+/* Mode-specific add/delete pair inside the shared toolbar. */
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+/* A class rule with `display` beats the UA's `[hidden] { display: none }`
+   (attribute selectors lose on specificity), so every element we hide from
+   JS needs its own [hidden] rule — otherwise the attribute is a no-op and
+   both modes render at once. */
+.toolbar-group[hidden],
+.toolbar-actions[hidden] { display: none; }
 /* Push the settings cog to the far right regardless of active toolbar. */
 #btn-settings { margin-left: auto; }
 .toolbar-group + #btn-settings { margin-left: 0; }
@@ -459,6 +474,9 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-si
   border-radius: 6px;
   display: block;
 }
+/* Same [hidden] trap as .layout — without this the "brak obrazka" state
+   still renders an empty, broken <img>. */
+.reward-image img[hidden] { display: none; }
 
 /* Live preview of a reward card as it appears in the Skarbiec detail view. */
 .reward-preview {

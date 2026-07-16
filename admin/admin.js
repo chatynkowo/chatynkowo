@@ -416,10 +416,9 @@
     const order = new Map(jsonRaw.map((c, i) => [c.slug, i]));
     state.cottages.sort((a, b) => (order.get(a.slug) ?? 999) - (order.get(b.slug) ?? 999));
 
-    // Rebuild dropdown.
-    els.select.innerHTML = state.cottages
-      .map(c => `<option value="${c.slug}">${escapeHtml(c.frontmatter.title || c.slug)} — ${c.slug}</option>`)
-      .join('');
+    // Rebuild the shared dropdown (a no-op for the list when the rewards mode
+    // is the active one — it is rebuilt again once rewards.json is parsed).
+    renderItemSelect();
 
     const target = (preferSlug && state.cottages.some(c => c.slug === preferSlug))
       ? preferSlug
@@ -441,7 +440,7 @@
     state.rewardsLoaded = cloneRewards(state.rewards);
     state.rwPendingImages.clear();
     rwMarkClean();
-    renderRewardSelect();
+    renderItemSelect();
     // If the rewards editor is already open, re-fill its current view (no
     // harvest — the freshly loaded config replaces any stale form values).
     if (state.rwMde) {
@@ -457,12 +456,12 @@
 
   function selectCottage(slug) {
     if (state.dirty && !confirm('Masz niezapisane zmiany. Porzucić je?')) {
-      els.select.value = state.current?.slug || ''; return;
+      syncSelectValue(); return;
     }
     const c = state.cottages.find(x => x.slug === slug);
     if (!c) return;
     state.current = c;
-    els.select.value = slug;
+    syncSelectValue();
     els.delete.disabled = false;
     fillForm(c);
     placeSymbolicPin(c.mapX, c.mapY);
@@ -524,43 +523,87 @@
     els.code.reportValidity();
   }
 
-  /* ---------- status ---------- */
+  /* ---------- status ----------
+     One status pill and one discard/save pair serve both categories, so each
+     category keeps its own status text and dirty flag while the toolbar shows
+     whichever category is active. Every mutation goes through setModeStatus()
+     / renderToolbar() rather than poking els.* directly — that way a save in
+     one category can never mislabel the other one's pill. */
 
-  function setStatus(s, text) { els.status.dataset.state = s; els.status.textContent = text; }
-  function markDirty() { state.dirty = true; els.save.disabled = false; els.discard.disabled = false; setStatus('dirty', 'niezapisane'); }
-  function markClean() { state.dirty = false; els.save.disabled = true; els.discard.disabled = true; setStatus('clean', 'zapisane'); }
+  const modeStatus = {
+    cottages: { state: 'clean', text: 'gotowy' },
+    rewards:  { state: 'clean', text: 'gotowy' },
+  };
+
+  function isDirty(mode) { return mode === 'rewards' ? state.rwDirty : state.dirty; }
+
+  function renderToolbar() {
+    const st = modeStatus[state.mode];
+    els.status.dataset.state = st.state;
+    els.status.textContent = st.text;
+    // Nothing to save/discard when clean; nothing to touch while a commit or
+    // a reload is in flight (a second click would commit twice).
+    const busy = st.state === 'saving';
+    const dirty = isDirty(state.mode);
+    els.save.disabled = busy || !dirty;
+    els.discard.disabled = busy || !dirty;
+  }
+
+  function setModeStatus(mode, s, text) {
+    modeStatus[mode] = { state: s, text };
+    if (mode === state.mode) renderToolbar();
+  }
+
+  function setStatus(s, text) { setModeStatus('cottages', s, text); }
+  function markDirty() { state.dirty = true; setStatus('dirty', 'niezapisane'); }
+  function markClean() { state.dirty = false; setStatus('clean', 'zapisane'); }
 
   /* ---------- discard changes ----------
-     Throw away unsaved edits to the current cottage and reload the canonical
-     version straight from the repository (GitHub). */
-  async function discardChanges() {
-    if (!state.current || !state.dirty) return;
-    if (!confirm('Odrzucić niezapisane zmiany i wczytać aktualną wersję z repozytorium?')) return;
-    const slug = state.current.slug;
-    // Clear the dirty flag first so the reload doesn't trigger the
+     The shared Discard button, always scoped to the ACTIVE category: throw away
+     its unsaved edits and reload the canonical version straight from the
+     repository (GitHub). loadAll() necessarily refreshes BOTH categories, so
+     unsaved work in the other one is called out before we pull the trigger
+     rather than vanishing silently. */
+  async function discardActive() {
+    const mode = state.mode;
+    if (!isDirty(mode)) return;
+    const other = mode === 'rewards' ? 'cottages' : 'rewards';
+    const lines = [`Odrzucić niezapisane zmiany w ${MODE_LABEL[mode]} i wczytać aktualną wersję z repozytorium?`];
+    if (isDirty(other)) {
+      lines.push('', `Uwaga: przeładowanie z repozytorium odrzuci też niezapisane zmiany w ${MODE_LABEL[other]}.`);
+    }
+    if (!confirm(lines.join('\n'))) return;
+
+    const slug = state.current?.slug;
+    for (const [, img] of state.rwPendingImages) URL.revokeObjectURL(img.url);
+    // Clear the dirty flags first so the reload doesn't trigger the
     // "unsaved changes" prompt again inside selectCottage().
+    const hadDirty = { cottages: state.dirty, rewards: state.rwDirty };
     state.dirty = false;
-    els.discard.disabled = true;
-    setStatus('saving', 'wczytuję z repozytorium…');
+    state.rwDirty = false;
+    setModeStatus(mode, 'saving', 'wczytuję z repozytorium…');
     try {
       await loadAll(slug);   // re-fetches the tree + blobs from the remote
     } catch (e) {
-      setStatus('error', `błąd: ${e.message}`);
-      state.dirty = true;
-      els.discard.disabled = false;
+      state.dirty = hadDirty.cottages;
+      state.rwDirty = hadDirty.rewards;
+      setModeStatus(mode, 'error', `błąd: ${e.message}`);
+      renderToolbar();
     }
   }
 
   /* ---------- save cottage ---------- */
 
+  /* Resolves true only when the commit landed — callers (e.g. the category
+     switch) must not move on after a failed or refused save. */
   async function save() {
-    if (!state.current) return;
+    if (!state.current) return false;
     const code = els.code.value.trim();
     const conflict = codeConflict(code);
     if (conflict) {
       setStatus('error', `kod ${code} zajęty przez „${conflict.frontmatter?.title || conflict.slug}"`);
       els.code.focus();
-      return;
+      return false;
     }
     // Soft guard: overlapping pins are hard to tap on a phone. Let the author
     // save anyway (two cottages may genuinely share a trailhead), but not by
@@ -569,11 +612,10 @@
     if (near) {
       const t = near.cottage.frontmatter?.title || near.cottage.slug;
       if (!confirm(`Pinezka nakłada się z chatynką „${t}" — będzie trudno ją kliknąć na telefonie. Zapisać mimo to?`)) {
-        return;
+        return false;
       }
     }
-    setStatus('saving', 'zapisuję…');
-    els.save.disabled = true;
+    setStatus('saving', 'zapisuję…');   // renderToolbar() locks the buttons
     try {
       const payload = harvestForm();
       const slug = state.current.slug;
@@ -610,14 +652,15 @@
       Object.assign(state.current, { frontmatter: fm, body: payload.body, lat: payload.lat, lng: payload.lng, mapX: payload.mapX, mapY: payload.mapY, code: payload.code });
 
       // Refresh the dropdown option label to reflect the new title.
-      const opt = Array.from(els.select.options).find(o => o.value === slug);
-      if (opt) opt.textContent = `${fm.title || slug} — ${slug}`;
+      renderItemSelect();
 
       state.cleanBody = state.mde.getMarkdown();
       markClean();
+      return true;
     } catch (e) {
       setStatus('error', `błąd: ${e.message}`);
-      els.save.disabled = false;
+      renderToolbar();
+      return false;
     }
   }
 
@@ -1003,19 +1046,98 @@
 
   /* ---------- mode switching ---------- */
 
-  function setMode(mode) {
-    if (mode === state.mode) return;
+  const MODE_LABEL = { cottages: 'chatynce', rewards: 'nagrodach' };
+
+  /* Ask what to do with unsaved work before leaving a category.
+     Resolves to 'save' | 'discard' | 'cancel'. */
+  function askUnsaved(mode) {
+    return new Promise(resolve => {
+      let done = false;
+      const finish = choice => {
+        if (done) return;
+        done = true;
+        els.unsavedSave.removeEventListener('click', onSave);
+        els.unsavedDiscard.removeEventListener('click', onDiscard);
+        els.unsavedDialog.removeEventListener('close', onClose);
+        resolve(choice);
+      };
+      const onSave = () => { els.unsavedDialog.close(); finish('save'); };
+      const onDiscard = () => { els.unsavedDialog.close(); finish('discard'); };
+      // Anuluj, Esc, and any other dismissal. close() delivers this event
+      // asynchronously, so one queued by a PREVIOUS prompt can land after this
+      // one already reopened the dialog — that stale event must not answer a
+      // question the user is still looking at. If the dialog is open, it isn't
+      // ours to answer.
+      const onClose = () => { if (!els.unsavedDialog.open) finish('cancel'); };
+      els.unsavedSave.addEventListener('click', onSave);
+      els.unsavedDiscard.addEventListener('click', onDiscard);
+      els.unsavedDialog.addEventListener('close', onClose);
+      els.unsavedText.textContent =
+        `Masz niezapisane zmiany w ${MODE_LABEL[mode]}. Zapisać je przed przełączeniem kategorii?`;
+      els.unsavedDialog.showModal();
+    });
+  }
+
+  /* Category switch. Unsaved work in the category being left is never dropped
+     silently — save it, discard it, or stay put. */
+  let modeSwitching = false;   // a second tab click must not stack dialogs/saves
+
+  async function setMode(mode) {
+    if (mode === state.mode || modeSwitching) return;
+    modeSwitching = true;
+    try { await switchMode(mode); } finally { modeSwitching = false; }
+  }
+
+  async function switchMode(mode) {
+    const leaving = state.mode;
+    if (isDirty(leaving)) {
+      const choice = await askUnsaved(leaving);
+      if (choice === 'cancel') return;
+      if (choice === 'save') {
+        const saved = leaving === 'rewards' ? await rwSave() : await save();
+        if (!saved) return;   // save failed or was refused — the pill says why
+      } else {
+        revertMode(leaving);
+      }
+    }
+    applyMode(mode);
+  }
+
+  /* Drop unsaved edits in one category WITHOUT touching the other one: both
+     categories keep their own last-loaded state in memory, so reverting is a
+     local re-fill rather than a repo reload (which would take the other
+     category's unsaved work down with it). */
+  function revertMode(mode) {
+    if (mode === 'rewards') {
+      for (const [, img] of state.rwPendingImages) URL.revokeObjectURL(img.url);
+      state.rwPendingImages.clear();
+      state.rewards = cloneRewards(state.rewardsLoaded);
+      rwMarkClean();
+      renderItemSelect();
+      if (state.rwMde) rwFill(rwSelectionKey());
+    } else {
+      // Cottage edits live only in the form until Save, so re-filling from
+      // state.current restores exactly the last loaded/saved version.
+      state.dirty = false;
+      if (state.current) selectCottage(state.current.slug);
+      else markClean();
+    }
+  }
+
+  function applyMode(mode) {
     state.mode = mode;
     const rewards = mode === 'rewards';
     els.tabCottages.classList.toggle('is-active', !rewards);
     els.tabRewards.classList.toggle('is-active', rewards);
     els.tabCottages.setAttribute('aria-selected', String(!rewards));
     els.tabRewards.setAttribute('aria-selected', String(rewards));
-    els.cottageToolbar.hidden = rewards;
-    els.rewardsToolbar.hidden = !rewards;
+    els.cottageActions.hidden = rewards;
+    els.rewardsActions.hidden = !rewards;
     els.cottageView.hidden = rewards;
     els.rewardsView.hidden = !rewards;
     if (rewards) ensureRewardsEditor();
+    renderItemSelect();   // repopulate the shared dropdown for this category
+    renderToolbar();      // …and the shared status/discard/save
   }
 
   /* Create the markdown editor the first time the rewards view is shown (so
@@ -1032,22 +1154,48 @@
       hideModeSwitch: false,
     });
     state.rwMde.on('change', () => { if (!state.rwFilling) rwOnEdit(); });
-    renderRewardSelect();
-    const key = (state.rwCurrent === 'treasury' || rewardHas(state.rwCurrent)) ? state.rwCurrent : 'treasury';
-    rwFill(key);
+    renderItemSelect();
+    rwFill(rwSelectionKey());
   }
 
   /* ---------- select / fill / harvest ---------- */
 
-  function renderRewardSelect() {
-    if (!state.rewards || !els.rwSelect) return;
+  /* ---------- shared dropdown ----------
+     A single <select> serves both categories: it is rebuilt from whichever
+     data set the ACTIVE mode owns, so the two lists can never show up side by
+     side. Everything that changes a label (rename, threshold, reorder, add,
+     delete, load) calls renderItemSelect(). */
+
+  function cottageOptionsHtml() {
+    return state.cottages
+      .map(c => `<option value="${escapeHtml(c.slug)}">${escapeHtml(c.frontmatter.title || c.slug)} — ${escapeHtml(c.slug)}</option>`)
+      .join('');
+  }
+
+  function rewardOptionsHtml() {
+    if (!state.rewards) return '';
     const opts = ['<option value="treasury">🏛 Skarbiec (wstęp)</option>'];
     state.rewards.levels.forEach((l, idx) => {
       const thr = l.final ? 'komplet' : (l.threshold != null ? `próg ${l.threshold}` : 'próg —');
       opts.push(`<option value="${escapeHtml(l.id)}">${idx + 1}. ${escapeHtml(l.name || l.id)} — ${thr}</option>`);
     });
-    els.rwSelect.innerHTML = opts.join('');
-    els.rwSelect.value = (state.rwCurrent === 'treasury' || rewardHas(state.rwCurrent)) ? state.rwCurrent : 'treasury';
+    return opts.join('');
+  }
+
+  /* The reward selection, falling back to the treasury when the level is gone. */
+  function rwSelectionKey() {
+    return (state.rwCurrent === 'treasury' || rewardHas(state.rwCurrent)) ? state.rwCurrent : 'treasury';
+  }
+
+  function syncSelectValue() {
+    if (state.mode === 'rewards') els.select.value = rwSelectionKey();
+    else if (state.current) els.select.value = state.current.slug;
+  }
+
+  function renderItemSelect() {
+    if (!els.select) return;
+    els.select.innerHTML = state.mode === 'rewards' ? rewardOptionsHtml() : cottageOptionsHtml();
+    syncSelectValue();
   }
 
   // User-initiated selection change: keep the outgoing edits, then fill.
@@ -1061,7 +1209,7 @@
     if (!state.rewards) return;
     if (key !== 'treasury' && !rewardHas(key)) key = 'treasury';
     state.rwCurrent = key;
-    els.rwSelect.value = key;
+    syncSelectValue();
     state.rwFilling = true;
     if (key === 'treasury') {
       els.rwTreasuryFields.hidden = false;
@@ -1108,7 +1256,7 @@
   function rwOnEdit() {
     rwHarvestCurrent();
     rwMarkDirty();
-    renderRewardSelect();   // keep the dropdown label in sync (name/threshold)
+    renderItemSelect();   // keep the dropdown label in sync (name/threshold)
     rwRenderPreview();
   }
 
@@ -1202,7 +1350,7 @@
     state.rewards.levels.push({ id, name, threshold: maxThr + 1, final: false, image: '', body: '' });
     els.rwAddDialog.close();
     rwMarkDirty();
-    renderRewardSelect();
+    renderItemSelect();
     rwFill(id);
   }
 
@@ -1214,7 +1362,7 @@
       + 'Gracze, którzy już go zdobyli, zachowają nagrodę w swoim Skarbcu.')) return;
     state.rewards.levels = state.rewards.levels.filter(x => x.id !== state.rwCurrent);
     rwMarkDirty();
-    renderRewardSelect();
+    renderItemSelect();
     rwFill('treasury');
   }
 
@@ -1227,7 +1375,7 @@
     rwHarvestCurrent();
     [arr[i], arr[j]] = [arr[j], arr[i]];
     rwMarkDirty();
-    renderRewardSelect();
+    renderItemSelect();
     rwFill(state.rwCurrent);
   }
 
@@ -1250,19 +1398,19 @@
 
   /* ---------- status / dirty ---------- */
 
-  function rwSetStatus(s, text) { els.rwStatus.dataset.state = s; els.rwStatus.textContent = text; }
-  function rwMarkDirty() { state.rwDirty = true; els.rwSave.disabled = false; els.rwDiscard.disabled = false; rwSetStatus('dirty', 'niezapisane'); }
-  function rwMarkClean() { state.rwDirty = false; els.rwSave.disabled = true; els.rwDiscard.disabled = true; rwSetStatus('clean', 'zapisane'); }
+  function rwSetStatus(s, text) { setModeStatus('rewards', s, text); }
+  function rwMarkDirty() { state.rwDirty = true; rwSetStatus('dirty', 'niezapisane'); }
+  function rwMarkClean() { state.rwDirty = false; rwSetStatus('clean', 'zapisane'); }
 
   /* ---------- save / discard ---------- */
 
+  /* Resolves true only when the commit landed — see save(). */
   async function rwSave() {
-    if (!state.rewards) return;
+    if (!state.rewards) return false;
     rwHarvestCurrent();
     const ids = state.rewards.levels.map(l => l.id);
-    if (new Set(ids).size !== ids.length) { rwSetStatus('error', 'zduplikowane identyfikatory poziomów'); return; }
+    if (new Set(ids).size !== ids.length) { rwSetStatus('error', 'zduplikowane identyfikatory poziomów'); return false; }
     rwSetStatus('saving', 'zapisuję…');
-    els.rwSave.disabled = true;
     try {
       const changes = [{ path: 'data/rewards.json', text: serializeRewardsJson(state.rewards) }];
       for (const [path, img] of state.rwPendingImages) changes.push({ path, binary: img.buffer });
@@ -1280,29 +1428,14 @@
       state.rwPendingImages.clear();
       state.rewardsLoaded = cloneRewards(state.rewards);
       rwMarkClean();
-      renderRewardSelect();
+      renderItemSelect();
       rwRefreshImage();
       rwRenderPreview();
+      return true;
     } catch (e) {
       rwSetStatus('error', `błąd: ${e.message}`);
-      els.rwSave.disabled = false;
-    }
-  }
-
-  async function rwDiscard() {
-    if (!state.rwDirty) return;
-    if (!confirm('Odrzucić niezapisane zmiany w nagrodach i wczytać wersję z repozytorium?')) return;
-    for (const [, img] of state.rwPendingImages) URL.revokeObjectURL(img.url);
-    state.rwPendingImages.clear();
-    state.rwDirty = false;
-    els.rwDiscard.disabled = true;
-    rwSetStatus('saving', 'wczytuję z repozytorium…');
-    try {
-      await loadAll();   // reloads cottages + rewards and re-fills the view
-    } catch (e) {
-      rwSetStatus('error', `błąd: ${e.message}`);
-      state.rwDirty = true;
-      els.rwDiscard.disabled = false;
+      renderToolbar();
+      return false;
     }
   }
 
@@ -1322,7 +1455,9 @@
     editorRoot: $('#editor-root'),
     updateBanner: $('#update-banner'),
     reload: $('#btn-reload'),
-    select: $('#cottage-select'),
+    // Shared toolbar — one dropdown, one status pill, one discard/save pair.
+    // All four always describe the ACTIVE category (state.mode).
+    select: $('#item-select'),
     save: $('#btn-save'),
     discard: $('#btn-discard'),
     add: $('#btn-add'),
@@ -1340,12 +1475,13 @@
     geoMap: $('#geo-map'),
     addDialog: $('#add-dialog'), addSlug: $('#add-slug'), addTitle: $('#add-title'),
     addError: $('#add-error'), addConfirm: $('#btn-add-confirm'),
+    unsavedDialog: $('#unsaved-dialog'), unsavedText: $('#unsaved-text'),
+    unsavedSave: $('#btn-unsaved-save'), unsavedDiscard: $('#btn-unsaved-discard'),
     // ---- Rewards mode ----
     tabCottages: $('#tab-cottages'), tabRewards: $('#tab-rewards'),
-    cottageToolbar: $('#cottage-toolbar'), rewardsToolbar: $('#rewards-toolbar'),
+    cottageActions: $('#cottage-actions'), rewardsActions: $('#rewards-actions'),
     cottageView: $('#cottage-view'), rewardsView: $('#rewards-view'),
-    rwSelect: $('#rw-select'), rwAdd: $('#rw-add'), rwDelete: $('#rw-delete'),
-    rwStatus: $('#rw-status'), rwDiscard: $('#rw-discard'), rwSave: $('#rw-save'),
+    rwAdd: $('#rw-add'), rwDelete: $('#rw-delete'),
     rwTreasuryFields: $('#rw-treasury-fields'), rwLevelFields: $('#rw-level-fields'),
     rwTreTitle: $('#rw-tre-title'),
     rwName: $('#rw-name'), rwThreshold: $('#rw-threshold'), rwFinal: $('#rw-final'),
@@ -1435,9 +1571,15 @@
     els.authCancel.addEventListener('click', hideAuthOverlay);
     els.authToken.addEventListener('keydown', ev => { if (ev.key === 'Enter') tryAuth(); });
 
-    els.select.addEventListener('change', () => selectCottage(els.select.value));
-    els.save.addEventListener('click', save);
-    els.discard.addEventListener('click', discardChanges);
+    // The shared dropdown / save / discard all dispatch on the active category.
+    els.select.addEventListener('change', () => {
+      if (state.mode === 'rewards') rwSelect(els.select.value);
+      else selectCottage(els.select.value);
+    });
+    els.save.addEventListener('click', () => {
+      if (state.mode === 'rewards') rwSave(); else save();
+    });
+    els.discard.addEventListener('click', discardActive);
     els.settings.addEventListener('click', () => showAuthOverlay());
     els.add.addEventListener('click', openAddDialog);
     els.delete.addEventListener('click', deleteCurrent);
@@ -1475,9 +1617,6 @@
     /* ---- Rewards mode ---- */
     els.tabCottages.addEventListener('click', () => setMode('cottages'));
     els.tabRewards.addEventListener('click', () => setMode('rewards'));
-    els.rwSelect.addEventListener('change', () => rwSelect(els.rwSelect.value));
-    els.rwSave.addEventListener('click', rwSave);
-    els.rwDiscard.addEventListener('click', rwDiscard);
     els.rwAdd.addEventListener('click', rwOpenAddDialog);
     els.rwDelete.addEventListener('click', rwDeleteLevel);
     els.rwAddConfirm.addEventListener('click', rwConfirmAddLevel);
@@ -1501,8 +1640,8 @@
     window.addEventListener('keydown', ev => {
       if ((ev.ctrlKey || ev.metaKey) && ev.key === 's') {
         ev.preventDefault();
-        if (state.mode === 'rewards') { if (!els.rwSave.disabled) rwSave(); }
-        else if (!els.save.disabled) save();
+        if (els.save.disabled) return;
+        if (state.mode === 'rewards') rwSave(); else save();
       }
     });
     window.addEventListener('beforeunload', ev => {

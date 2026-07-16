@@ -72,26 +72,25 @@
         <button id="tab-rewards" class="mode-tab" type="button" role="tab" aria-selected="false">Nagrody</button>
       </div>
 
-      <!-- Pasek narzędzi trybu „Chatynki" -->
-      <span id="cottage-toolbar" class="toolbar-group">
-        <select id="cottage-select" class="cottage-select"></select>
-        <button id="btn-add" class="btn" type="button">+ Dodaj nową</button>
-        <button id="btn-delete" class="btn btn-ghost danger" type="button">Usuń bieżącą</button>
+      <!-- Jeden wspólny pasek narzędzi. Lista wyboru jest wypełniana danymi
+           aktywnej kategorii, a stan/odrzuć/zapisz zawsze dotyczą tej
+           kategorii. Tylko przyciski dodaj/usuń różnią się między trybami. -->
+      <span class="toolbar-group">
+        <select id="item-select" class="cottage-select"></select>
+
+        <span id="cottage-actions" class="toolbar-actions">
+          <button id="btn-add" class="btn" type="button">+ Dodaj nową</button>
+          <button id="btn-delete" class="btn btn-ghost danger" type="button">Usuń bieżącą</button>
+        </span>
+        <span id="rewards-actions" class="toolbar-actions" hidden>
+          <button id="rw-add" class="btn" type="button">+ Dodaj poziom</button>
+          <button id="rw-delete" class="btn btn-ghost danger" type="button">Usuń poziom</button>
+        </span>
+
         <span id="status-pill" class="status-pill" data-state="clean">gotowy</span>
         <button id="btn-discard" class="btn btn-ghost" type="button" disabled
-                title="Odrzuć niezapisane zmiany i wczytaj wersję z repozytorium">Odrzuć zmiany</button>
+                title="Odrzuć niezapisane zmiany w tej kategorii i wczytaj wersję z repozytorium">Odrzuć zmiany</button>
         <button id="btn-save" class="btn btn-primary" type="button" disabled>Zapisz i opublikuj</button>
-      </span>
-
-      <!-- Pasek narzędzi trybu „Nagrody" -->
-      <span id="rewards-toolbar" class="toolbar-group" hidden>
-        <select id="rw-select" class="cottage-select"></select>
-        <button id="rw-add" class="btn" type="button">+ Dodaj poziom</button>
-        <button id="rw-delete" class="btn btn-ghost danger" type="button">Usuń poziom</button>
-        <span id="rw-status" class="status-pill" data-state="clean">gotowy</span>
-        <button id="rw-discard" class="btn btn-ghost" type="button" disabled
-                title="Odrzuć niezapisane zmiany i wczytaj wersję z repozytorium">Odrzuć zmiany</button>
-        <button id="rw-save" class="btn btn-primary" type="button" disabled>Zapisz i opublikuj</button>
       </span>
 
       <button id="btn-settings" class="btn btn-ghost" type="button" title="Ustawienia">⚙</button>
@@ -293,6 +292,19 @@
       <div class="dialog-actions">
         <button value="cancel" class="btn btn-ghost">Anuluj</button>
         <button id="rw-add-confirm" class="btn btn-primary" type="button">Utwórz</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Switching category with unsaved work: save, drop, or stay put. -->
+  <dialog id="unsaved-dialog" class="publish-dialog">
+    <form method="dialog">
+      <h2>Niezapisane zmiany</h2>
+      <p id="unsaved-text"></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="btn btn-ghost">Anuluj</button>
+        <button id="btn-unsaved-discard" class="btn btn-ghost danger" type="button">Porzuć zmiany</button>
+        <button id="btn-unsaved-save" class="btn btn-primary" type="button">Zapisz i przełącz</button>
       </div>
     </form>
   </dialog>
