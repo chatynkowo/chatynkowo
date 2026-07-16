@@ -145,8 +145,15 @@
       await ghFetch('PATCH', `git/refs/heads/${cfg.branch}`, { sha: newCommit.sha });
     }
 
-    // Update local SHA cache from the returned tree.
-    for (const item of newTree.tree) {
+    // Update the local SHA cache from the blobs we just created — NOT from
+    // newTree.tree. Git trees are hierarchical, so the create-tree response
+    // lists the root's DIRECT children ("data", "assets", … as type "tree"),
+    // never "data/rewards.json". Reading SHAs back from it cached directory
+    // SHAs under directory names and left every real file path stale, which
+    // broke two things at once: rawUrl() kept minting the pre-save "?v=" so the
+    // browser re-served the cached OLD image after an upload, and
+    // effectiveChanges() compared against SHAs that never moved.
+    for (const item of treeItems) {
       if (item.sha) state.sha.set(item.path, item.sha);
     }
     for (const ch of changes) {
