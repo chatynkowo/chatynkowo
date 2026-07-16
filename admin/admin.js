@@ -1336,17 +1336,40 @@
     }
   }
 
+  /* Content-addressed name: assets/img/rewards/<id>/card.<hash8>.webp
+
+     A fixed name would republish new bytes under an URL the visitor already
+     has cached. The Skarbiec renders `img.src = def.image` with no cache
+     buster and Pages serves assets with max-age=600, so a swapped card would
+     keep showing the old artwork to anyone who had seen it before — invisibly,
+     with the correct file sitting in the repo. Hashing the content into the
+     name means new artwork is always a new URL. The file it replaces is
+     removed by the orphan sweep in rwSave(), in the same commit.
+
+     Without crypto.subtle (plain http on a LAN host) there is no hash to use —
+     fall back to the fixed name, since a working upload beats a fresh URL. */
+  async function rewardImagePath(key, buffer, ext) {
+    const dir = key === 'treasury' ? 'treasury' : key;
+    const stem = key === 'treasury' ? 'cover' : 'card';
+    const tag = (window.isSecureContext && window.crypto?.subtle)
+      ? `.${(await gitBlobSha(buffer)).slice(0, 8)}`
+      : '';
+    return `assets/img/rewards/${dir}/${stem}${tag}.${ext}`;
+  }
+
   async function rwImageChosen(file) {
     const obj = rwCurrentObj();
     if (!file || !obj) return;
     if (file.size > MAX_PHOTO_BYTES) { rwSetStatus('error', `${file.name} za duży (maks. 10 MB)`); return; }
     const ext = (file.name.match(/\.([a-z0-9]+)$/i)?.[1] || 'jpg').toLowerCase();
-    const path = state.rwCurrent === 'treasury'
-      ? `assets/img/rewards/treasury/cover.${ext}`
-      : `assets/img/rewards/${state.rwCurrent}/card.${ext}`;
+    // Pin the selection now: the awaits below let the user switch levels, and
+    // the bytes must land on the level they were picked for.
+    const key = state.rwCurrent;
     const buffer = await file.arrayBuffer();
+    const path = await rewardImagePath(key, buffer, ext);
     const url = URL.createObjectURL(new Blob([buffer], { type: file.type }));
-    // Drop a stale staged blob if the previous pick used a different extension.
+    // Every pick with different bytes lands on a different path, so release the
+    // blob staged by the pick this one replaces.
     if (obj.image && obj.image !== path && state.rwPendingImages.has(obj.image)) {
       URL.revokeObjectURL(state.rwPendingImages.get(obj.image).url);
       state.rwPendingImages.delete(obj.image);
