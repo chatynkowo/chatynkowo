@@ -72,9 +72,44 @@
     return res.json();
   }
 
+  /* Drop changes that would not actually change the repository.
+
+     GitHub accepts a tree identical to its parent and records an EMPTY commit:
+     no files, no diff. To the author that reads as "the editor threw my work
+     away" — the commit is right there in the history with nothing in it. It
+     happens whenever the dirty flag is set by an action that does not alter
+     content (re-picking the same image is the easy way to trigger it), because
+     the flag tracks "the user did something", not "the bytes differ".
+
+     Compare each change against the blob SHA we already know for that path and
+     drop the no-ops. Needs crypto.subtle (HTTPS/localhost) — where it is
+     missing we commit as before rather than skip a real change. */
+  async function effectiveChanges(changes) {
+    if (!window.isSecureContext || !window.crypto?.subtle) return changes;
+    const out = [];
+    for (const ch of changes) {
+      if (ch.delete) {
+        if (state.sha.has(ch.path)) out.push(ch);   // deleting a missing file: no-op
+        continue;
+      }
+      const known = state.sha.get(ch.path);
+      if (known) {
+        const bytes = ch.binary ? ch.binary : new TextEncoder().encode(ch.text || '');
+        if (await gitBlobSha(bytes) === known) continue;   // byte-identical already
+      }
+      out.push(ch);
+    }
+    return out;
+  }
+
   /* Commit multiple files (add/modify/delete) in a single Git commit.
-     changes: [{path, text?, binary?: ArrayBuffer, delete?: true}] */
-  async function commitChanges(changes, message) {
+     changes: [{path, text?, binary?: ArrayBuffer, delete?: true}]
+     Returns null when nothing would change — callers must not report a save
+     that never happened. */
+  async function commitChanges(rawChanges, message) {
+    const changes = await effectiveChanges(rawChanges);
+    if (!changes.length) return null;
+
     const ref = await ghFetch('GET', `git/refs/heads/${cfg.branch}`);
     const parentSha = ref.object.sha;
     const parentCommit = await ghFetch('GET', `git/commits/${parentSha}`);
@@ -644,7 +679,7 @@
         ? withCode(state.codesFile, slug, payload.code) : null;
       if (freshCodes) changes.push(...await codeFileChanges(freshCodes));
 
-      await commitChanges(changes, `edit: ${slug}`);
+      const commit = await commitChanges(changes, `edit: ${slug}`);
 
       // Update in-memory state to the freshly committed version.
       state.cottagesJson = freshJson;
@@ -656,6 +691,7 @@
 
       state.cleanBody = state.mde.getMarkdown();
       markClean();
+      if (!commit) setStatus('clean', 'brak zmian do zapisania');
       return true;
     } catch (e) {
       setStatus('error', `błąd: ${e.message}`);
@@ -1423,11 +1459,14 @@
           changes.push({ path: oldPath, delete: true });
         }
       }
-      await commitChanges(changes, 'rewards: edytuj Skarbiec');
+      const commit = await commitChanges(changes, 'rewards: edytuj Skarbiec');
       for (const [, img] of state.rwPendingImages) URL.revokeObjectURL(img.url);
       state.rwPendingImages.clear();
       state.rewardsLoaded = cloneRewards(state.rewards);
       rwMarkClean();
+      // Nothing differed from the repository — say so instead of implying a
+      // commit that was never made.
+      if (!commit) rwSetStatus('clean', 'brak zmian do zapisania');
       renderItemSelect();
       rwRefreshImage();
       rwRenderPreview();
