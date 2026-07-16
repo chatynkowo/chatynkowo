@@ -23,11 +23,11 @@
     },
     {
       "id": "polowa-drogi",
-      "name": "Brzoza",
+      "name": "Wiatr",
       "threshold": 13,
       "final": false,
       "image": "assets/img/rewards/polowa-drogi/card.webp",
-      "body": "**Jadalna** · Występuje w lesie\n\n**Sezon:** kwiecień – maj\n\n## Co i jak można leczyć?\n\n* **Działa oczyszczająco** — wspomaga usuwanie toksyn z organizmu, wspiera pracę nerek i dróg moczowych.\n* **Działa przeciwzapalnie** — pomaga w stanach zapalnych skóry, przy reumatyzmie, artretyzmie.\n* **Wspomaga trawienie** — łagodzi dolegliwości żołądkowe, wzdęcia, niestrawność.\n* **Wzmacnia włosy i skórę** — napar z liści używany do płukania włosów i jako tonik do skóry.\n\n*Słodka jak leśna tajemnica – ale pełna mocy!*"
+      "body": ""
     },
     {
       "id": "mistrz-chatynkowa",
