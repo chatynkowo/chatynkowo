@@ -45,7 +45,7 @@ Statyczny hosting nie udostępnia listingu katalogów, więc `photos` w `data/co
 
 Nagrody są w całości sterowane danymi: progi przyznawania, teksty i grafiki pochodzą z `data/rewards.json`. `src/lib/rewards.ts` zawiera tylko awaryjny zestaw używany, gdy pliku nie da się wczytać — identyfikatory poziomów są w obu miejscach takie same, żeby zdobyty postęp pasował niezależnie od źródła.
 
-## Panel administracyjny
+## Panel administracyjny (edytor zawartości)
 
 Panel zapisuje zmiany bezpośrednio do repozytorium przez GitHub API. Token PAT jest przechowywany wyłącznie w `localStorage` przeglądarki. Publikowanie wielu zmienionych plików odbywa się w jednym commicie.
 
