@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <!-- Edytor nigdy nie może działać na nieaktualnym, zacache'owanym kodzie.
-       GitHub Pages nie pozwala ustawić nagłówków HTTP, więc prosimy o brak
-       cache'owania metatagami, a własne aktywa ładujemy z tokenem ?v=… . -->
+       Kod edytora jest budowany przez Vite pod nazwą z hashem treści, więc nowe
+       wydanie to zawsze nowy URL — wystarczy, by przeglądarka nie trzymała
+       samego index.html (GitHub Pages nie pozwala ustawić nagłówków HTTP). -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -29,8 +30,8 @@
         <span>GitHub Personal Access Token</span>
         <input id="auth-token" type="password" autocomplete="off" placeholder="github_pat_…">
       </label>
-      <details class="auth-advanced">
-        <summary>Zaawansowane (repozytorium)</summary>
+      <details id="auth-advanced" class="auth-advanced">
+        <summary>Repozytorium i gałąź</summary>
         <label class="field">
           <span>Właściciel (owner)</span>
           <input id="auth-owner" type="text" autocomplete="off">
@@ -43,6 +44,8 @@
           <span>Gałąź (branch)</span>
           <input id="auth-branch" type="text" autocomplete="off" placeholder="main">
         </label>
+        <p class="auth-warning">Każdy zapis to prawdziwy commit na wybranej
+          gałęzi — także wtedy, gdy edytor działa na localhoście.</p>
       </details>
       <p id="auth-error" class="auth-error" hidden></p>
       <div style="display:flex;gap:.5rem;margin-top:.25rem">
@@ -54,15 +57,9 @@
 
   <!-- Main editor (hidden until auth succeeds) -->
   <div id="editor-root" hidden>
-    <div id="update-banner" class="update-banner" role="alert" hidden>
-      <span>Dostępna jest nowsza wersja edytora w repozytorium. Odśwież stronę,
-        zanim zaczniesz edycję — jeśli banner nie zniknie, wymuś odświeżenie
-        (Ctrl+Shift+R).</span>
-      <button id="btn-reload" class="btn" type="button">Odśwież stronę</button>
-    </div>
     <header class="topbar">
       <div class="brand">Chatynkowo · edytor</div>
-      <!-- Przełącznik trybu: edycja Chatynek albo Nagród (Skarbca). -->
+      <!-- Przełącznik trybu: edycja Chatynek albo Nagród (Kroniki). -->
       <div class="mode-tabs" role="tablist" aria-label="Tryb edycji">
         <button id="tab-cottages" class="mode-tab is-active" type="button" role="tab" aria-selected="true">Chatynki</button>
         <button id="tab-rewards" class="mode-tab" type="button" role="tab" aria-selected="false">Nagrody</button>
@@ -70,26 +67,33 @@
 
       <!-- Jeden wspólny pasek narzędzi. Lista wyboru jest wypełniana danymi
            aktywnej kategorii, a stan/odrzuć/zapisz zawsze dotyczą tej
-           kategorii. Tylko przyciski dodaj/usuń różnią się między trybami. -->
+           kategorii. Tylko przyciski dodaj/usuń różnią się między trybami.
+
+           Pasek dzieli się na dwie strefy, żeby przy wąskim oknie zawijał się
+           na czytelne wiersze zamiast wypychać „Zapisz" poza ekran. -->
       <span class="toolbar-group">
         <select id="item-select" class="cottage-select"></select>
 
         <span id="cottage-actions" class="toolbar-actions">
           <button id="btn-add" class="btn" type="button">+ Dodaj nową</button>
-          <button id="btn-delete" class="btn btn-ghost danger" type="button">Usuń bieżącą</button>
+          <button id="btn-delete" class="btn btn-quiet-danger" type="button"
+                  title="Usuń bieżącą chatynkę wraz z nagraniem i zdjęciami">Usuń</button>
         </span>
         <span id="rewards-actions" class="toolbar-actions" hidden>
           <button id="rw-add" class="btn" type="button">+ Dodaj poziom</button>
-          <button id="rw-delete" class="btn btn-ghost danger" type="button">Usuń poziom</button>
+          <button id="rw-delete" class="btn btn-quiet-danger" type="button"
+                  title="Usuń bieżący poziom nagrody">Usuń</button>
         </span>
-
-        <span id="status-pill" class="status-pill" data-state="clean">gotowy</span>
-        <button id="btn-discard" class="btn btn-ghost" type="button" disabled
-                title="Odrzuć niezapisane zmiany w tej kategorii i wczytaj wersję z repozytorium">Odrzuć zmiany</button>
-        <button id="btn-save" class="btn btn-primary" type="button" disabled>Zapisz i opublikuj</button>
       </span>
 
-      <button id="btn-settings" class="btn btn-ghost" type="button" title="Ustawienia">⚙</button>
+      <span class="toolbar-end">
+        <span id="status-pill" class="status-pill" data-state="clean">gotowy</span>
+        <button id="btn-discard" class="btn btn-ghost" type="button" disabled
+                title="Odrzuć niezapisane zmiany w tej kategorii i wczytaj wersję z repozytorium">Odrzuć</button>
+        <button id="btn-save" class="btn btn-primary" type="button" disabled
+                title="Zapisz i opublikuj (Ctrl+S)">Zapisz i opublikuj</button>
+        <button id="btn-settings" class="btn btn-ghost btn-icon" type="button" title="Ustawienia (token, repozytorium, gałąź)" aria-label="Ustawienia">⚙</button>
+      </span>
     </header>
 
     <main class="layout" id="cottage-view">
@@ -107,9 +111,9 @@
           <span>Cnota (virtue)</span>
           <input id="f-virtue" type="text" autocomplete="off">
         </label>
-        <label class="field">
+        <label class="field field--narrow">
           <span>Kod chatynki (4 cyfry — wpisywany przez gości)</span>
-          <input id="f-code" type="text" inputmode="numeric" maxlength="4" pattern="\d{4}" autocomplete="off" placeholder="np. 1234">
+          <input id="f-code" class="input-code" type="text" inputmode="numeric" maxlength="4" pattern="\d{4}" autocomplete="off" placeholder="1234">
         </label>
         <div class="field-row">
           <label class="field">
@@ -119,16 +123,6 @@
           <label class="field">
             <span>Długość (lng)</span>
             <input id="f-lng" type="number" step="0.000001" inputmode="decimal">
-          </label>
-        </div>
-        <div class="field-row">
-          <label class="field">
-            <span>mapX (% szerokości mapy)</span>
-            <input id="f-mapx" type="number" step="0.01" min="0" max="100" inputmode="decimal">
-          </label>
-          <label class="field">
-            <span>mapY (% wysokości mapy)</span>
-            <input id="f-mapy" type="number" step="0.01" min="0" max="100" inputmode="decimal">
           </label>
         </div>
 
@@ -146,8 +140,11 @@
         </div>
 
         <h2>Zdjęcia</h2>
-        <p class="meta">Pliki trafiają do <code>assets/img/cottages/&lt;slug&gt;/</code>.
-          Formaty: <code>.webp .jpg .png .gif .avif</code> (do 10 MB każdy).</p>
+        <p class="meta">Pokazywane w oknie opowieści po wpisaniu kodu. Pliki
+          trafiają do <code>assets/img/cottages/&lt;slug&gt;/</code>, a ich lista
+          do <code>data/cottages.json</code>. Formaty:
+          <code>.webp .jpg .png .gif .avif</code> (do 10 MB każdy). Bez zdjęć
+          strona pokazuje wspólną ilustrację.</p>
         <div id="photos-grid" class="photos-grid"></div>
         <div class="photos-actions">
           <label class="btn btn-ghost">
@@ -159,40 +156,34 @@
 
         <h2>Treść (markdown)</h2>
         <p class="meta">
-          Sekcje <code>## Jak znaleźć Chatynkę</code> i
-          <code>## Co zrobić, gdy trafisz pod chatynkę?</code> trafiają do dymka pinezki.
+          Wszystko przed nagłówkiem <code>## Co zrobić, gdy trafisz pod chatynkę?</code>
+          to opowieść — widoczna dopiero po wpisaniu kodu. Sekcja po tym nagłówku
+          jest <strong>publiczna</strong>: pokazuje się w panelu chatynki na mapie,
+          zanim ktokolwiek ją odnajdzie.
         </p>
         <div id="f-body-editor"></div>
       </section>
 
       <section class="map-pane">
-        <h2>Pinezka na bajkowej mapie</h2>
-        <p class="meta">Kliknij w obrazek, aby umieścić pinezkę (<code>mapX/mapY</code> jako %).</p>
-        <div id="symbolic-map" class="symbolic-map">
-          <img id="symbolic-img" src="../assets/img/map_base_vertical.webp" alt="">
-          <div id="symbolic-pin" class="symbolic-pin" hidden></div>
-        </div>
-        <p id="pin-warning" class="pin-warning" hidden></p>
-
-        <h2>Pinezka na rzeczywistej mapie</h2>
-        <p class="meta">Kliknij albo przeciągnij pinezkę, aby ustawić <code>lat/lng</code>.</p>
+        <h2>Pinezka na mapie wyprawy</h2>
+        <p class="meta">Kliknij albo przeciągnij pinezkę, aby ustawić <code>lat/lng</code>.
+          To jedyne współrzędne, których używa strona.</p>
         <div id="geo-map" class="geo-map"></div>
       </section>
     </main>
 
-    <!-- Tryb „Nagrody" (Skarbiec). Edytuje data/rewards.json: wstęp Skarbca
-         oraz poziomy nagród (kolekcjonerskie karty ziół) — nazwa, próg,
-         obrazek i opis w markdown. -->
+    <!-- Tryb „Nagrody" (Kronika). Edytuje data/rewards.json: wstęp Kroniki
+         oraz poziomy nagród — nazwa, próg, obrazek i opis w markdown. -->
     <main class="layout" id="rewards-view" hidden>
       <section class="form-pane">
-        <!-- Pola Skarbca (widoczne, gdy wybrano „Skarbiec (wstęp)") -->
+        <!-- Pola Kroniki (widoczne, gdy wybrano „Kronika (wstęp)") -->
         <div id="rw-treasury-fields">
-          <h2>Skarbiec — ekran główny</h2>
-          <p class="meta">Tekst widoczny u góry „Twojego Skarbca". Wstęp piszesz
+          <h2>Kronika — ekran główny</h2>
+          <p class="meta">Tytuł i wstęp widoczne u góry Kroniki. Wstęp piszesz
             w edytorze poniżej.</p>
           <label class="field">
-            <span>Tytuł Skarbca</span>
-            <input id="rw-tre-title" type="text" autocomplete="off" placeholder="Twój Skarbiec">
+            <span>Tytuł Kroniki</span>
+            <input id="rw-tre-title" type="text" autocomplete="off" placeholder="Twoja Kronika">
           </label>
         </div>
 
@@ -219,12 +210,12 @@
           <div class="reward-order">
             <button id="rw-move-up" class="btn btn-ghost" type="button">↑ Wyżej</button>
             <button id="rw-move-down" class="btn btn-ghost" type="button">↓ Niżej</button>
-            <span class="meta">Kolejność poziomów w Skarbcu.</span>
+            <span class="meta">Kolejność poziomów w Kronice.</span>
           </div>
         </div>
 
         <h2>Obrazek</h2>
-        <p class="meta">Kolekcjonerska ilustracja pokazywana w Skarbcu (miniatura
+        <p class="meta">Kolekcjonerska ilustracja pokazywana w Kronice (miniatura
           i podgląd nagrody). Formaty: <code>.webp .jpg .png .gif .avif</code> (do 10 MB).</p>
         <div id="rw-image" class="reward-image">
           <img id="rw-image-preview" alt="" hidden>
@@ -239,14 +230,13 @@
         </div>
 
         <h2 id="rw-body-label">Opis (markdown)</h2>
-        <p class="meta" id="rw-body-hint">Treść, która wcześniej była wypalona
-          w obrazku — teraz zwykły, edytowalny tekst.</p>
+        <p class="meta" id="rw-body-hint">Treść pokazywana po kliknięciu karty nagrody.</p>
         <div id="rw-body-editor"></div>
       </section>
 
       <section class="map-pane">
         <h2>Podgląd nagrody</h2>
-        <p class="meta">Tak nagroda wygląda w Skarbcu po kliknięciu miniatury.</p>
+        <p class="meta">Tak nagroda wygląda w Kronice po kliknięciu miniatury.</p>
         <div id="rw-preview" class="reward-preview"></div>
       </section>
     </main>

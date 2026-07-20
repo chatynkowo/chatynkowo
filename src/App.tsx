@@ -15,10 +15,11 @@ import {
 } from '@phosphor-icons/react'
 import { marked } from 'marked'
 import { loadCottages, resolveCode } from './lib/content'
-import { BADGES, discoverCottage, loadStoredState } from './lib/persistence'
+import { backfillBadges, discoverCottage, loadStoredState } from './lib/persistence'
+import { fallbackRewards, finalLevelId, loadRewards, requiredFinds } from './lib/rewards'
 import { initializeAnalytics, track } from './lib/analytics'
 import { syncNewFind } from './lib/sync'
-import type { Cottage, StoredState } from './types'
+import type { Cottage, RewardLevel, RewardsConfig, StoredState } from './types'
 import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
 import { AudioPlayer } from './components/AudioPlayer'
@@ -37,9 +38,29 @@ const MapExplorer = lazy(() =>
   import('./components/MapExplorer').then((module) => ({ default: module.MapExplorer })),
 )
 
-function storyImage(cottage: Cottage) {
+/* Photos uploaded for this cottage in /admin/, or — while none exist — one of
+   the shared illustrations, picked from the slug so a cottage always shows the
+   same one. */
+function storyPhotos(cottage: Cottage) {
+  if (cottage.photos?.length) {
+    return cottage.photos.map((name) => `assets/img/cottages/${cottage.slug}/${name}`)
+  }
   const index = Array.from(cottage.slug).reduce((sum, character) => sum + character.charCodeAt(0), 0)
-  return STORY_IMAGES[index % STORY_IMAGES.length]
+  return [STORY_IMAGES[index % STORY_IMAGES.length]]
+}
+
+function rewardLockedHint(level: RewardLevel, total: number) {
+  const required = requiredFinds(level, total)
+  if (typeof required !== 'number' || required <= 0) return 'Nagroda jeszcze nie zdobyta.'
+  return `Odkryj ${cottageCountLabel(required)}, aby zdobyć tę nagrodę.`
+}
+
+function cottageCountLabel(count: number) {
+  if (count === 1) return '1 Chatynkę'
+  const lastTwo = count % 100
+  const last = count % 10
+  if ((lastTwo < 12 || lastTwo > 14) && last >= 2 && last <= 4) return `${count} Chatynki`
+  return `${count} Chatynek`
 }
 
 function discoveryCountLabel(count: number) {
@@ -62,15 +83,30 @@ function App() {
   const [story, setStory] = useState<Cottage | null>(null)
   const [storyPreviouslyFound, setStoryPreviouslyFound] = useState(false)
   const [treasuryOpen, setTreasuryOpen] = useState(false)
+  const [rewardDetail, setRewardDetail] = useState<RewardLevel | null>(null)
+  const [rewards, setRewards] = useState<RewardsConfig>(fallbackRewards)
   const [achievement, setAchievement] = useState('')
   const codeInputRefs = useRef<Array<HTMLInputElement | null>>([])
 
   const foundSlugs = useMemo(() => new Set(Object.keys(stored.found)), [stored.found])
   const foundCount = foundSlugs.size
   const progressPercent = cottages.length ? Math.round((foundCount / cottages.length) * 100) : 0
-  const nextBadge = BADGES.find((badge) => !stored.badges[badge.id])
-  const nextBadgeTarget = nextBadge?.final ? cottages.length : nextBadge?.threshold ?? cottages.length
-  const discoveriesToNextBadge = Math.max(0, nextBadgeTarget - foundCount)
+  const nextLevel = rewards.levels.find((level) => !stored.badges[level.id])
+  const nextLevelTarget = (nextLevel && requiredFinds(nextLevel, cottages.length)) || cottages.length
+  const discoveriesToNextLevel = Math.max(0, nextLevelTarget - foundCount)
+
+  /* Every level the seeker has a record of: the published ones, plus any level
+     earned before it was renamed or removed in the editor, so collected
+     progress is never hidden. */
+  const kronikaLevels = useMemo<RewardLevel[]>(() => {
+    const published = new Set(rewards.levels.map((level) => level.id))
+    const orphans = Object.entries(stored.badges)
+      .filter(([id]) => !published.has(id))
+      .map(([id, meta]) => ({ id, name: meta.name || id, threshold: null, final: false, image: '', body: '' }))
+    return [...rewards.levels, ...orphans]
+  }, [rewards.levels, stored.badges])
+
+  const completed = cottages.length > 0 && Boolean(stored.badges[finalLevelId(rewards.levels)])
 
   useEffect(() => {
     let current = true
@@ -83,12 +119,25 @@ function App() {
       .catch(() => {
         if (current) setLoadState('error')
       })
+    void loadRewards().then((config) => {
+      if (current) setRewards(config)
+    })
     const cleanupAnalytics = initializeAnalytics()
     return () => {
       current = false
       cleanupAnalytics()
     }
   }, [])
+
+  /* Cottages and the reward config load independently, and both can change what
+     is already earned (a new level, a lowered threshold). Reconcile once both
+     are in, so a seeker never has to find one more Chatynka to see a reward
+     they already qualify for. */
+  useEffect(() => {
+    if (!cottages.length) return
+    const result = backfillBadges(stored, rewards.levels, cottages.length)
+    if (result) setStored(result.next)
+  }, [cottages.length, rewards.levels, stored])
 
   useEffect(() => {
     if (loadState === 'loading' || !window.location.hash) return
@@ -97,9 +146,9 @@ function App() {
   }, [loadState])
 
   useEffect(() => {
-    document.body.classList.toggle('modal-open', Boolean(story || treasuryOpen))
+    document.body.classList.toggle('modal-open', Boolean(story || treasuryOpen || rewardDetail))
     return () => document.body.classList.remove('modal-open')
-  }, [story, treasuryOpen])
+  }, [story, treasuryOpen, rewardDetail])
 
   useEffect(() => {
     if (!story && !treasuryOpen) return
@@ -113,12 +162,20 @@ function App() {
     })
     const closeModal = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
+      // The reward card sits on top of the Kronika — Escape peels off one layer.
+      if (rewardDetail) {
+        setRewardDetail(null)
+        return
+      }
       setStory(null)
       setTreasuryOpen(false)
     }
     document.addEventListener('keydown', closeModal)
     window.requestAnimationFrame(() => {
-      document.querySelector<HTMLElement>('.modal-card .modal-close')?.focus()
+      // Focus the topmost card — with a reward open that is the detail, not the
+      // Kronika grid still rendered underneath it.
+      const cards = document.querySelectorAll<HTMLElement>('.modal-card .modal-close')
+      cards[cards.length - 1]?.focus()
     })
     return () => {
       document.removeEventListener('keydown', closeModal)
@@ -128,7 +185,7 @@ function App() {
       })
       previousFocus?.focus()
     }
-  }, [story, treasuryOpen])
+  }, [story, treasuryOpen, rewardDetail])
 
   const openCode = useCallback(() => {
     const mobile = window.matchMedia('(max-width: 760px)').matches
@@ -239,7 +296,7 @@ function App() {
         return
       }
 
-      const result = discoverCottage(stored, cottage.slug, normalized, cottages.length)
+      const result = discoverCottage(stored, cottage.slug, normalized, cottages.length, rewards.levels)
       setStored(result.next)
       setCodeState('idle')
       setCodeMessage(result.isNew ? 'Nowa opowieść została odblokowana.' : 'Ta Chatynka jest już w Twojej Kronice. Otwieram opowieść ponownie.')
@@ -255,8 +312,8 @@ function App() {
         void syncNewFind(cottage.slug, foundAt, count)
       }
       if (result.newlyEarned.length) {
-        const latest = BADGES.find((badge) => badge.id === result.newlyEarned.at(-1))
-        setAchievement(latest ? `Nowa odznaka: ${latest.name}` : '')
+        const latest = rewards.levels.find((level) => level.id === result.newlyEarned.at(-1))
+        setAchievement(latest ? `Nowa nagroda: ${latest.name}` : '')
         window.setTimeout(() => setAchievement(''), 5000)
       }
     } catch {
@@ -307,7 +364,7 @@ function App() {
             <div className="quest-panel-head">
               <span>Etap {foundCount + 1} · Aktualne zadanie</span>
               <strong>{foundCount ? 'Odnajdź kolejną pieczęć' : 'Wybierz trop na mapie'}</strong>
-              <p>{nextBadge ? `${nextBadge.name}: jeszcze ${discoveryCountLabel(discoveriesToNextBadge)}.` : 'Wszystkie opowieści odnalezione.'}</p>
+              <p>{nextLevel ? `${nextLevel.name}: jeszcze ${discoveryCountLabel(discoveriesToNextLevel)}.` : 'Wszystkie opowieści odnalezione.'}</p>
               <button type="button" className="quest-progress-mini" onClick={() => setTreasuryOpen(true)}>
                 <span><Crown size={15} weight="fill" /> Kronika</span>
                 <strong>{foundCount} / {cottages.length || 26}</strong>
@@ -405,21 +462,49 @@ function App() {
           <section className="modal-card treasury-modal" role="dialog" aria-modal="true" aria-labelledby="treasury-title">
             <button className="icon-button modal-close" type="button" onClick={() => setTreasuryOpen(false)} aria-label="Zamknij Kronikę"><X size={22} /></button>
             <Crown className="modal-emblem" size={42} weight="duotone" />
-            <h2 id="treasury-title">Twoja Kronika</h2>
-            <p>{foundCount ? `Kronika przechowuje ${foundCount} z ${cottages.length} opowieści.` : 'Jej karty są jeszcze puste. Pierwsza odnaleziona Chatynka zostawi tu swój ślad.'}</p>
+            <h2 id="treasury-title">{rewards.treasury.title}</h2>
+            {rewards.treasury.intro
+              ? <div className="markdown treasury-intro" dangerouslySetInnerHTML={{ __html: marked.parse(rewards.treasury.intro) as string }} />
+              : <p>{foundCount ? `Kronika przechowuje ${foundCount} z ${cottages.length} opowieści.` : 'Jej karty są jeszcze puste. Pierwsza odnaleziona Chatynka zostawi tu swój ślad.'}</p>}
             <div className="badge-grid">
-              {BADGES.map((badge) => {
-                const earned = Boolean(stored.badges[badge.id])
+              {kronikaLevels.map((level) => {
+                const earned = Boolean(stored.badges[level.id])
                 return (
-                  <article className={`badge-item${earned ? ' is-earned' : ''}`} key={badge.id}>
-                    {earned ? <Trophy size={28} weight="fill" /> : <ShieldCheck size={28} />}
-                    <div><h3>{badge.name}</h3><p>{badge.description}</p></div>
-                  </article>
+                  <button
+                    type="button"
+                    className={`badge-item${earned ? ' is-earned' : ''}`}
+                    key={level.id}
+                    onClick={() => setRewardDetail(level)}
+                  >
+                    <span className="badge-art">
+                      {level.image
+                        ? <img src={level.image} alt="" loading="lazy" decoding="async" />
+                        : earned ? <Trophy size={28} weight="fill" /> : <ShieldCheck size={28} />}
+                    </span>
+                    <span className="badge-text">
+                      <strong>{level.name}</strong>
+                      <em>{earned ? 'zdobyta' : 'do zdobycia'}</em>
+                    </span>
+                  </button>
                 )
               })}
             </div>
-            {foundCount === cottages.length && cottages.length > 0 && <a className="button button-primary" href="ranking.html">Zobacz ranking</a>}
+            {completed && <a className="button button-primary" href="ranking.html">Zobacz ranking</a>}
           </section>
+        </div>
+      )}
+
+      {rewardDetail && (
+        <div className="modal-backdrop is-stacked" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setRewardDetail(null)}>
+          <article className="modal-card reward-modal" role="dialog" aria-modal="true" aria-labelledby="reward-title">
+            <button className="icon-button modal-close" type="button" onClick={() => setRewardDetail(null)} aria-label="Zamknij nagrodę"><X size={22} /></button>
+            <h2 id="reward-title">{rewardDetail.name}</h2>
+            {rewardDetail.image && <div className="reward-art"><img src={rewardDetail.image} alt={rewardDetail.name} decoding="async" /></div>}
+            {stored.badges[rewardDetail.id]
+              ? <p className="reward-status is-earned"><Trophy size={18} weight="fill" /> Nagroda zdobyta</p>
+              : <p className="reward-status">{rewardLockedHint(rewardDetail, cottages.length)}</p>}
+            {rewardDetail.body && <div className="markdown" dangerouslySetInnerHTML={{ __html: marked.parse(rewardDetail.body) as string }} />}
+          </article>
         </div>
       )}
 
@@ -427,7 +512,11 @@ function App() {
         <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setStory(null)}>
           <article className="modal-card story-modal" role="dialog" aria-modal="true" aria-labelledby="story-title">
             <button className="icon-button modal-close" type="button" onClick={() => setStory(null)} aria-label="Zamknij opowieść"><X size={22} /></button>
-            <div className="story-photo"><img src={storyImage(story)} alt={`Leśna Chatynka, opowieść: ${story.title}`} /></div>
+            <div className={`story-photo${storyPhotos(story).length > 1 ? ' is-gallery' : ''}`}>
+              {storyPhotos(story).map((src) => (
+                <img key={src} src={src} alt={`Chatynka: ${story.title}`} loading="lazy" decoding="async" />
+              ))}
+            </div>
             <div className="story-body">
               <p className={`story-unlocked${storyPreviouslyFound ? ' is-returning' : ''}`}>
                 <CheckCircle size={18} weight="fill" />

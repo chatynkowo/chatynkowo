@@ -1617,22 +1617,39 @@ h2 {
   color: var(--ink-soft);
 }
 
+.treasury-intro {
+  color: var(--ink-soft);
+}
+
+/* The reward cards are the Kronika's collectibles: an illustration authored in
+   /admin/ → Nagrody, tapped to open the full description. */
 .badge-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 12px;
   margin: 28px 0;
 }
 
 .badge-item {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
+  background: none;
   color: var(--ink-faint);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
   opacity: 0.62;
+  transition: transform 160ms ease, border-color 160ms ease, opacity 160ms ease;
+}
+
+.badge-item:hover,
+.badge-item:focus-visible {
+  border-color: var(--line-strong);
+  opacity: 1;
+  transform: translateY(-2px);
 }
 
 .badge-item.is-earned {
@@ -1642,16 +1659,88 @@ h2 {
   opacity: 1;
 }
 
-.badge-item h3 {
-  margin-bottom: 4px;
-  color: var(--ink);
-  font-size: 1rem;
+.badge-art {
+  display: grid;
+  overflow: hidden;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: var(--radius-small);
+  background: rgb(210 166 77 / 0.07);
 }
 
-.badge-item p {
-  margin-bottom: 0;
+.badge-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Locked rewards keep their silhouette but not their secret. */
+  filter: grayscale(1) brightness(0.72);
+}
+
+.badge-item.is-earned .badge-art img {
+  filter: none;
+}
+
+.badge-text {
+  display: grid;
+  gap: 3px;
+}
+
+.badge-text strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.badge-text em {
   color: var(--ink-soft);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
+  font-style: normal;
+}
+
+.badge-item.is-earned .badge-text em {
+  color: var(--success);
+}
+
+/* Detail view for one reward, opened on top of the Kronika grid. */
+.modal-backdrop.is-stacked {
+  z-index: 1700;
+}
+
+.reward-modal {
+  width: min(560px, 100%);
+  padding: 42px;
+  text-align: center;
+}
+
+.reward-art {
+  overflow: hidden;
+  max-width: 380px;
+  margin: 18px auto;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-small);
+}
+
+.reward-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.reward-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.reward-status.is-earned {
+  color: var(--success);
+}
+
+.reward-modal .markdown {
+  margin-top: 18px;
+  text-align: left;
 }
 
 .story-modal {
@@ -1669,6 +1758,20 @@ h2 {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* More than one photo uploaded for the cottage: a scrollable column instead of
+   a single cropped hero. */
+.story-photo.is-gallery {
+  display: grid;
+  overflow-y: auto;
+  align-content: start;
+  gap: 4px;
+}
+
+.story-photo.is-gallery img {
+  height: auto;
+  aspect-ratio: 4 / 3;
 }
 
 .story-body {
@@ -2142,7 +2245,11 @@ h2 {
   }
 
   .badge-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .reward-modal {
+    padding: 36px 20px 24px;
   }
 
   .story-modal {
@@ -2683,6 +2790,16 @@ h2 {
     background: var(--surface);
   }
   .story-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 45%; }
+  /* On a phone the gallery reads better swiped sideways than stacked into a
+     nested vertical scroller inside the sheet. */
+  .story-photo.is-gallery {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 4px;
+    scroll-snap-type: x mandatory;
+  }
+  .story-photo.is-gallery img { flex: 0 0 86%; aspect-ratio: auto; scroll-snap-align: center; }
   .story-body {
     position: relative;
     z-index: 1;
@@ -2750,7 +2867,7 @@ h2 {
 .found-notice,
 .cottage-clue,
 .arrival-guide { font-size: 14px; }
-.badge-item p { font-size: .86rem; }
+.badge-text em { font-size: .82rem; }
 
 .map-search input:hover::placeholder { color: #e0cfa6; }
 .map-search:focus-within {
