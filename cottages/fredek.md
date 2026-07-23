@@ -25,7 +25,7 @@ virtue: cisza
 
 ## Mieszka tu
 
-**Elf Fredek**, który uczy wędrowców cnoty: *cisza*.
+**Elf Ferdek**, który uczy wędrowców cnoty: *cisza*.
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
