@@ -25,31 +25,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # pnpm before setup-node so setup-node's cache: pnpm can find it.
+      # No version here: action-setup reads the pinned packageManager field
+      # from package.json (pnpm@11.10.0), matching the version the lockfile and
+      # pnpm-workspace.yaml were verified against.
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - name: Rebuild the symbolic map from the pin-less source
-        # Regenerates assets/img/map_base_vertical.webp from
-        # private/img/origs/map_base_vertical.png so the published map can never
-        # drift back to a pinned ("dead pins") background. Must run BEFORE the
-        # strip step below, while private/ still exists. Fails the deploy if the
-        # rebuild can't run — a broken build step must be visible, not silently
-        # skipped (the last successful deploy stays live until it's fixed).
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y webp
-          node private/img/build-map.mjs
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Rebuild the public code-hash lookup from the secret codes
         # Regenerates data/code_hashes.json from private/codes.json so the
-        # published validation data can never drift from the real plaque
-        # codes. Must run before the Vite build, while private/ still exists.
-        # The build copies only explicitly public files into dist/.
-        run: node private/build-code-hashes.mjs
-      - name: Install frontend dependencies
-        run: npm ci
+        # published validation data can never drift from the real plaque codes.
+        # Runs before the Vite build; the build copies data/ into dist/, while
+        # private/ is never copied, so the plaintext codes never reach the artifact.
+        run: pnpm codes:build
       - name: Build the React static site
-        run: npm run build
+        # tsc -b && vite build -> dist/. The copy-static plugin in vite.config.ts
+        # pulls assets/, data/, cottages/, legal/, style.css and CNAME into dist/;
+        # private/ is deliberately excluded, so no separate strip step is needed.
+        run: pnpm build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

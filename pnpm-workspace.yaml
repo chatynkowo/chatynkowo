@@ -1,0 +1,6 @@
+# pnpm settings (pnpm 11 no longer reads the "pnpm" key in package.json).
+# esbuild ships its binary via a platform optional dependency, but its install
+# script is still gated; allow it so `pnpm install` doesn't abort the Pages
+# build with ERR_PNPM_IGNORED_BUILDS.
+allowBuilds:
+  esbuild: true
