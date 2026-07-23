@@ -52,11 +52,13 @@ function regionFor(cottage: Cottage) {
   return REGION_AREAS.find((region) => cottage.lat >= region.minLat) ?? REGION_AREAS[2]
 }
 
-function cottageIcon(found: boolean, active: boolean) {
-  const house = renderToStaticMarkup(<HouseLine size={28} weight="fill" aria-hidden />)
+function cottageIcon(pinImg: string | undefined, found: boolean, active: boolean) {
+  const inner = pinImg
+    ? `<img class="cottage-marker-img" src="${pinImg}" alt="" />`
+    : renderToStaticMarkup(<HouseLine size={28} weight="fill" aria-hidden />)
   return L.divIcon({
     className: 'cottage-marker-shell',
-    html: `<span class="cottage-marker${found ? ' is-found' : ''}${active ? ' is-active' : ''}">${house}</span>`,
+    html: `<span class="cottage-marker${pinImg ? ' is-custom' : ''}${found ? ' is-found' : ''}${active ? ' is-active' : ''}">${inner}</span>`,
     iconSize: [52, 58],
     iconAnchor: [26, 46],
     tooltipAnchor: [0, -42],
@@ -110,6 +112,9 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
     () => L.latLngBounds(cottages.map((cottage) => [cottage.lat, cottage.lng] as L.LatLngTuple)).pad(0.24),
     [cottages],
   )
+  // Lookup so the setIcon loops (which iterate markers by slug) can find each
+  // cottage's optional custom pin image without re-scanning the array.
+  const cottageBySlug = useMemo(() => new Map(cottages.map((cottage) => [cottage.slug, cottage])), [cottages])
 
   const clearArea = useCallback(() => {
     if (searchAreaRef.current && mapRef.current) searchAreaRef.current.removeFrom(mapRef.current)
@@ -124,7 +129,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
     setSelected(cottage)
     setLevel('szlak')
     markersRef.current.forEach((marker, slug) => {
-      marker.setIcon(cottageIcon(foundSlugs.has(slug), slug === cottage.slug))
+      marker.setIcon(cottageIcon(cottageBySlug.get(slug)?.pin_custom_img, foundSlugs.has(slug), slug === cottage.slug))
     })
     searchAreaRef.current = L.circle([cottage.lat, cottage.lng], {
       pane: 'searchArea',
@@ -145,16 +150,16 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
       paddingTopLeft: [28, 88],
       paddingBottomRight: mobile ? [24, 320] : [420, 40],
     })
-  }, [clearArea, foundSlugs])
+  }, [clearArea, cottageBySlug, foundSlugs])
 
   const closeCottage = useCallback(() => {
     selectedRef.current = null
     setSelected(null)
     clearArea()
-    markersRef.current.forEach((marker, slug) => marker.setIcon(cottageIcon(foundSlugs.has(slug), false)))
+    markersRef.current.forEach((marker, slug) => marker.setIcon(cottageIcon(cottageBySlug.get(slug)?.pin_custom_img, foundSlugs.has(slug), false)))
     const zoom = mapRef.current?.getZoom() ?? 9
     setLevel(zoom < 10.5 ? 'kraina' : 'region')
-  }, [clearArea, foundSlugs])
+  }, [clearArea, cottageBySlug, foundSlugs])
 
   const resetMap = useCallback(() => {
     closeCottage()
@@ -221,7 +226,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
     cottages.forEach((cottage) => {
       const marker = L.marker([cottage.lat, cottage.lng], {
         pane: 'cottages',
-        icon: cottageIcon(foundSlugs.has(cottage.slug), false),
+        icon: cottageIcon(cottage.pin_custom_img, foundSlugs.has(cottage.slug), false),
         keyboard: true,
         riseOnHover: true,
         title: `Otwórz ${cottage.title}`,

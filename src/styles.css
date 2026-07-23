@@ -967,6 +967,18 @@ h2 {
   color: #e3f4c6;
 }
 
+/* Optional per-cottage custom pin (data/cottages.json → pin_custom_img), e.g.
+   the skull for "mrok". The image is counter-rotated like the house svg so it
+   sits upright inside the tilted teardrop; the found/active states still tint
+   the shell around it. */
+.cottage-marker-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  transform: rotate(45deg);
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.55));
+}
+
 .cottage-cluster {
   display: grid;
   width: 58px;

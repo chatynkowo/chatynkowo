@@ -6,6 +6,10 @@ export type CottageLocation = {
      The site is a static bundle with no directory listing, so the manifest in
      data/cottages.json is the only way to know which photos exist. */
   photos?: string[]
+  /* Optional per-cottage custom map pin (e.g. a skull for "mrok"). When set,
+     the map marker shows this image instead of the default house icon. Path is
+     relative to the site root, e.g. "assets/img/skull.png". */
+  pin_custom_img?: string
 }
 
 export type Cottage = CottageLocation & {
