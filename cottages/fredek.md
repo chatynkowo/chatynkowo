@@ -1,7 +1,7 @@
 ---
 title: "Chatynka Elfa FERDKA I NIETOPERZA"
 slug: fredek
-occupant: "Elf Feredek"
+occupant: "Elf Ferdek"
 virtue: cisza
 ---
 
