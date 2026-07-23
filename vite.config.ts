@@ -31,6 +31,7 @@ function copyStaticSite(): Plugin {
 }
 
 export default defineConfig({
+  base: './',
   plugins: [react(), copyStaticSite()],
   publicDir: false,
   build: {
