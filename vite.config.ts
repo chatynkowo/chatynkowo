@@ -12,6 +12,8 @@ const staticEntries = [
   // ../style.css, so the old stylesheet must ship alongside them.
   'style.css',
   'CNAME',
+  'robots.txt',
+  'sitemap.xml',
 ]
 
 function copyStaticSite(): Plugin {
