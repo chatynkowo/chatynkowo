@@ -68,7 +68,7 @@ export function RankingApp() {
 
   return <>
     <a className="skip-link" href="#ranking-main">Przejdź do rankingu</a>
-    <SiteHeader items={[{ label: 'Mapa wyprawy', href: 'index.html#mapa' }, { label: 'Wpisz kod', href: 'index.html#kod' }, { label: 'Notatnik', href: 'index.html#magia' }, { label: 'Wróć do gry', href: 'index.html', primary: true }]} />
+    <SiteHeader items={[{ label: 'Mapa wyprawy', href: 'index.html#mapa' }, { label: 'Wpisz kod', href: 'index.html#kod' }, { label: 'Notatnik', href: 'index.html#magia' }, { label: 'O Chatynkowie', href: 'index.html#o-chatynkowie' }, { label: 'Wróć do gry', href: 'index.html', primary: true }]} />
     <main className="rank-main" id="ranking-main">
       <section className="rank-intro" aria-labelledby="ranking-title">
         <div className="rank-intro__copy"><p className="rank-eyebrow">Kronika jurajskich wypraw</p><h1 id="ranking-title">Ranking Zdobywców</h1><p className="rank-intro__lede">Zobacz tropicieli, którzy odnaleźli najwięcej opowieści Chatynkowa — i swoje miejsce w Kronice.</p>

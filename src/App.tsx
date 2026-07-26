@@ -5,11 +5,17 @@ import {
   CheckCircle,
   Crown,
   Footprints,
+  HandHeart,
+  HouseLine,
   Key,
   LockKeyOpen,
   MapTrifold,
+  MoonStars,
+  QrCode,
   ShieldCheck,
+  Sparkle,
   SpeakerHigh,
+  TreeEvergreen,
   Trophy,
   X,
 } from '@phosphor-icons/react'
@@ -333,6 +339,7 @@ function App() {
         { label: 'Mapa wyprawy', onClick: () => navigateTo('mapa') },
         { label: 'Wpisz kod', onClick: openCode },
         { label: 'Notatnik', onClick: () => navigateTo('magia') },
+        { label: 'O Chatynkowie', onClick: () => navigateTo('o-chatynkowie') },
         { label: 'Ranking', href: 'ranking.html' },
       ]} />
 
@@ -436,6 +443,63 @@ function App() {
           <div className="field-guide-photo">
             <img src="assets/img/chatynkowo-trail.webp" alt="Leśny szlak prowadzący do rozświetlonej Chatynki" loading="lazy" decoding="async" />
             <blockquote>„Chatynki pokazują się tylko tym, którzy patrzą uważnie.”</blockquote>
+          </div>
+        </section>
+
+        <section className="lore" id="o-chatynkowie" aria-label="O Chatynkowie">
+          <div className="lore-board">
+            <div className="lore-intro">
+              <p className="eyebrow"><MoonStars size={16} weight="fill" /> O Chatynkowie</p>
+              <h2>Miejsce, gdzie baśnie stają się rzeczywistością</h2>
+              <p>
+                W ukrytych zakamarkach natury czekają na Ciebie malutkie chatynki — domy prawdziwych
+                Elfów. Każda z nich kryje w sobie niezwykłą historię i mądrość swojego mieszkańca,
+                ukrytą w magicznej opowieści.
+              </p>
+              <p>
+                Chatynkowo to baśniowa gra terenowa w Jurze Krakowsko-Częstochowskiej: odszukujesz
+                ukryte Chatynki, zdobywasz pieczęcie i otwierasz kolejne opowieści Elfów — a każda
+                z nich zostawia w Twojej Kronice odrobinę elfiej mądrości.
+              </p>
+            </div>
+            <aside className="lore-creed">
+              <HandHeart size={34} weight="duotone" />
+              <blockquote>„Zostaw chatynkę tak, jak ją zastałeś — las to pamięta.”</blockquote>
+              <p>
+                Chatynki mieszkają w prawdziwym lesie, więc wchodzimy do niego jak goście: cicho,
+                uważnie i z dobrym sercem. Właśnie takim wędrowcom Elfy opowiadają swoje historie.
+              </p>
+              <div className="lore-actions">
+                <button className="button button-primary" type="button" onClick={() => navigateTo('mapa')}>
+                  Otwórz Atlas <ArrowRight size={20} />
+                </button>
+                <button className="button button-ghost" type="button" onClick={() => navigateTo('magia')}>
+                  Zobacz cztery kroki
+                </button>
+              </div>
+            </aside>
+            <ul className="lore-cards">
+              <li>
+                <HouseLine size={30} weight="duotone" />
+                <h3>Czym są Chatynki?</h3>
+                <p>To malutkie, tajemnicze leśne domki pełne magii i historii.</p>
+              </li>
+              <li>
+                <Sparkle size={30} weight="duotone" />
+                <h3>Kim są ich mieszkańcy?</h3>
+                <p>To Elfy. Każdy z nich ma nam do powiedzenia swoją historię. Bardzo ważną.</p>
+              </li>
+              <li>
+                <TreeEvergreen size={30} weight="duotone" />
+                <h3>Jak je odnaleźć?</h3>
+                <p>Na Elfa możesz trafić w każdej chwili. Jeśli chcesz ich poszukać, otwórz baśniową mapę i wybierz trop.</p>
+              </li>
+              <li>
+                <QrCode size={30} weight="duotone" />
+                <h3>Co zrobić przy Chatynce?</h3>
+                <p>Zeskanuj kod QR z tabliczki w jej pobliżu albo wpisz tajny czterocyfrowy kod.</p>
+              </li>
+            </ul>
           </div>
         </section>
       </main>
