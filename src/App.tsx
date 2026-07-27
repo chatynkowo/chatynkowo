@@ -29,14 +29,35 @@ import type { Cottage, RewardLevel, RewardsConfig, StoredState } from './types'
 import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
 import { AudioPlayer } from './components/AudioPlayer'
+import { CottageGallery } from './components/CottageGallery'
 
-const STORY_IMAGES = [
-  'assets/img/WhatsApp-Image-2026-01-26-at-23.08.00-1.webp',
-  'assets/img/683x1024/WhatsApp-Image-2026-01-26-at-23.08.04-1-683x1024.webp',
-  'assets/img/WhatsApp-Image-2026-01-27-at-22.45.46.webp',
-  'assets/img/683x1024/WhatsApp-Image-2026-01-27-at-22.51.33-683x1024.webp',
-  'assets/img/WhatsApp-Image-2026-02-12-at-13.25.30.webp',
+/* Shared cottage photos: `thumb` (320x480, ~35 KB, sharp up to 3x displays)
+   is all the gallery strip downloads; `full` loads only in the tapped-open
+   lightbox and story dialog. */
+const GALLERY_IMAGES = [
+  {
+    full: 'assets/img/WhatsApp-Image-2026-01-26-at-23.08.00-1.webp',
+    thumb: 'assets/img/320x480/WhatsApp-Image-2026-01-26-at-23.08.00-1-320x480.webp',
+  },
+  {
+    full: 'assets/img/683x1024/WhatsApp-Image-2026-01-26-at-23.08.04-1-683x1024.webp',
+    thumb: 'assets/img/320x480/WhatsApp-Image-2026-01-26-at-23.08.04-1-320x480.webp',
+  },
+  {
+    full: 'assets/img/WhatsApp-Image-2026-01-27-at-22.45.46.webp',
+    thumb: 'assets/img/320x480/WhatsApp-Image-2026-01-27-at-22.45.46-320x480.webp',
+  },
+  {
+    full: 'assets/img/683x1024/WhatsApp-Image-2026-01-27-at-22.51.33-683x1024.webp',
+    thumb: 'assets/img/320x480/WhatsApp-Image-2026-01-27-at-22.51.33-320x480.webp',
+  },
+  {
+    full: 'assets/img/WhatsApp-Image-2026-02-12-at-13.25.30.webp',
+    thumb: 'assets/img/320x480/WhatsApp-Image-2026-02-12-at-13.25.30-320x480.webp',
+  },
 ]
+
+const STORY_IMAGES = GALLERY_IMAGES.map((image) => image.full)
 
 const EMPTY_PIN = ['', '', '', '']
 
@@ -338,8 +359,8 @@ function App() {
       <SiteHeader items={[
         { label: 'Mapa wyprawy', onClick: () => navigateTo('mapa') },
         { label: 'Wpisz kod', onClick: openCode },
-        { label: 'Notatnik', onClick: () => navigateTo('magia') },
         { label: 'O Chatynkowie', onClick: () => navigateTo('o-chatynkowie') },
+        { label: 'Notatnik', onClick: () => navigateTo('magia') },
         { label: 'Ranking', href: 'ranking.html' },
       ]} />
 
@@ -428,24 +449,6 @@ function App() {
           </aside>
         </section>
 
-        <section className="field-guide" id="magia">
-          <div className="field-guide-intro">
-            <p className="eyebrow"><BookOpenText size={16} weight="fill" /> Notatnik Tropiciela</p>
-            <h2>Jeśli to Twoja pierwsza wyprawa</h2>
-            <p>Nie musisz czytać instrukcji od deski do deski. Zapamiętaj cztery ruchy — resztę podpowie Ci Atlas i sam szlak.</p>
-          </div>
-          <ol className="field-guide-steps">
-            <li><span>01</span><MapTrifold size={28} weight="duotone" /><strong>Wybierz znak</strong><p>Otwórz punkt w Atlasie i poznaj trop.</p></li>
-            <li><span>02</span><Footprints size={28} weight="duotone" /><strong>Rusz w teren</strong><p>Chatynki czekają w prawdziwych miejscach Jury.</p></li>
-            <li><span>03</span><Key size={28} weight="duotone" /><strong>Znajdź kod</strong><p>Cztery cyfry są na tabliczce przy Chatynce.</p></li>
-            <li><span>04</span><BookOpenText size={28} weight="duotone" /><strong>Obudź historię</strong><p>Zapisz opowieść i pieczęć w Kronice.</p></li>
-          </ol>
-          <div className="field-guide-photo">
-            <img src="assets/img/chatynkowo-trail.webp" alt="Leśny szlak prowadzący do rozświetlonej Chatynki" loading="lazy" decoding="async" />
-            <blockquote>„Chatynki pokazują się tylko tym, którzy patrzą uważnie.”</blockquote>
-          </div>
-        </section>
-
         <section className="lore" id="o-chatynkowie" aria-label="O Chatynkowie">
           <div className="lore-board">
             <div className="lore-intro">
@@ -474,9 +477,10 @@ function App() {
                   Otwórz Atlas <ArrowRight size={20} />
                 </button>
                 <button className="button button-ghost" type="button" onClick={() => navigateTo('magia')}>
-                  Zobacz cztery kroki
+                  Zobacz, jak zacząć
                 </button>
               </div>
+              <CottageGallery images={GALLERY_IMAGES} />
             </aside>
             <ul className="lore-cards">
               <li>
@@ -500,6 +504,24 @@ function App() {
                 <p>Zeskanuj kod QR z tabliczki w jej pobliżu albo wpisz tajny czterocyfrowy kod.</p>
               </li>
             </ul>
+          </div>
+        </section>
+
+        <section className="field-guide" id="magia">
+          <div className="field-guide-intro">
+            <p className="eyebrow"><BookOpenText size={16} weight="fill" /> Notatnik Tropiciela</p>
+            <h2>Jeśli to Twoja pierwsza wyprawa</h2>
+            <p>Nie musisz czytać instrukcji od deski do deski. Zapamiętaj cztery ruchy — resztę podpowie Ci Atlas i sam szlak.</p>
+          </div>
+          <ol className="field-guide-steps">
+            <li><span>01</span><MapTrifold size={28} weight="duotone" /><strong>Wybierz znak</strong><p>Otwórz punkt w Atlasie i poznaj trop.</p></li>
+            <li><span>02</span><Footprints size={28} weight="duotone" /><strong>Rusz w teren</strong><p>Chatynki czekają w prawdziwych miejscach Jury.</p></li>
+            <li><span>03</span><Key size={28} weight="duotone" /><strong>Znajdź kod</strong><p>Cztery cyfry są na tabliczce przy Chatynce.</p></li>
+            <li><span>04</span><BookOpenText size={28} weight="duotone" /><strong>Obudź historię</strong><p>Zapisz opowieść i pieczęć w Kronice.</p></li>
+          </ol>
+          <div className="field-guide-photo">
+            <img src="assets/img/chatynkowo-trail.webp" alt="Leśny szlak prowadzący do rozświetlonej Chatynki" loading="lazy" decoding="async" />
+            <blockquote>„Chatynki pokazują się tylko tym, którzy patrzą uważnie.”</blockquote>
           </div>
         </section>
       </main>

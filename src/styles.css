@@ -2639,7 +2639,9 @@ h2 {
 .lore-board {
   display: grid;
   overflow: hidden;
-  grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr);
+  /* Exactly 50/50 — the intro/creed divider must land on the middle divider
+     of the four cards below, or the board's lines read as misaligned. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas:
     'intro creed'
     'cards cards';
@@ -2672,6 +2674,71 @@ h2 {
 .lore-creed blockquote { margin: 0; color: var(--ink); font-size: clamp(1.3rem, 1.8vw, 1.6rem); font-style: italic; line-height: 1.35; text-wrap: balance; }
 .lore-creed > p { max-width: 44ch; margin: 0; color: var(--ink-faint); font-size: .9rem; }
 .lore-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+
+/* Gallery of cottage photos — a compact strip of thumbnails closing the creed
+   panel, balancing the text-heavy intro on the left. A thumbnail opens the
+   photo full-size (.gallery-lightbox). */
+.lore-gallery {
+  display: flex;
+  gap: 9px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+/* Equal split of the panel width on every viewport — five tiles always fit,
+   nothing scrolls, nothing gets clipped. max-width only stops them from
+   growing huge on desktop. */
+.lore-gallery li { flex: 1 1 0; min-width: 0; max-width: 106px; }
+.lore-gallery button {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  /* Must match the 320x480 thumbnails — a different ratio makes object-fit
+     re-crop the already-cropped photos, zooming them in. */
+  aspect-ratio: 2 / 3;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: none;
+  cursor: zoom-in;
+}
+.lore-gallery button:hover { border-color: var(--line-strong); }
+.lore-gallery img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 600ms ease;
+}
+.lore-gallery button:hover img,
+.lore-gallery button:focus-visible img { transform: scale(1.07); }
+
+.gallery-lightbox {
+  display: grid;
+  width: min(520px, 100%);
+  margin: 0;
+}
+.gallery-lightbox > img {
+  display: block;
+  width: 100%;
+  height: min(72dvh, 660px);
+  object-fit: cover;
+}
+.gallery-lightbox figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 11px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: .9rem;
+}
+.gallery-lightbox figcaption span { min-width: 52px; text-align: center; font-variant-numeric: tabular-nums; }
+/* Pin the close button over the photo's top-right corner on every viewport —
+   the mobile sticky/float variant assumes a text column, not a grid of one
+   image. */
+.gallery-lightbox .modal-close { position: absolute; top: 12px; right: 12px; float: none; margin: 0; }
 
 .lore-cards {
   grid-area: cards;
@@ -2742,6 +2809,7 @@ h2 {
   .field-guide-photo { min-height: 290px; height: 42dvh; border-top: 0; border-radius: 0 0 18px 18px; }
   .field-guide-photo blockquote { right: 12px; bottom: 12px; left: 12px; text-align: center; }
   .lore { padding: 0 18px 90px; }
+  .lore-gallery { gap: 7px; }
   .lore-intro { padding: 26px 24px 24px; }
   .lore-intro h2 { max-width: 100%; font-size: clamp(1.55rem, 7.4vw, 2.4rem); overflow-wrap: anywhere; text-wrap: wrap; }
   .lore-creed { padding: 26px 24px 28px; }
