@@ -20,9 +20,8 @@ virtue: pracowitość
 > **Boguś twierdzi, że dopóki rano ma sie  po co wstać z łóżka, to metrykę można spokojnie schować do szuflady. I z tym nawet elfy nie dyskutują.**
 > 
 > <br>
->     **Morał? Najbardziej potrzebni są często ci, których ktoś zbyt szybko uznał za niepotrzebnych**Mieszka tu
+>     **Morał? Najbardziej potrzebni są często ci, których ktoś zbyt szybko uznał za niepotrzebnych**
 
-(uzupełnij: kto mieszka, jakiej cnoty uczy)
 
 ## Co zrobić, gdy trafisz pod chatynkę?
 
