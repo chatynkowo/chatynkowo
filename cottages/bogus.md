@@ -17,7 +17,7 @@ virtue: pracowitość
 > Wiecie, dlaczego Boguś zamieszkał właśnie tutaj?
 > Bo elfy wiedzą coś, o czym ludzie często sobie przypominają dopiero wtedy, gdy jest już za późno !
 > 
->  **Boguś twierdzi, że dopóki rano ma sie  po co wstać z łóżka, to metrykę można spokojnie schować do szuflady. I z tym nawet elfy nie dyskutują.**
+> **Boguś twierdzi, że dopóki rano ma sie  po co wstać z łóżka, to metrykę można spokojnie schować do szuflady. I z tym nawet elfy nie dyskutują.**
 > 
 > <br>
 >     **Morał? Najbardziej potrzebni są często ci, których ktoś zbyt szybko uznał za niepotrzebnych**Mieszka tu
