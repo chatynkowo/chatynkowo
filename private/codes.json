@@ -28,6 +28,7 @@
     { "slug": "samotny",        "code": "6853" },
     { "slug": "mrok",           "code": "5557" },
     { "slug": "konkurs",        "code": "8333" },
-    { "slug": "bogus",          "code": "0980" }
+    { "slug": "bogus",          "code": "0980" },
+    { "slug": "halinka",        "code": "0981" }
   ]
 }
