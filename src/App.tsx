@@ -610,11 +610,11 @@ function App() {
               </p>
               <h2 id="story-title">{story.title}</h2>
               {story.virtue && <p className="story-virtue">Mądrość tej historii: <strong>{story.virtue}</strong></p>}
-              <div className="markdown" dangerouslySetInnerHTML={{ __html: marked.parse(story.storyMarkdown) as string }} />
               <div className="audio-card">
                 <SpeakerHigh size={28} weight="duotone" />
                 <div><strong>Posłuchaj baśni Elfa</strong><AudioPlayer src={`assets/stories/${story.slug}.mp3`} title={story.title} /></div>
               </div>
+              <div className="markdown" dangerouslySetInnerHTML={{ __html: marked.parse(story.storyMarkdown) as string }} />
             </div>
           </article>
         </div>
