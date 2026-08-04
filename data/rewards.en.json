@@ -1,0 +1,41 @@
+{
+  "treasury": {
+    "title": "Your Treasury",
+    "intro": "You gather what the forest gives – herbs, leaves, flowers and other treasures of nature. Not to own more, but to know that one day they may be of use to you or to others. Every badge is a small step towards forest wisdom. Keep gathering and build your own little green treasure chest!",
+    "image": ""
+  },
+  "levels": [
+    {
+      "id": "first-find",
+      "name": "Earth",
+      "threshold": 1,
+      "final": false,
+      "image": "assets/img/rewards/first-find/card.webp",
+      "body": ""
+    },
+    {
+      "id": "tropiciel",
+      "name": "Fire",
+      "threshold": 5,
+      "final": false,
+      "image": "assets/img/rewards/tropiciel/card.webp",
+      "body": ""
+    },
+    {
+      "id": "polowa-drogi",
+      "name": "Wind",
+      "threshold": 13,
+      "final": false,
+      "image": "assets/img/rewards/polowa-drogi/card.webp",
+      "body": ""
+    },
+    {
+      "id": "mistrz-chatynkowa",
+      "name": "Yarrow",
+      "threshold": null,
+      "final": true,
+      "image": "assets/img/rewards/mistrz-chatynkowa/card.webp",
+      "body": "**Edible** · Found in the forest\n\n**Season:** May – September (the best time to gather the flowering herb: June – August)\n\n## What can it treat, and how?\n\n* **Works against inflammation** — helps with inflammations of the throat, mouth and gums.\n* **Stops bleeding** — for small wounds, cuts and nosebleeds – applied as a compress.\n* **Supports digestion** — soothes bloating, stomach aches and loss of appetite.\n* **Helps women** — eases menstrual pain and regulates the cycle.\n* **Strengthens immunity** — induces sweating and supports the body through colds.\n\n*Unassuming, yet full of power – a forest secret hidden in tiny flowers.*"
+    }
+  ]
+}
