@@ -1,6 +1,7 @@
 import L from 'leaflet'
 import Editor from '@toast-ui/editor'
 import { marked } from 'marked'
+import { DEFAULT_LANGUAGE, LANGUAGES } from '../src/i18n/registry'
 import 'leaflet/dist/leaflet.css'
 import '@toast-ui/editor/dist/toastui-editor.css'
 
@@ -353,7 +354,28 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     rwMde: null,           // toastui editor for treasury intro / level body (lazy)
     rwFilling: false,      // suppress dirty/preview while programmatically filling
     rwPendingImages: new Map(), // path → { buffer, type, url } staged image uploads
+    // ---- Content language (translation mode) ----
+    // Polish is the canonical original; any other language turns both
+    // categories into translation mode, editing the parallel files
+    // (cottages/<lang>/<slug>.md, data/rewards.<lang>.json). The
+    // language-neutral fields (code, pin, audio, photos, thresholds, order,
+    // images) hide or lock — the Polish original owns them.
+    language: DEFAULT_LANGUAGE,
+    trCache: new Map(),    // `${lang}/${slug}` → { fm, body, exists } last loaded/saved cottage translation
+    rwTr: new Map(),       // lang → { treasury, byId, loaded } rewards translation draft + clean snapshot
   };
+
+  const translating = () => state.language !== DEFAULT_LANGUAGE;
+  const trKey = slug => `${state.language}/${slug}`;
+
+  /* Blob content for a path from the already-fetched tree, or null when the
+     file does not exist in the repository. */
+  async function fetchBlobPath(path) {
+    const sha = state.sha.get(path);
+    if (!sha) return null;
+    const blob = await ghFetch('GET', `git/blobs/${sha}`);
+    return base64ToUtf8(blob.content);
+  }
 
   /* ---------- load all ---------- */
 
@@ -366,13 +388,19 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
     state.sha.clear();
     for (const item of tree.tree) state.sha.set(item.path, item.sha);
+    // A fresh tree invalidates any cached translations.
+    state.trCache.clear();
+    state.rwTr.clear();
 
     const baseUrl = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}`;
 
-    // Identify cottage slugs from tree.
+    // Identify cottage slugs from tree. Subdirectories hold translations
+    // (cottages/<lang>/<slug>.md) — only the top-level Polish originals are
+    // the cottages this editor manages.
     const slugs = tree.tree
       .filter(i => i.type === 'blob' && i.path.startsWith('cottages/') && i.path.endsWith('.md'))
-      .map(i => i.path.slice('cottages/'.length, -'.md'.length));
+      .map(i => i.path.slice('cottages/'.length, -'.md'.length))
+      .filter(slug => !slug.includes('/'));
 
     // Fetch file content via blob API — authoritative, no CDN propagation delay.
     const fetchBlob = sha => ghFetch('GET', `git/blobs/${sha}`).then(b => base64ToUtf8(b.content));
@@ -449,7 +477,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     renderItemSelect();
     // If the rewards editor is already open, re-fill its current view (no
     // harvest — the freshly loaded config replaces any stale form values).
-    if (state.rwMde) rwFill(rwSelectionKey());
+    if (state.rwMde) rwFillCurrent(rwSelectionKey());
   }
 
   /* ---------- select / form ---------- */
@@ -462,11 +490,45 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     if (!c) return;
     state.current = c;
     syncSelectValue();
-    els.delete.disabled = false;
-    fillForm(c);
+    els.delete.disabled = translating();
+    if (translating()) void fillTranslationForm(c);
+    else fillForm(c);
     placeGeoMarker(c.lat, c.lng);
     refreshAudio();
     refreshPhotos();
+    markClean();
+  }
+
+  /* Fill the form with one cottage's translation — from the cache, from the
+     repository, or (when the translation does not exist yet) prefilled with
+     the Polish original as the starting point for the translator. */
+  async function fillTranslationForm(c) {
+    const key = trKey(c.slug);
+    let tr = state.trCache.get(key);
+    if (!tr) {
+      setStatus('saving', 'wczytuję tłumaczenie…');
+      let raw = null;
+      try {
+        raw = await fetchBlobPath(`cottages/${state.language}/${c.slug}.md`);
+      } catch (e) {
+        setStatus('error', `błąd: ${e.message}`);
+        return;
+      }
+      // The selection or the language may have moved on while the blob loaded.
+      if (state.current !== c || trKey(c.slug) !== key) return;
+      if (raw != null) {
+        const { fm, body } = parseFrontmatter(raw);
+        tr = { fm, body, exists: true };
+      } else {
+        tr = { fm: { ...c.frontmatter, slug: c.slug }, body: c.body, exists: false };
+      }
+      state.trCache.set(key, tr);
+    }
+    els.title.value = tr.fm.title ?? '';
+    els.occupant.value = tr.fm.occupant ?? '';
+    els.virtue.value = tr.fm.virtue ?? '';
+    state.mde.setMarkdown(tr.body ?? '');
+    state.cleanBody = state.mde.getMarkdown();
     markClean();
   }
 
@@ -617,6 +679,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
      switch) must not move on after a failed or refused save. */
   async function save() {
     if (!state.current) return false;
+    if (translating()) return saveTranslation();
     const code = els.code.value.trim();
     const conflict = codeConflict(code);
     if (conflict) {
@@ -672,6 +735,38 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     }
   }
 
+  /* Save the current cottage's translation — one file, nothing else: the
+     location, code, audio and photos are language-neutral and stay with the
+     Polish original. */
+  async function saveTranslation() {
+    const c = state.current;
+    const lang = state.language;
+    setStatus('saving', 'zapisuję…');
+    try {
+      const fm = {
+        title: els.title.value.trim(),
+        slug: c.slug,
+        occupant: els.occupant.value.trim(),
+        virtue: els.virtue.value.trim(),
+      };
+      const body = state.mde.getMarkdown();
+      const commit = await commitChanges(
+        [{ path: `cottages/${lang}/${c.slug}.md`, text: serializeMd(fm, body) }],
+        `i18n(${lang}): ${c.slug}`,
+      );
+      state.trCache.set(`${lang}/${c.slug}`, { fm, body, exists: true });
+      state.cleanBody = state.mde.getMarkdown();
+      markClean();
+      if (!commit) setStatus('clean', 'brak zmian do zapisania');
+      renderItemSelect();
+      return true;
+    } catch (e) {
+      setStatus('error', `błąd: ${e.message}`);
+      renderToolbar();
+      return false;
+    }
+  }
+
   /* ---------- add / delete cottage ---------- */
 
   const DEFAULT_LAT = 50.32, DEFAULT_LNG = 19.6;
@@ -688,6 +783,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   }
 
   function openAddDialog() {
+    if (translating()) return;
     if (state.dirty && !confirm('Masz niezapisane zmiany. Porzucić je?')) return;
     els.addSlug.value = ''; els.addTitle.value = '';
     els.addError.hidden = true;
@@ -724,7 +820,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
   async function deleteCurrent() {
     const c = state.current;
-    if (!c) return;
+    if (!c || translating()) return;
     const lines = [
       `Usunąć chatynkę „${c.frontmatter.title || c.slug}" (${c.slug})?`, '',
       'Zostaną usunięte:', `• cottages/${c.slug}.md`, '• wpis w data/cottages.json',
@@ -769,7 +865,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   }
 
   async function uploadAudio(file) {
-    if (!state.current || !file) return;
+    if (!state.current || !file || translating()) return;
     if (file.size > MAX_AUDIO_BYTES) { setStatus('error', 'plik za duży (maks. 30 MB)'); return; }
     setStatus('saving', 'wgrywam audio…');
     try {
@@ -786,7 +882,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   }
 
   async function deleteAudio() {
-    if (!state.current || !state.current.audio.exists) return;
+    if (!state.current || !state.current.audio.exists || translating()) return;
     if (!confirm(`Usunąć plik audio dla chatynki „${state.current.slug}"?`)) return;
     setStatus('saving', 'usuwam audio…');
     try {
@@ -822,7 +918,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   }
 
   async function uploadPhotos(files) {
-    if (!state.current || !files.length) return;
+    if (!state.current || !files.length || translating()) return;
     const slug = state.current.slug;
     setStatus('saving', `wgrywam ${files.length} plik${files.length > 1 ? 'i' : ''}…`);
     const changes = [];
@@ -853,7 +949,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   }
 
   async function deletePhoto(name) {
-    if (!state.current) return;
+    if (!state.current || translating()) return;
     if (!confirm(`Usunąć zdjęcie „${name}"?`)) return;
     const slug = state.current.slug;
     setStatus('saving', 'usuwam zdjęcie…');
@@ -989,9 +1085,9 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
   const MODE_LABEL = { cottages: 'chatynce', rewards: 'nagrodach' };
 
-  /* Ask what to do with unsaved work before leaving a category.
-     Resolves to 'save' | 'discard' | 'cancel'. */
-  function askUnsaved(mode) {
+  /* Ask what to do with unsaved work before leaving a category (or changing
+     the content language). Resolves to 'save' | 'discard' | 'cancel'. */
+  function askUnsaved(mode, action = 'przełączeniem kategorii') {
     return new Promise(resolve => {
       let done = false;
       const finish = choice => {
@@ -1014,7 +1110,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
       els.unsavedDiscard.addEventListener('click', onDiscard);
       els.unsavedDialog.addEventListener('close', onClose);
       els.unsavedText.textContent =
-        `Masz niezapisane zmiany w ${MODE_LABEL[mode]}. Zapisać je przed przełączeniem kategorii?`;
+        `Masz niezapisane zmiany w ${MODE_LABEL[mode]}. Zapisać je przed ${action}?`;
       els.unsavedDialog.showModal();
     });
   }
@@ -1050,6 +1146,18 @@ import '@toast-ui/editor/dist/toastui-editor.css'
      category's unsaved work down with it). */
   function revertMode(mode) {
     if (mode === 'rewards') {
+      if (translating()) {
+        // Translation drafts keep their own clean snapshot per language.
+        const trE = state.rwTr.get(state.language);
+        if (trE && trE.loaded) {
+          trE.treasury = cloneRewards(trE.loaded.treasury);
+          trE.byId = cloneRewards(trE.loaded.byId);
+        }
+        rwMarkClean();
+        renderItemSelect();
+        if (state.rwMde) rwFill(rwSelectionKey());
+        return;
+      }
       for (const [, img] of state.rwPendingImages) URL.revokeObjectURL(img.url);
       state.rwPendingImages.clear();
       state.rewards = cloneRewards(state.rewardsLoaded);
@@ -1081,6 +1189,56 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     renderToolbar();      // …and the shared status/discard/save
   }
 
+  /* ---------- content language switching ---------- */
+
+  function syncLangSelect() {
+    if (els.langSelect) els.langSelect.value = state.language;
+  }
+
+  async function setLanguage(lang) {
+    if (lang === state.language || modeSwitching) { syncLangSelect(); return; }
+    modeSwitching = true;
+    try {
+      // Only the ACTIVE category can be dirty (category switches always
+      // resolve the one being left), so one prompt settles everything.
+      const mode = state.mode;
+      if (isDirty(mode)) {
+        const choice = await askUnsaved(mode, 'zmianą języka');
+        if (choice === 'cancel') { syncLangSelect(); return; }
+        if (choice === 'save') {
+          const saved = mode === 'rewards' ? await rwSave() : await save();
+          if (!saved) { syncLangSelect(); return; }
+        } else {
+          revertMode(mode);
+        }
+      }
+      state.language = lang;
+      applyLanguage();
+    } finally { modeSwitching = false; }
+  }
+
+  /* Re-skin both categories for the chosen language: hide the Polish-only
+     sections, show the translation hints, and refill the forms with the
+     chosen language's content. */
+  function applyLanguage() {
+    const tr = translating();
+    syncLangSelect();
+    document.body.classList.toggle('is-translating', tr);
+    for (const el of document.querySelectorAll('[data-pl-only]')) el.hidden = tr;
+    for (const el of document.querySelectorAll('[data-tr-only]')) el.hidden = !tr;
+    els.add.disabled = tr;
+    els.delete.disabled = tr || !state.current;
+    els.rwAdd.disabled = tr;
+    els.rwDelete.disabled = tr || state.rwCurrent === 'treasury';
+    renderItemSelect();
+    if (state.current) {
+      if (tr) void fillTranslationForm(state.current);
+      else { fillForm(state.current); markClean(); }
+    }
+    if (state.rwMde) rwFillCurrent(rwSelectionKey());
+    renderToolbar();
+  }
+
   /* Create the markdown editor the first time the rewards view is shown (so
      toastui measures a visible container), then fill the current selection. */
   function ensureRewardsEditor() {
@@ -1096,7 +1254,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     });
     state.rwMde.on('change', () => { if (!state.rwFilling) rwOnEdit(); });
     renderItemSelect();
-    rwFill(rwSelectionKey());
+    rwFillCurrent(rwSelectionKey());
   }
 
   /* ---------- shared dropdown ----------
@@ -1107,16 +1265,24 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
   function cottageOptionsHtml() {
     return state.cottages
-      .map(c => `<option value="${escapeHtml(c.slug)}">${escapeHtml(c.frontmatter.title || c.slug)} — ${escapeHtml(c.slug)}</option>`)
+      .map(c => {
+        const missing = translating()
+          && !state.trCache.get(trKey(c.slug))?.exists
+          && !state.sha.has(`cottages/${state.language}/${c.slug}.md`);
+        const label = `${c.frontmatter.title || c.slug} — ${c.slug}${missing ? ' · brak tłumaczenia' : ''}`;
+        return `<option value="${escapeHtml(c.slug)}">${escapeHtml(label)}</option>`;
+      })
       .join('');
   }
 
   function rewardOptionsHtml() {
     if (!state.rewards) return '';
+    const trE = translating() ? state.rwTr.get(state.language) : null;
     const opts = ['<option value="treasury">🏛 Kronika (wstęp)</option>'];
     state.rewards.levels.forEach((l, idx) => {
       const thr = l.final ? 'komplet' : (l.threshold != null ? `próg ${l.threshold}` : 'próg —');
-      opts.push(`<option value="${escapeHtml(l.id)}">${idx + 1}. ${escapeHtml(l.name || l.id)} — ${thr}</option>`);
+      const name = (trE && trE.byId[l.id] && trE.byId[l.id].name) || l.name || l.id;
+      opts.push(`<option value="${escapeHtml(l.id)}">${idx + 1}. ${escapeHtml(name)} — ${thr}</option>`);
     });
     return opts.join('');
   }
@@ -1140,7 +1306,47 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   // User-initiated selection change: keep the outgoing edits, then fill.
   function rwSelect(key) {
     rwHarvestCurrent();
-    rwFill(key);
+    rwFillCurrent(key);
+  }
+
+  /* rwFill reads the translation draft in translation mode, so it has to be
+     loaded first; Polish fills synchronously as before. */
+  function rwFillCurrent(key) {
+    if (!translating()) { rwFill(key); return; }
+    void rwEnsureTranslation()
+      .then(entry => { if (entry && translating()) rwFill(key); })
+      .catch(e => rwSetStatus('error', `błąd: ${e.message}`));
+  }
+
+  /* The rewards translation draft for the current language: treasury texts and
+     per-level name/body, prefilled from the Polish config wherever the
+     translation file is missing a piece. `loaded` snapshots the clean state
+     for revert. */
+  async function rwEnsureTranslation() {
+    const lang = state.language;
+    let entry = state.rwTr.get(lang);
+    if (entry) return entry;
+    const raw = await fetchBlobPath(`data/rewards.${lang}.json`);
+    if (state.language !== lang) return null;
+    let norm = null;
+    if (raw != null) {
+      try { norm = normalizeRewardsEditor(JSON.parse(raw)); } catch { norm = null; }
+    }
+    const byId = {};
+    for (const l of state.rewards.levels) {
+      const t = norm && norm.levels.find(x => x.id === l.id);
+      byId[l.id] = { name: (t && t.name) || l.name, body: t ? t.body : l.body };
+    }
+    entry = {
+      treasury: {
+        title: (norm && norm.treasury.title) || state.rewards.treasury.title,
+        intro: norm ? norm.treasury.intro : state.rewards.treasury.intro,
+      },
+      byId,
+    };
+    entry.loaded = cloneRewards({ treasury: entry.treasury, byId: entry.byId });
+    state.rwTr.set(lang, entry);
+    return entry;
   }
 
   // Programmatic fill (no harvest) — used after loads, adds, deletes, reorders.
@@ -1150,23 +1356,25 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     state.rwCurrent = key;
     syncSelectValue();
     state.rwFilling = true;
+    const trE = translating() ? state.rwTr.get(state.language) : null;
     if (key === 'treasury') {
       els.rwTreasuryFields.hidden = false;
       els.rwLevelFields.hidden = true;
-      els.rwTreTitle.value = state.rewards.treasury.title || '';
+      els.rwTreTitle.value = (trE ? trE.treasury.title : state.rewards.treasury.title) || '';
       els.rwBodyLabel.textContent = 'Wstęp do Kroniki (markdown)';
       els.rwBodyHint.textContent = 'Tekst pokazywany pod tytułem Kroniki.';
-      state.rwMde.setMarkdown(state.rewards.treasury.intro || '');
+      state.rwMde.setMarkdown((trE ? trE.treasury.intro : state.rewards.treasury.intro) || '');
     } else {
       const l = state.rewards.levels.find(x => x.id === key);
+      const trL = trE && trE.byId[key];
       els.rwTreasuryFields.hidden = true;
       els.rwLevelFields.hidden = false;
-      els.rwName.value = l.name || '';
+      els.rwName.value = (trL ? trL.name : l.name) || '';
       els.rwThreshold.value = (l.threshold == null ? '' : l.threshold);
       els.rwFinal.checked = Boolean(l.final);
       els.rwBodyLabel.textContent = 'Opis nagrody (markdown)';
       els.rwBodyHint.textContent = 'Treść pokazywana po kliknięciu karty nagrody.';
-      state.rwMde.setMarkdown(l.body || '');
+      state.rwMde.setMarkdown((trL ? trL.body : l.body) || '');
       rwUpdateFinalUI();
     }
     state.rwFilling = false;
@@ -1178,6 +1386,19 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   function rwHarvestCurrent() {
     if (!state.rwMde || !state.rewards) return;
     const md = state.rwMde.getMarkdown();
+    if (translating()) {
+      // Translation drafts hold texts only; the structure stays Polish.
+      const trE = state.rwTr.get(state.language);
+      if (!trE) return;
+      if (state.rwCurrent === 'treasury') {
+        trE.treasury.title = els.rwTreTitle.value;
+        trE.treasury.intro = md;
+      } else {
+        const t = trE.byId[state.rwCurrent];
+        if (t) { t.name = els.rwName.value; t.body = md; }
+      }
+      return;
+    }
     if (state.rwCurrent === 'treasury') {
       state.rewards.treasury.title = els.rwTreTitle.value;
       state.rewards.treasury.intro = md;
@@ -1202,16 +1423,18 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   function rwUpdateFinalUI() {
     const final = els.rwFinal.checked;
     els.rwThreshold.disabled = final;
-    els.rwFinalHint.hidden = !final;
+    els.rwFinalHint.hidden = !final || translating();
   }
 
   function rwUpdateToolbarButtons() {
+    const tr = translating();
     const isLevel = state.rwCurrent !== 'treasury';
-    els.rwDelete.disabled = !isLevel;
+    els.rwAdd.disabled = tr;
+    els.rwDelete.disabled = tr || !isLevel;
     const arr = (state.rewards && state.rewards.levels) || [];
     const i = arr.findIndex(l => l.id === state.rwCurrent);
-    els.rwMoveUp.disabled = !isLevel || i <= 0;
-    els.rwMoveDown.disabled = !isLevel || i < 0 || i >= arr.length - 1;
+    els.rwMoveUp.disabled = tr || !isLevel || i <= 0;
+    els.rwMoveDown.disabled = tr || !isLevel || i < 0 || i >= arr.length - 1;
   }
 
   /* ---------- reward image ---------- */
@@ -1255,7 +1478,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
   async function rwImageChosen(file) {
     const obj = rwCurrentObj();
-    if (!file || !obj) return;
+    if (!file || !obj || translating()) return;
     if (file.size > MAX_PHOTO_BYTES) { rwSetStatus('error', `${file.name} za duży (maks. 10 MB)`); return; }
     const ext = (file.name.match(/\.([a-z0-9]+)$/i)?.[1] || 'jpg').toLowerCase();
     // Pin the selection now: the awaits below let the user switch levels, and
@@ -1279,7 +1502,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
   function rwDeleteImage() {
     const obj = rwCurrentObj();
-    if (!obj || !obj.image) return;
+    if (!obj || !obj.image || translating()) return;
     if (state.rwPendingImages.has(obj.image)) {
       URL.revokeObjectURL(state.rwPendingImages.get(obj.image).url);
       state.rwPendingImages.delete(obj.image);
@@ -1294,6 +1517,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   /* ---------- add / delete / reorder level ---------- */
 
   function rwOpenAddDialog() {
+    if (translating()) return;
     els.rwAddId.value = ''; els.rwAddName.value = ''; els.rwAddError.hidden = true;
     els.rwAddDialog.showModal();
     setTimeout(() => els.rwAddId.focus(), 0);
@@ -1317,7 +1541,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   }
 
   function rwDeleteLevel() {
-    if (state.rwCurrent === 'treasury') return;
+    if (state.rwCurrent === 'treasury' || translating()) return;
     const l = state.rewards.levels.find(x => x.id === state.rwCurrent);
     if (!l) return;
     if (!confirm(`Usunąć poziom nagrody „${l.name || l.id}"?\n\n`
@@ -1329,7 +1553,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   }
 
   function rwMove(dir) {
-    if (state.rwCurrent === 'treasury') return;
+    if (state.rwCurrent === 'treasury' || translating()) return;
     const arr = state.rewards.levels;
     const i = arr.findIndex(l => l.id === state.rwCurrent);
     const j = i + dir;
@@ -1348,8 +1572,16 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     const obj = rwCurrentObj();
     if (!obj) { els.rwPreview.innerHTML = '<p class="rp-empty">—</p>'; return; }
     const isTre = state.rwCurrent === 'treasury';
-    const name = isTre ? (obj.title || 'Twoja Kronika') : (obj.name || state.rwCurrent);
-    const text = isTre ? obj.intro : obj.body;
+    // Texts come from the translation draft in translation mode; the image is
+    // language-neutral, so it always comes from the Polish config (obj).
+    const trE = translating() ? state.rwTr.get(state.language) : null;
+    const trL = trE && !isTre ? trE.byId[state.rwCurrent] : null;
+    const name = isTre
+      ? ((trE ? trE.treasury.title : obj.title) || 'Twoja Kronika')
+      : ((trL ? trL.name : obj.name) || state.rwCurrent);
+    const text = isTre
+      ? (trE ? trE.treasury.intro : obj.intro)
+      : (trL ? trL.body : obj.body);
     const art = obj.image
       ? `<div class="rp-art"><img src="${escapeHtml(rewardImageUrl(obj.image))}" alt=""></div>`
       : '';
@@ -1368,6 +1600,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   /* Resolves true only when the commit landed — see save(). */
   async function rwSave() {
     if (!state.rewards) return false;
+    if (translating()) return rwSaveTranslation();
     rwHarvestCurrent();
     const ids = state.rewards.levels.map(l => l.id);
     if (new Set(ids).size !== ids.length) { rwSetStatus('error', 'zduplikowane identyfikatory poziomów'); return false; }
@@ -1403,6 +1636,41 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     }
   }
 
+  /* Save the rewards translation: the Polish structure (ids, thresholds,
+     order, images) merged with the translated texts, so the translation file
+     can never drift structurally from the original. */
+  async function rwSaveTranslation() {
+    const lang = state.language;
+    const trE = state.rwTr.get(lang);
+    if (!trE || !state.rewards) return false;
+    rwHarvestCurrent();
+    rwSetStatus('saving', 'zapisuję…');
+    try {
+      const merged = {
+        treasury: { ...state.rewards.treasury, title: trE.treasury.title, intro: trE.treasury.intro },
+        levels: state.rewards.levels.map(l => ({
+          ...l,
+          name: (trE.byId[l.id] && trE.byId[l.id].name) || l.name,
+          body: trE.byId[l.id] ? trE.byId[l.id].body : l.body,
+        })),
+      };
+      const commit = await commitChanges(
+        [{ path: `data/rewards.${lang}.json`, text: serializeRewardsJson(merged) }],
+        `i18n(${lang}): nagrody`,
+      );
+      trE.loaded = cloneRewards({ treasury: trE.treasury, byId: trE.byId });
+      rwMarkClean();
+      if (!commit) rwSetStatus('clean', 'brak zmian do zapisania');
+      renderItemSelect();
+      rwRenderPreview();
+      return true;
+    } catch (e) {
+      rwSetStatus('error', `błąd: ${e.message}`);
+      renderToolbar();
+      return false;
+    }
+  }
+
   /* ---------- auth / settings ---------- */
 
   const $ = sel => document.querySelector(sel);
@@ -1421,6 +1689,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     // Shared toolbar — one dropdown, one status pill, one discard/save pair.
     // All four always describe the ACTIVE category (state.mode).
     select: $('#item-select'),
+    langSelect: $('#lang-select'),
     save: $('#btn-save'),
     discard: $('#btn-discard'),
     add: $('#btn-add'),
@@ -1545,6 +1814,14 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     els.authConfirm.addEventListener('click', tryAuth);
     els.authCancel.addEventListener('click', hideAuthOverlay);
     els.authToken.addEventListener('keydown', ev => { if (ev.key === 'Enter') tryAuth(); });
+
+    // Content language: the registry is shared with the site, so a language
+    // added there automatically shows up here.
+    els.langSelect.innerHTML = LANGUAGES
+      .map(l => `<option value="${l.code}">${l.code === DEFAULT_LANGUAGE ? `${l.nativeName} (oryginał)` : l.nativeName}</option>`)
+      .join('');
+    syncLangSelect();
+    els.langSelect.addEventListener('change', () => { void setLanguage(els.langSelect.value); });
 
     // The shared dropdown / save / discard all dispatch on the active category.
     els.select.addEventListener('change', () => {

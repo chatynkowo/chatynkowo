@@ -89,6 +89,32 @@ code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-si
   font: inherit;
 }
 
+/* Language of the content being edited; anything but Polish = translation mode. */
+.lang-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+.lang-select select {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+  font: inherit;
+}
+body.is-translating .lang-select select {
+  border-color: var(--accent);
+  background: #f6efdc;
+}
+
+.tr-hint {
+  padding: 0.5rem 0.65rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  background: #f6efdc;
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;

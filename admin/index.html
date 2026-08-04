@@ -65,6 +65,15 @@
         <button id="tab-rewards" class="mode-tab" type="button" role="tab" aria-selected="false">Nagrody</button>
       </div>
 
+      <!-- Język edytowanych treści. Polski to oryginał; każdy inny wybór
+           przełącza edytor w tryb tłumaczenia — te same formularze zapisują
+           wtedy pliki równoległe (cottages/<kod>/<slug>.md,
+           data/rewards.<kod>.json), a pola wspólne dla języków się chowają. -->
+      <label class="lang-select" title="Język edytowanych treści">
+        <span aria-hidden="true">🌐</span>
+        <select id="lang-select" aria-label="Język edytowanych treści"></select>
+      </label>
+
       <!-- Jeden wspólny pasek narzędzi. Lista wyboru jest wypełniana danymi
            aktywnej kategorii, a stan/odrzuć/zapisz zawsze dotyczą tej
            kategorii. Tylko przyciski dodaj/usuń różnią się między trybami.
@@ -99,6 +108,11 @@
     <main class="layout" id="cottage-view">
       <section class="form-pane">
         <h2>Podstawowe dane</h2>
+        <p class="meta tr-hint" data-tr-only hidden>Tryb tłumaczenia: edytujesz
+          wersję językową nazwy, mieszkańca, cnoty i treści. Kod, pinezka, audio
+          i zdjęcia są wspólne dla wszystkich języków — edytuje się je w polskim
+          oryginale. Sekcję „na miejscu&rdquo; zamyka w tłumaczeniu nagłówek w danym
+          języku (po angielsku: <code>## What to do when you reach the cottage?</code>).</p>
         <label class="field">
           <span>Nazwa chatynki</span>
           <input id="f-title" type="text" autocomplete="off">
@@ -111,11 +125,11 @@
           <span>Cnota (virtue)</span>
           <input id="f-virtue" type="text" autocomplete="off">
         </label>
-        <label class="field field--narrow">
+        <label class="field field--narrow" data-pl-only>
           <span>Kod chatynki (4 cyfry — wpisywany przez gości)</span>
           <input id="f-code" class="input-code" type="text" inputmode="numeric" maxlength="4" pattern="\d{4}" autocomplete="off" placeholder="1234">
         </label>
-        <div class="field-row">
+        <div class="field-row" data-pl-only>
           <label class="field">
             <span>Szerokość (lat)</span>
             <input id="f-lat" type="number" step="0.000001" inputmode="decimal">
@@ -126,8 +140,8 @@
           </label>
         </div>
 
-        <h2>Opowieść (audio)</h2>
-        <div class="audio-row">
+        <h2 data-pl-only>Opowieść (audio)</h2>
+        <div class="audio-row" data-pl-only>
           <audio id="audio-preview" controls preload="none"></audio>
           <div class="audio-actions">
             <label class="btn btn-ghost">
@@ -139,14 +153,14 @@
           <p id="audio-meta" class="meta">—</p>
         </div>
 
-        <h2>Zdjęcia</h2>
-        <p class="meta">Pokazywane w oknie opowieści po wpisaniu kodu. Pliki
+        <h2 data-pl-only>Zdjęcia</h2>
+        <p class="meta" data-pl-only>Pokazywane w oknie opowieści po wpisaniu kodu. Pliki
           trafiają do <code>assets/img/cottages/&lt;slug&gt;/</code>, a ich lista
           do <code>data/cottages.json</code>. Formaty:
           <code>.webp .jpg .png .gif .avif</code> (do 10 MB każdy). Bez zdjęć
           strona pokazuje wspólną ilustrację.</p>
-        <div id="photos-grid" class="photos-grid"></div>
-        <div class="photos-actions">
+        <div id="photos-grid" class="photos-grid" data-pl-only></div>
+        <div class="photos-actions" data-pl-only>
           <label class="btn btn-ghost">
             <input id="photos-file" type="file" accept="image/*" multiple hidden>
             Wgraj zdjęcia…
@@ -164,7 +178,7 @@
         <div id="f-body-editor"></div>
       </section>
 
-      <section class="map-pane">
+      <section class="map-pane" data-pl-only>
         <h2>Pinezka na mapie wyprawy</h2>
         <p class="meta">Kliknij albo przeciągnij pinezkę, aby ustawić <code>lat/lng</code>.
           To jedyne współrzędne, których używa strona.</p>
@@ -176,6 +190,10 @@
          oraz poziomy nagród — nazwa, próg, obrazek i opis w markdown. -->
     <main class="layout" id="rewards-view" hidden>
       <section class="form-pane">
+        <p class="meta tr-hint" data-tr-only hidden>Tryb tłumaczenia: edytujesz
+          tytuł Kroniki, wstęp oraz nazwy i opisy nagród. Progi, kolejność
+          i obrazki pochodzą z polskiego oryginału i przy zapisie przenoszą się
+          do pliku tłumaczenia automatycznie.</p>
         <!-- Pola Kroniki (widoczne, gdy wybrano „Kronika (wstęp)") -->
         <div id="rw-treasury-fields">
           <h2>Kronika — ekran główny</h2>
@@ -194,7 +212,7 @@
             <span>Nazwa nagrody (np. Buk)</span>
             <input id="rw-name" type="text" autocomplete="off">
           </label>
-          <div class="field-row">
+          <div class="field-row" data-pl-only>
             <label class="field">
               <span>Próg — liczba odkrytych Chatynek</span>
               <input id="rw-threshold" type="number" min="1" step="1" inputmode="numeric">
@@ -207,21 +225,21 @@
           <p class="meta" id="rw-final-hint" hidden>Nagroda finałowa przyznawana
             po odkryciu <strong>wszystkich</strong> Chatynek — pole „próg" jest
             wtedy ignorowane. Odblokowuje też zaproszenie do Rankingu.</p>
-          <div class="reward-order">
+          <div class="reward-order" data-pl-only>
             <button id="rw-move-up" class="btn btn-ghost" type="button">↑ Wyżej</button>
             <button id="rw-move-down" class="btn btn-ghost" type="button">↓ Niżej</button>
             <span class="meta">Kolejność poziomów w Kronice.</span>
           </div>
         </div>
 
-        <h2>Obrazek</h2>
-        <p class="meta">Kolekcjonerska ilustracja pokazywana w Kronice (miniatura
+        <h2 data-pl-only>Obrazek</h2>
+        <p class="meta" data-pl-only>Kolekcjonerska ilustracja pokazywana w Kronice (miniatura
           i podgląd nagrody). Formaty: <code>.webp .jpg .png .gif .avif</code> (do 10 MB).</p>
-        <div id="rw-image" class="reward-image">
+        <div id="rw-image" class="reward-image" data-pl-only>
           <img id="rw-image-preview" alt="" hidden>
           <span id="rw-image-empty" class="meta">brak obrazka</span>
         </div>
-        <div class="photos-actions">
+        <div class="photos-actions" data-pl-only>
           <label class="btn btn-ghost">
             <input id="rw-image-file" type="file" accept="image/*" hidden>
             Wgraj obrazek…
