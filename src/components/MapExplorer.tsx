@@ -14,6 +14,8 @@ import {
 import L from 'leaflet'
 import 'leaflet.markercluster'
 import { marked } from 'marked'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import type { Cottage } from '../types'
 
 type MapExplorerProps = {
@@ -24,25 +26,25 @@ type MapExplorerProps = {
 
 type MapLevel = 'kraina' | 'region' | 'szlak'
 
-const LEVEL_LABELS: Record<MapLevel, string> = {
-  kraina: 'Kraina',
-  region: 'Okolica',
-  szlak: 'Szlak',
+const LEVEL_KEYS: Record<MapLevel, string> = {
+  kraina: 'map.levelKraina',
+  region: 'map.levelRegion',
+  szlak: 'map.levelSzlak',
 }
 
 const REGION_AREAS = [
   {
-    name: 'Północna Jura',
+    labelKey: 'map.regionNorth',
     minLat: 50.35,
     points: [[50.43, 19.43], [50.42, 19.7], [50.35, 19.75], [50.34, 19.48]] as L.LatLngExpression[],
   },
   {
-    name: 'Środkowa Jura',
+    labelKey: 'map.regionCentral',
     minLat: 50.27,
     points: [[50.35, 19.45], [50.35, 19.7], [50.27, 19.72], [50.26, 19.46]] as L.LatLngExpression[],
   },
   {
-    name: 'Południowa Jura',
+    labelKey: 'map.regionSouth',
     minLat: 0,
     points: [[50.27, 19.42], [50.28, 19.8], [50.15, 19.83], [50.15, 19.46]] as L.LatLngExpression[],
   },
@@ -65,10 +67,10 @@ function cottageIcon(pinImg: string | undefined, found: boolean, active: boolean
   })
 }
 
-function createAtlas(map: L.Map, cottages: Cottage[]) {
+function createAtlas(map: L.Map, cottages: Cottage[], t: TFunction) {
   const group = L.layerGroup().addTo(map)
   REGION_AREAS.forEach((region, index) => {
-    const matching = cottages.filter((cottage) => regionFor(cottage).name === region.name)
+    const matching = cottages.filter((cottage) => regionFor(cottage).labelKey === region.labelKey)
     L.polygon(region.points, {
       pane: 'atlas',
       className: `atlas-area atlas-area-${index + 1}`,
@@ -87,7 +89,7 @@ function createAtlas(map: L.Map, cottages: Cottage[]) {
         className: 'region-label-shell',
         iconSize: [190, 64],
         iconAnchor: [95, 32],
-        html: `<button type="button" class="region-label"><strong>${region.name}</strong><span>${matching.length} Chatynek</span></button>`,
+        html: `<button type="button" class="region-label"><strong>${t(region.labelKey)}</strong><span>${t('map.regionCottages', { count: matching.length })}</span></button>`,
       }),
     }).addTo(group)
     marker.on('click', () => map.flyTo(center, Math.max(map.getMinZoom() + 1, 11.5), { duration: 1.15 }))
@@ -96,6 +98,7 @@ function createAtlas(map: L.Map, cottages: Cottage[]) {
 }
 
 export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerProps) {
+  const { t, i18n } = useTranslation()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const markersRef = useRef(new Map<string, L.Marker>())
@@ -106,7 +109,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
   const [canZoomIn, setCanZoomIn] = useState(true)
   const [canZoomOut, setCanZoomOut] = useState(false)
   const [query, setQuery] = useState('')
-  const [searchMessage, setSearchMessage] = useState('')
+  const [searchMissed, setSearchMissed] = useState(false)
   const [touchMapActive, setTouchMapActive] = useState(() => !window.matchMedia('(max-width: 760px)').matches)
   const bounds = useMemo(
     () => L.latLngBounds(cottages.map((cottage) => [cottage.lat, cottage.lng] as L.LatLngTuple)).pad(0.24),
@@ -203,7 +206,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
       className: 'base-map-tiles',
     }).addTo(map)
     L.control.attribution({ position: 'bottomleft', prefix: false }).addTo(map)
-    createAtlas(map, cottages)
+    createAtlas(map, cottages, t)
 
     const clusters = L.markerClusterGroup({
       maxClusterRadius: (zoom) => (zoom < 11 ? 74 : 48),
@@ -229,7 +232,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
         icon: cottageIcon(cottage.pin_custom_img, foundSlugs.has(cottage.slug), false),
         keyboard: true,
         riseOnHover: true,
-        title: `Otwórz ${cottage.title}`,
+        title: t('map.openMarker', { title: cottage.title }),
       })
         .bindTooltip(cottage.title, { direction: 'top', offset: [0, -40], className: 'fantasy-tooltip' })
         .on('click', () => chooseCottage(cottage))
@@ -276,7 +279,9 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
       markersRef.current.clear()
       searchAreaRef.current = null
     }
-  }, [bounds, chooseCottage, cottages, foundSlugs])
+    // The region labels and marker titles are markup injected into Leaflet, so
+    // the whole map is rebuilt when the interface language changes.
+  }, [bounds, chooseCottage, cottages, foundSlugs, i18n.resolvedLanguage, t])
 
   useEffect(() => {
     const map = mapRef.current
@@ -295,82 +300,95 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
     return () => query.removeEventListener('change', handleBreakpoint)
   }, [])
 
+  /* Cottages reload when the language changes — an open side panel must show
+     the freshly loaded copy of the same cottage, not the stale one. */
+  useEffect(() => {
+    const current = selectedRef.current
+    if (!current) return
+    const refreshed = cottages.find((cottage) => cottage.slug === current.slug)
+    if (refreshed && refreshed !== current) {
+      selectedRef.current = refreshed
+      setSelected(refreshed)
+    }
+  }, [cottages])
+
   function submitSearch(event: React.FormEvent) {
     event.preventDefault()
-    const normalized = query.trim().toLocaleLowerCase('pl')
-    const match = cottages.find((cottage) => cottage.title.toLocaleLowerCase('pl').includes(normalized))
+    const locale = i18n.resolvedLanguage ?? 'pl'
+    const normalized = query.trim().toLocaleLowerCase(locale)
+    const match = cottages.find((cottage) => cottage.title.toLocaleLowerCase(locale).includes(normalized))
     if (!normalized || !match) {
-      setSearchMessage('Nie znaleźliśmy takiej Chatynki. Wybierz nazwę z listy.')
+      setSearchMissed(true)
       return
     }
-    setSearchMessage('')
+    setSearchMissed(false)
     chooseCottage(match)
   }
 
   return (
     <div className={`map-explorer${selected ? ' has-selection' : ''}${touchMapActive ? '' : ' is-touch-locked'}`}>
-      <div ref={containerRef} className="fantasy-map" aria-label="Interaktywna mapa Chatynkowa" />
+      <div ref={containerRef} className="fantasy-map" aria-label={t('map.interactiveAria')} />
       <div className="map-vignette" aria-hidden="true" />
 
       {!touchMapActive && (
         <button className="map-touch-shield" type="button" onClick={() => setTouchMapActive(true)}>
-          <span><MapPin size={24} weight="fill" /> Włącz mapę</span>
-          <small>Wtedy możesz ją przesuwać i wybierać tropy</small>
+          <span><MapPin size={24} weight="fill" /> {t('map.enable')}</span>
+          <small>{t('map.enableHint')}</small>
         </button>
       )}
-      {touchMapActive && <button className="map-touch-exit" type="button" onClick={() => setTouchMapActive(false)}>Zakończ sterowanie mapą</button>}
+      {touchMapActive && <button className="map-touch-exit" type="button" onClick={() => setTouchMapActive(false)}>{t('map.exitTouch')}</button>}
 
       <div className="map-topbar">
         <div className="map-level" aria-live="polite">
-          <span>Poziom mapy</span>
-          <strong>{LEVEL_LABELS[level]}</strong>
+          <span>{t('map.levelLabel')}</span>
+          <strong>{t(LEVEL_KEYS[level])}</strong>
         </div>
         <form className="map-search" onSubmit={submitSearch}>
-          <label className="sr-only" htmlFor="map-search-input">Wyszukaj Chatynkę</label>
+          <label className="sr-only" htmlFor="map-search-input">{t('map.searchLabel')}</label>
           <MagnifyingGlass size={20} aria-hidden />
           <input
             id="map-search-input"
             list="cottage-names"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Wyszukaj Chatynkę"
+            placeholder={t('map.searchLabel')}
           />
           <datalist id="cottage-names">
             {cottages.map((cottage) => <option key={cottage.slug} value={cottage.title} />)}
           </datalist>
-          <button type="submit">Pokaż</button>
+          <button type="submit">{t('map.searchSubmit')}</button>
         </form>
       </div>
 
-      {searchMessage && <p className="map-search-error" role="alert">{searchMessage}</p>}
+      {searchMissed && <p className="map-search-error" role="alert">{t('map.searchMiss')}</p>}
 
-      <nav className="map-controls" aria-label="Sterowanie mapą">
-        <button type="button" disabled={!canZoomIn} onClick={() => mapRef.current?.zoomIn(0.5)} aria-label="Przybliż mapę"><Plus size={20} /></button>
-        <button type="button" disabled={!canZoomOut} onClick={() => mapRef.current?.zoomOut(0.5)} aria-label="Oddal mapę"><Minus size={20} /></button>
-        <button type="button" onClick={resetMap} aria-label="Pokaż całą krainę"><ArrowCounterClockwise size={20} /></button>
+      <nav className="map-controls" aria-label={t('map.controlsAria')}>
+        <button type="button" disabled={!canZoomIn} onClick={() => mapRef.current?.zoomIn(0.5)} aria-label={t('map.zoomIn')}><Plus size={20} /></button>
+        <button type="button" disabled={!canZoomOut} onClick={() => mapRef.current?.zoomOut(0.5)} aria-label={t('map.zoomOut')}><Minus size={20} /></button>
+        <button type="button" onClick={resetMap} aria-label={t('map.resetView')}><ArrowCounterClockwise size={20} /></button>
       </nav>
 
-      <div className="map-legend" aria-label="Legenda mapy">
-        <span><HouseLine size={18} weight="fill" /> Chatynka</span>
-        <span><CheckCircle size={18} weight="fill" /> Odkryta</span>
-        <span><i className="legend-area" /> Obszar poszukiwań</span>
+      <div className="map-legend" aria-label={t('map.legendAria')}>
+        <span><HouseLine size={18} weight="fill" /> {t('map.legendCottage')}</span>
+        <span><CheckCircle size={18} weight="fill" /> {t('map.legendFound')}</span>
+        <span><i className="legend-area" /> {t('map.legendArea')}</span>
       </div>
 
       {!selected && (
-        <p className="map-tip"><MagnifyingGlass size={18} aria-hidden /> Przybliż mapę lub wybierz jeden z punktów.</p>
+        <p className="map-tip"><MagnifyingGlass size={18} aria-hidden /> {t('map.tip')}</p>
       )}
 
       {selected && (
-        <aside className="cottage-panel" aria-label={`Informacje o ${selected.title}`}>
+        <aside className="cottage-panel" aria-label={t('map.panelAria', { title: selected.title })}>
           <div className="cottage-panel-handle" aria-hidden="true" />
-          <button type="button" className="icon-button panel-close" onClick={closeCottage} aria-label="Zamknij panel"><X size={20} /></button>
-          <p className="cottage-region">{regionFor(selected).name}</p>
+          <button type="button" className="icon-button panel-close" onClick={closeCottage} aria-label={t('map.closePanel')}><X size={20} /></button>
+          <p className="cottage-region">{t(regionFor(selected).labelKey)}</p>
           <h3>{selected.title}</h3>
-          <p className="cottage-resident">Mieszka tu <strong>{selected.occupant || 'Elf'}</strong></p>
+          <p className="cottage-resident">{t('map.residentPrefix')} <strong>{selected.occupant || t('map.defaultOccupant')}</strong></p>
           {foundSlugs.has(selected.slug) ? (
-            <p className="found-notice"><CheckCircle size={20} weight="fill" /> Ta opowieść jest już w Twoim Skarbcu.</p>
+            <p className="found-notice"><CheckCircle size={20} weight="fill" /> {t('map.alreadyInTreasury')}</p>
           ) : (
-            <p className="cottage-clue">Na miejscu odszukaj tabliczkę z czterocyfrowym kodem. Dopiero wtedy opowieść stanie się dostępna.</p>
+            <p className="cottage-clue">{t('map.clue')}</p>
           )}
           {selected.arrivalMarkdown && (
             <div className="arrival-guide" dangerouslySetInnerHTML={{ __html: marked.parse(selected.arrivalMarkdown) as string }} />
@@ -382,10 +400,10 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
               target="_blank"
               rel="noreferrer"
             >
-              <NavigationArrow size={20} weight="fill" /> Nawiguj
+              <NavigationArrow size={20} weight="fill" /> {t('map.navigate')}
             </a>
             <button type="button" className="button button-ghost" onClick={onOpenCode}>
-              <MapPin size={20} /> Mam kod
+              <MapPin size={20} /> {t('map.haveCode')}
             </button>
           </div>
         </aside>

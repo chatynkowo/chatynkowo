@@ -1,6 +1,14 @@
 import type { Cottage, CottageLocation } from '../types'
+import { DEFAULT_LANGUAGE, type Language } from '../i18n/registry'
 
 const FRONTMATTER = /^---\n([\s\S]*?)\n---\n?/
+
+/* One entry per content language: the exact heading that separates the story
+   from the arrival instructions in a cottage file. */
+const ARRIVAL_HEADINGS = [
+  '## Co zrobić, gdy trafisz pod chatynkę?',
+  '## What to do when you reach the cottage?',
+]
 
 function plainDash(value: string) {
   return value.replace(/[—–]/g, '-')
@@ -15,20 +23,37 @@ function splitMarkdown(raw: string) {
   const body = plainDash(raw.replace(FRONTMATTER, ''))
     .replace(/^#\s+.*\n+/, '')
     .trim()
-  const arrivalHeading = '## Co zrobić, gdy trafisz pod chatynkę?'
-  const arrivalIndex = body.indexOf(arrivalHeading)
-  if (arrivalIndex < 0) return { storyMarkdown: body, arrivalMarkdown: '' }
-
-  return {
-    storyMarkdown: body.slice(0, arrivalIndex).trim(),
-    arrivalMarkdown: body.slice(arrivalIndex + arrivalHeading.length).trim(),
+  for (const heading of ARRIVAL_HEADINGS) {
+    const arrivalIndex = body.indexOf(heading)
+    if (arrivalIndex >= 0) {
+      return {
+        storyMarkdown: body.slice(0, arrivalIndex).trim(),
+        arrivalMarkdown: body.slice(arrivalIndex + heading.length).trim(),
+      }
+    }
   }
+  return { storyMarkdown: body, arrivalMarkdown: '' }
 }
 
-async function loadCottage(location: CottageLocation): Promise<Cottage> {
-  const response = await fetch(`cottages/${location.slug}.md`, { cache: 'no-cache' })
-  if (!response.ok) throw new Error(`Nie udało się wczytać opowieści: ${location.slug}`)
-  const raw = await response.text()
+/* Polish files are the canonical originals at cottages/<slug>.md (that is what
+   the admin editor writes); translations live in cottages/<language>/<slug>.md. */
+function storyUrl(slug: string, language: Language) {
+  return language === DEFAULT_LANGUAGE ? `cottages/${slug}.md` : `cottages/${language}/${slug}.md`
+}
+
+async function fetchStory(slug: string, language: Language) {
+  const response = await fetch(storyUrl(slug, language), { cache: 'no-cache' })
+  if (response.ok) return response.text()
+  // A story without a translation yet falls back to the Polish original.
+  if (language !== DEFAULT_LANGUAGE) {
+    const fallback = await fetch(storyUrl(slug, DEFAULT_LANGUAGE), { cache: 'no-cache' })
+    if (fallback.ok) return fallback.text()
+  }
+  throw new Error(`Nie udało się wczytać opowieści: ${slug}`)
+}
+
+async function loadCottage(location: CottageLocation, language: Language): Promise<Cottage> {
+  const raw = await fetchStory(location.slug, language)
   const frontmatter = raw.match(FRONTMATTER)?.[1] ?? ''
   const markdown = splitMarkdown(raw)
 
@@ -41,11 +66,11 @@ async function loadCottage(location: CottageLocation): Promise<Cottage> {
   }
 }
 
-export async function loadCottages(): Promise<Cottage[]> {
+export async function loadCottages(language: Language = DEFAULT_LANGUAGE): Promise<Cottage[]> {
   const response = await fetch('data/cottages.json', { cache: 'no-cache' })
   if (!response.ok) throw new Error('Nie udało się wczytać mapy Chatynkowa.')
   const locations = (await response.json()) as CottageLocation[]
-  return Promise.all(locations.map(loadCottage))
+  return Promise.all(locations.map((location) => loadCottage(location, language)))
 }
 
 export async function resolveCode(code: string) {

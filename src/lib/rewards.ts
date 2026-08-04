@@ -1,4 +1,5 @@
 import type { RewardLevel, RewardsConfig } from '../types'
+import { DEFAULT_LANGUAGE, type Language } from '../i18n/registry'
 
 /* The Kronika (Skarbiec) is data-driven: its intro text and every reward level
    live in data/rewards.json, authored in /admin/ → Nagrody. This module is the
@@ -50,15 +51,24 @@ function normalize(raw: unknown): RewardsConfig {
   }
 }
 
-export async function loadRewards(): Promise<RewardsConfig> {
-  try {
-    const response = await fetch('data/rewards.json', { cache: 'no-cache' })
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    const config = normalize(await response.json())
-    return config.levels.length ? config : FALLBACK
-  } catch {
-    return FALLBACK
+/* data/rewards.json is the canonical Polish config written by the editor;
+   a translation lives alongside it as data/rewards.<language>.json and the
+   Polish file remains the fallback when one does not exist. */
+export async function loadRewards(language: Language = DEFAULT_LANGUAGE): Promise<RewardsConfig> {
+  const sources = language === DEFAULT_LANGUAGE
+    ? ['data/rewards.json']
+    : [`data/rewards.${language}.json`, 'data/rewards.json']
+  for (const url of sources) {
+    try {
+      const response = await fetch(url, { cache: 'no-cache' })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const config = normalize(await response.json())
+      if (config.levels.length) return config
+    } catch {
+      // Try the next source; the static FALLBACK is the last resort.
+    }
   }
+  return FALLBACK
 }
 
 /* How many discoveries unlock a level — `total` for the final one, so renaming

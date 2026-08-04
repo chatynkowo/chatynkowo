@@ -20,6 +20,8 @@ import {
   X,
 } from '@phosphor-icons/react'
 import { marked } from 'marked'
+import { useTranslation } from 'react-i18next'
+import { toLanguage } from './i18n'
 import { loadCottages, resolveCode } from './lib/content'
 import { backfillBadges, discoverCottage, loadStoredState } from './lib/persistence'
 import { fallbackRewards, finalLevelId, loadRewards, requiredFinds } from './lib/rewards'
@@ -76,37 +78,15 @@ function storyPhotos(cottage: Cottage) {
   return [STORY_IMAGES[index % STORY_IMAGES.length]]
 }
 
-function rewardLockedHint(level: RewardLevel, total: number) {
-  const required = requiredFinds(level, total)
-  if (typeof required !== 'number' || required <= 0) return 'Nagroda jeszcze nie zdobyta.'
-  return `Odkryj ${cottageCountLabel(required)}, aby zdobyć tę nagrodę.`
-}
-
-function cottageCountLabel(count: number) {
-  if (count === 1) return '1 Chatynkę'
-  const lastTwo = count % 100
-  const last = count % 10
-  if ((lastTwo < 12 || lastTwo > 14) && last >= 2 && last <= 4) return `${count} Chatynki`
-  return `${count} Chatynek`
-}
-
-function discoveryCountLabel(count: number) {
-  if (count === 1) return '1 odkrycie'
-  const lastTwo = count % 100
-  const last = count % 10
-  if (lastTwo < 12 || lastTwo > 14) {
-    if (last >= 2 && last <= 4) return `${count} odkrycia`
-  }
-  return `${count} odkryć`
-}
-
 function App() {
+  const { t, i18n } = useTranslation()
+  const language = toLanguage(i18n.resolvedLanguage)
   const [cottages, setCottages] = useState<Cottage[]>([])
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading')
   const [stored, setStored] = useState<StoredState>(() => loadStoredState())
   const [codeDigits, setCodeDigits] = useState<string[]>(() => [...EMPTY_PIN])
   const [codeState, setCodeState] = useState<'idle' | 'checking' | 'error'>('idle')
-  const [codeMessage, setCodeMessage] = useState('')
+  const [codeMessageKey, setCodeMessageKey] = useState('')
   const [story, setStory] = useState<Cottage | null>(null)
   const [storyPreviouslyFound, setStoryPreviouslyFound] = useState(false)
   const [treasuryOpen, setTreasuryOpen] = useState(false)
@@ -115,12 +95,19 @@ function App() {
   const [achievement, setAchievement] = useState('')
   const codeInputRefs = useRef<Array<HTMLInputElement | null>>([])
 
+  const codeMessage = codeMessageKey ? t(codeMessageKey) : ''
   const foundSlugs = useMemo(() => new Set(Object.keys(stored.found)), [stored.found])
   const foundCount = foundSlugs.size
   const progressPercent = cottages.length ? Math.round((foundCount / cottages.length) * 100) : 0
   const nextLevel = rewards.levels.find((level) => !stored.badges[level.id])
   const nextLevelTarget = (nextLevel && requiredFinds(nextLevel, cottages.length)) || cottages.length
   const discoveriesToNextLevel = Math.max(0, nextLevelTarget - foundCount)
+
+  function rewardLockedHint(level: RewardLevel, total: number) {
+    const required = requiredFinds(level, total)
+    if (typeof required !== 'number' || required <= 0) return t('reward.lockedNone')
+    return t('reward.lockedHint', { count: required })
+  }
 
   /* Every level the seeker has a record of: the published ones, plus any level
      earned before it was renamed or removed in the editor, so collected
@@ -136,8 +123,16 @@ function App() {
   const completed = cottages.length > 0 && Boolean(stored.badges[finalLevelId(rewards.levels)])
 
   useEffect(() => {
+    document.title = t('meta.homeTitle')
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('meta.homeDescription'))
+  }, [t])
+
+  /* Stories and rewards are language-specific content, so they reload on every
+     language change; the previous data stays on screen until the new one lands,
+     which keeps the switch flicker-free. */
+  useEffect(() => {
     let current = true
-    loadCottages()
+    loadCottages(language)
       .then((loaded) => {
         if (!current) return
         setCottages(loaded)
@@ -146,15 +141,21 @@ function App() {
       .catch(() => {
         if (current) setLoadState('error')
       })
-    void loadRewards().then((config) => {
+    void loadRewards(language).then((config) => {
       if (current) setRewards(config)
     })
-    const cleanupAnalytics = initializeAnalytics()
     return () => {
       current = false
-      cleanupAnalytics()
     }
-  }, [])
+  }, [language])
+
+  useEffect(() => initializeAnalytics(), [])
+
+  /* An open story dialog must follow a content reload — re-point it at the
+     freshly loaded cottage with the same slug. */
+  useEffect(() => {
+    setStory((current) => current && (cottages.find((cottage) => cottage.slug === current.slug) ?? current))
+  }, [cottages])
 
   /* Cottages and the reward config load independently, and both can change what
      is already earned (a new level, a lowered threshold). Reconcile once both
@@ -233,7 +234,7 @@ function App() {
 
   function clearCodeFeedback() {
     if (codeState !== 'idle') setCodeState('idle')
-    if (codeMessage) setCodeMessage('')
+    if (codeMessageKey) setCodeMessageKey('')
   }
 
   function fillPin(startIndex: number, rawValue: string) {
@@ -306,33 +307,35 @@ function App() {
     const normalized = codeDigits.join('')
     if (!/^\d{4}$/.test(normalized)) {
       setCodeState('error')
-      setCodeMessage('Wpisz dokładnie cztery cyfry z tabliczki.')
+      setCodeMessageKey('code.invalid')
       const firstEmpty = codeDigits.findIndex((digit) => !digit)
       codeInputRefs.current[firstEmpty < 0 ? 0 : firstEmpty]?.focus()
       return
     }
 
     setCodeState('checking')
-    setCodeMessage('Sprawdzam kod w kronice Chatynkowa...')
+    setCodeMessageKey('code.checking')
     try {
       const slug = await resolveCode(normalized)
       const cottage = cottages.find((item) => item.slug === slug)
       if (!cottage) {
         setCodeState('error')
-        setCodeMessage('Ten kod nie otwiera żadnej Chatynki. Sprawdź cyfry i spróbuj ponownie.')
+        setCodeMessageKey('code.unknown')
         return
       }
 
       const result = discoverCottage(stored, cottage.slug, normalized, cottages.length, rewards.levels)
       setStored(result.next)
       setCodeState('idle')
-      setCodeMessage(result.isNew ? 'Nowa opowieść została odblokowana.' : 'Ta Chatynka jest już w Twojej Kronice. Otwieram opowieść ponownie.')
+      setCodeMessageKey(result.isNew ? 'code.unlocked' : 'code.alreadyFound')
       setCodeDigits([...EMPTY_PIN])
       setStoryPreviouslyFound(!result.isNew)
       setStory(cottage)
 
       if (result.isNew) {
         const count = Object.keys(result.next.found).length
+        // Analytics labels stay Polish so both language versions of the site
+        // aggregate into a single set of events.
         track(`found-${cottage.slug}`, `Odkryto: ${cottage.title}`)
         track(`progress-${count}`, `Postęp: ${count}`)
         const foundAt = result.next.found[cottage.slug].foundAt
@@ -340,12 +343,12 @@ function App() {
       }
       if (result.newlyEarned.length) {
         const latest = rewards.levels.find((level) => level.id === result.newlyEarned.at(-1))
-        setAchievement(latest ? `Nowa nagroda: ${latest.name}` : '')
+        setAchievement(latest ? t('achievement.newReward', { name: latest.name }) : '')
         window.setTimeout(() => setAchievement(''), 5000)
       }
     } catch {
       setCodeState('error')
-      setCodeMessage('Nie udało się sprawdzić kodu. Sprawdź połączenie i spróbuj ponownie.')
+      setCodeMessageKey('code.failed')
     }
   }
 
@@ -355,57 +358,57 @@ function App() {
 
   return (
     <div className="site-shell">
-      <a className="skip-link" href="#main">Przejdź do treści</a>
+      <a className="skip-link" href="#main">{t('common.skipToContent')}</a>
       <SiteHeader items={[
-        { label: 'Mapa wyprawy', onClick: () => navigateTo('mapa') },
-        { label: 'Wpisz kod', onClick: openCode },
-        { label: 'O Chatynkowie', onClick: () => navigateTo('o-chatynkowie') },
-        { label: 'Notatnik', onClick: () => navigateTo('magia') },
-        { label: 'Ranking', href: 'ranking.html' },
+        { label: t('nav.map'), onClick: () => navigateTo('mapa') },
+        { label: t('nav.enterCode'), onClick: openCode },
+        { label: t('nav.about'), onClick: () => navigateTo('o-chatynkowie') },
+        { label: t('nav.notebook'), onClick: () => navigateTo('magia') },
+        { label: t('nav.ranking'), href: 'ranking.html' },
       ]} />
 
       <main id="main">
-        <section className="expedition-board" id="top" aria-label="Plansza wyprawy">
+        <section className="expedition-board" id="top" aria-label={t('atlas.boardAria')}>
           <div className="map-section" id="mapa">
             <div className="section-heading atlas-heading">
               <div>
-                <p className="eyebrow"><MapTrifold size={16} weight="fill" /> Atlas Chatynkowa</p>
-                <h2>{foundCount ? 'Wybierz kolejny trop' : 'Gdzie ruszysz najpierw?'}</h2>
+                <p className="eyebrow"><MapTrifold size={16} weight="fill" /> {t('atlas.eyebrow')}</p>
+                <h2>{foundCount ? t('atlas.headingNext') : t('atlas.headingFirst')}</h2>
               </div>
-              <p>Dotknij znaku, poznaj wskazówkę i wyznacz swoją wyprawę w prawdziwym świecie.</p>
-              <nav className="atlas-mobile-actions" aria-label="Szybkie akcje wyprawy">
-                <button type="button" onClick={openCode}><Key size={19} weight="fill" /> Wpisz kod</button>
-                <button type="button" onClick={() => setTreasuryOpen(true)}><Crown size={19} weight="fill" /> Kronika{foundCount > 0 && <strong>{foundCount}</strong>}</button>
+              <p>{t('atlas.lead')}</p>
+              <nav className="atlas-mobile-actions" aria-label={t('atlas.quickActionsAria')}>
+                <button type="button" onClick={openCode}><Key size={19} weight="fill" /> {t('nav.enterCode')}</button>
+                <button type="button" onClick={() => setTreasuryOpen(true)}><Crown size={19} weight="fill" /> {t('quest.chronicle')}{foundCount > 0 && <strong>{foundCount}</strong>}</button>
               </nav>
             </div>
-            {loadState === 'loading' && <div className="map-skeleton" role="status" aria-label="Ładowanie mapy"><div /><span>Rozwijam baśniową mapę...</span></div>}
-            {loadState === 'error' && <div className="map-error" role="alert"><ShieldCheck size={34} /><h3>Mapa nie mogła się otworzyć</h3><p>Sprawdź połączenie i odśwież stronę. Twoje odkrycia są bezpieczne.</p><button className="button button-primary" type="button" onClick={() => window.location.reload()}>Odśwież</button></div>}
-            {loadState === 'ready' && cottages.length === 0 && <div className="map-error"><MapTrifold size={34} /><h3>Kraina czeka na pierwszą Chatynkę</h3></div>}
+            {loadState === 'loading' && <div className="map-skeleton" role="status" aria-label={t('atlas.loadingAria')}><div /><span>{t('atlas.loading')}</span></div>}
+            {loadState === 'error' && <div className="map-error" role="alert"><ShieldCheck size={34} /><h3>{t('atlas.errorTitle')}</h3><p>{t('atlas.errorBody')}</p><button className="button button-primary" type="button" onClick={() => window.location.reload()}>{t('atlas.refresh')}</button></div>}
+            {loadState === 'ready' && cottages.length === 0 && <div className="map-error"><MapTrifold size={34} /><h3>{t('atlas.emptyTitle')}</h3></div>}
             {loadState === 'ready' && cottages.length > 0 && (
-              <Suspense fallback={<div className="map-skeleton"><div /><span>Rozwijam baśniową mapę...</span></div>}>
+              <Suspense fallback={<div className="map-skeleton"><div /><span>{t('atlas.loading')}</span></div>}>
                 <MapExplorer cottages={cottages} foundSlugs={foundSlugs} onOpenCode={openCode} />
               </Suspense>
             )}
           </div>
 
-          <aside className="quest-panel" aria-label="Ekwipunek i cel wyprawy">
+          <aside className="quest-panel" aria-label={t('quest.panelAria')}>
             <div className="quest-panel-head">
-              <span>Etap {foundCount + 1} · Aktualne zadanie</span>
-              <strong>{foundCount ? 'Odnajdź kolejną pieczęć' : 'Wybierz trop na mapie'}</strong>
-              <p>{nextLevel ? `${nextLevel.name}: jeszcze ${discoveryCountLabel(discoveriesToNextLevel)}.` : 'Wszystkie opowieści odnalezione.'}</p>
+              <span>{t('quest.stage', { stage: foundCount + 1 })}</span>
+              <strong>{foundCount ? t('quest.taskNext') : t('quest.taskFirst')}</strong>
+              <p>{nextLevel ? t('quest.nextLevel', { name: nextLevel.name, count: discoveriesToNextLevel }) : t('quest.allFound')}</p>
               <button type="button" className="quest-progress-mini" onClick={() => setTreasuryOpen(true)}>
-                <span><Crown size={15} weight="fill" /> Kronika</span>
+                <span><Crown size={15} weight="fill" /> {t('quest.chronicle')}</span>
                 <strong>{foundCount} / {cottages.length || 26}</strong>
                 <i aria-hidden="true"><b style={{ width: `${progressPercent}%` }} /></i>
               </button>
             </div>
             <div className="discovery-gate" id="kod" aria-labelledby="gate-title">
             <div className="gate-seal" aria-hidden="true"><LockKeyOpen size={28} weight="duotone" /></div>
-            <p className="gate-kicker">Pieczęć Chatynki</p>
-            <h2 id="gate-title">Jesteś na miejscu?</h2>
-            <p className="gate-lead">Wpisz cztery cyfry z tabliczki i sprawdź, kogo udało Ci się odnaleźć.</p>
+            <p className="gate-kicker">{t('quest.gateKicker')}</p>
+            <h2 id="gate-title">{t('quest.gateTitle')}</h2>
+            <p className="gate-lead">{t('quest.gateLead')}</p>
             <form className="code-form code-form--gate" onSubmit={submitCode} noValidate>
-              <label id="code-label" htmlFor="discovery-code-0">Kod z tabliczki</label>
+              <label id="code-label" htmlFor="discovery-code-0">{t('quest.codeLabel')}</label>
               <div
                 className="pin-input"
                 role="group"
@@ -427,57 +430,46 @@ function App() {
                     pattern="[0-9]*"
                     maxLength={index === 0 ? 4 : 1}
                     enterKeyHint={index === 3 ? 'done' : 'next'}
-                    aria-label={`Cyfra ${index + 1} z 4`}
+                    aria-label={t('quest.digitAria', { index: index + 1 })}
                     aria-invalid={codeState === 'error'}
                     required
                   />
                 ))}
               </div>
               <button className="button button-primary" type="submit" disabled={codeState === 'checking'}>
-                {codeState === 'checking' ? 'Sprawdzam pieczęć...' : 'Otwórz opowieść'} <ArrowRight size={20} />
+                {codeState === 'checking' ? t('quest.checking') : t('quest.submit')} <ArrowRight size={20} />
               </button>
               {codeMessage && <p id="code-result" className={`code-result ${codeState}`} role="status">{codeMessage}</p>}
             </form>
             </div>
             <button className="quest-kronika" type="button" onClick={() => setTreasuryOpen(true)}>
-              <Crown size={22} weight="duotone" /><span><strong>Otwórz Kronikę</strong>Zobacz pieczęcie i odznaki</span><ArrowRight size={18} />
+              <Crown size={22} weight="duotone" /><span><strong>{t('quest.chronicleOpen')}</strong>{t('quest.chronicleOpenSub')}</span><ArrowRight size={18} />
             </button>
-            <div className="quest-notes" aria-label="Ważne informacje o wyprawie">
-              <p><Footprints size={18} /> <span><strong>Wyprawa odbywa się w terenie</strong>Dbaj o las i trzymaj się bezpiecznych ścieżek.</span></p>
-              <p><ShieldCheck size={18} weight="duotone" /> <span><strong>Postęp zapisuje się automatycznie</strong>Pieczęcie pozostaną na tym urządzeniu.</span></p>
+            <div className="quest-notes" aria-label={t('quest.notesAria')}>
+              <p><Footprints size={18} /> <span><strong>{t('quest.note1Title')}</strong>{t('quest.note1Body')}</span></p>
+              <p><ShieldCheck size={18} weight="duotone" /> <span><strong>{t('quest.note2Title')}</strong>{t('quest.note2Body')}</span></p>
             </div>
           </aside>
         </section>
 
-        <section className="lore" id="o-chatynkowie" aria-label="O Chatynkowie">
+        <section className="lore" id="o-chatynkowie" aria-label={t('lore.sectionAria')}>
           <div className="lore-board">
             <div className="lore-intro">
-              <p className="eyebrow"><MoonStars size={16} weight="fill" /> O Chatynkowie</p>
-              <h2>Miejsce, gdzie baśnie stają się rzeczywistością</h2>
-              <p>
-                W ukrytych zakamarkach natury czekają na Ciebie malutkie chatynki — domy prawdziwych
-                Elfów. Każda z nich kryje w sobie niezwykłą historię i mądrość swojego mieszkańca,
-                ukrytą w magicznej opowieści.
-              </p>
-              <p>
-                Chatynkowo to baśniowa gra terenowa w Jurze Krakowsko-Częstochowskiej: odszukujesz
-                ukryte Chatynki, zdobywasz pieczęcie i otwierasz kolejne opowieści Elfów — a każda
-                z nich zostawia w Twojej Kronice odrobinę elfiej mądrości.
-              </p>
+              <p className="eyebrow"><MoonStars size={16} weight="fill" /> {t('lore.eyebrow')}</p>
+              <h2>{t('lore.title')}</h2>
+              <p>{t('lore.intro1')}</p>
+              <p>{t('lore.intro2')}</p>
             </div>
             <aside className="lore-creed">
               <HandHeart size={34} weight="duotone" />
-              <blockquote>„Zostaw chatynkę tak, jak ją zastałeś — las to pamięta.”</blockquote>
-              <p>
-                Chatynki mieszkają w prawdziwym lesie, więc wchodzimy do niego jak goście: cicho,
-                uważnie i z dobrym sercem. Właśnie takim wędrowcom Elfy opowiadają swoje historie.
-              </p>
+              <blockquote>{t('lore.creedQuote')}</blockquote>
+              <p>{t('lore.creedBody')}</p>
               <div className="lore-actions">
                 <button className="button button-primary" type="button" onClick={() => navigateTo('mapa')}>
-                  Otwórz Atlas <ArrowRight size={20} />
+                  {t('lore.openAtlas')} <ArrowRight size={20} />
                 </button>
                 <button className="button button-ghost" type="button" onClick={() => navigateTo('magia')}>
-                  Zobacz, jak zacząć
+                  {t('lore.howToStart')}
                 </button>
               </div>
               <CottageGallery images={GALLERY_IMAGES} />
@@ -485,23 +477,23 @@ function App() {
             <ul className="lore-cards">
               <li>
                 <HouseLine size={30} weight="duotone" />
-                <h3>Czym są Chatynki?</h3>
-                <p>To malutkie, tajemnicze leśne domki pełne magii i historii.</p>
+                <h3>{t('lore.cardWhatTitle')}</h3>
+                <p>{t('lore.cardWhatBody')}</p>
               </li>
               <li>
                 <Sparkle size={30} weight="duotone" />
-                <h3>Kim są ich mieszkańcy?</h3>
-                <p>To Elfy. Każdy z nich ma nam do powiedzenia swoją historię. Bardzo ważną.</p>
+                <h3>{t('lore.cardWhoTitle')}</h3>
+                <p>{t('lore.cardWhoBody')}</p>
               </li>
               <li>
                 <TreeEvergreen size={30} weight="duotone" />
-                <h3>Jak je odnaleźć?</h3>
-                <p>Na Elfa możesz trafić w każdej chwili. Jeśli chcesz ich poszukać, otwórz baśniową mapę i wybierz trop.</p>
+                <h3>{t('lore.cardFindTitle')}</h3>
+                <p>{t('lore.cardFindBody')}</p>
               </li>
               <li>
                 <QrCode size={30} weight="duotone" />
-                <h3>Co zrobić przy Chatynce?</h3>
-                <p>Zeskanuj kod QR z tabliczki w jej pobliżu albo wpisz tajny czterocyfrowy kod.</p>
+                <h3>{t('lore.cardArriveTitle')}</h3>
+                <p>{t('lore.cardArriveBody')}</p>
               </li>
             </ul>
           </div>
@@ -509,19 +501,19 @@ function App() {
 
         <section className="field-guide" id="magia">
           <div className="field-guide-intro">
-            <p className="eyebrow"><BookOpenText size={16} weight="fill" /> Notatnik Tropiciela</p>
-            <h2>Jeśli to Twoja pierwsza wyprawa</h2>
-            <p>Nie musisz czytać instrukcji od deski do deski. Zapamiętaj cztery ruchy — resztę podpowie Ci Atlas i sam szlak.</p>
+            <p className="eyebrow"><BookOpenText size={16} weight="fill" /> {t('guide.eyebrow')}</p>
+            <h2>{t('guide.title')}</h2>
+            <p>{t('guide.lead')}</p>
           </div>
           <ol className="field-guide-steps">
-            <li><span>01</span><MapTrifold size={28} weight="duotone" /><strong>Wybierz znak</strong><p>Otwórz punkt w Atlasie i poznaj trop.</p></li>
-            <li><span>02</span><Footprints size={28} weight="duotone" /><strong>Rusz w teren</strong><p>Chatynki czekają w prawdziwych miejscach Jury.</p></li>
-            <li><span>03</span><Key size={28} weight="duotone" /><strong>Znajdź kod</strong><p>Cztery cyfry są na tabliczce przy Chatynce.</p></li>
-            <li><span>04</span><BookOpenText size={28} weight="duotone" /><strong>Obudź historię</strong><p>Zapisz opowieść i pieczęć w Kronice.</p></li>
+            <li><span>01</span><MapTrifold size={28} weight="duotone" /><strong>{t('guide.step1Title')}</strong><p>{t('guide.step1Body')}</p></li>
+            <li><span>02</span><Footprints size={28} weight="duotone" /><strong>{t('guide.step2Title')}</strong><p>{t('guide.step2Body')}</p></li>
+            <li><span>03</span><Key size={28} weight="duotone" /><strong>{t('guide.step3Title')}</strong><p>{t('guide.step3Body')}</p></li>
+            <li><span>04</span><BookOpenText size={28} weight="duotone" /><strong>{t('guide.step4Title')}</strong><p>{t('guide.step4Body')}</p></li>
           </ol>
           <div className="field-guide-photo">
-            <img src="assets/img/chatynkowo-trail.webp" alt="Leśny szlak prowadzący do rozświetlonej Chatynki" loading="lazy" decoding="async" />
-            <blockquote>„Chatynki pokazują się tylko tym, którzy patrzą uważnie.”</blockquote>
+            <img src="assets/img/chatynkowo-trail.webp" alt={t('guide.photoAlt')} loading="lazy" decoding="async" />
+            <blockquote>{t('guide.quote')}</blockquote>
           </div>
         </section>
       </main>
@@ -533,7 +525,7 @@ function App() {
           type="button"
           className="treasury-toggle"
           onClick={() => setTreasuryOpen(true)}
-          aria-label={`Otwórz Kronikę. Zdobyte odznaki: ${Object.keys(stored.badges).length}`}
+          aria-label={t('treasury.toggleAria', { count: Object.keys(stored.badges).length })}
         >
           <Crown size={25} weight="fill" />
           <span>{Object.keys(stored.badges).length}</span>
@@ -546,12 +538,12 @@ function App() {
       {treasuryOpen && (
         <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setTreasuryOpen(false)}>
           <section className="modal-card treasury-modal" role="dialog" aria-modal="true" aria-labelledby="treasury-title">
-            <button className="icon-button modal-close" type="button" onClick={() => setTreasuryOpen(false)} aria-label="Zamknij Kronikę"><X size={22} /></button>
+            <button className="icon-button modal-close" type="button" onClick={() => setTreasuryOpen(false)} aria-label={t('treasury.closeAria')}><X size={22} /></button>
             <Crown className="modal-emblem" size={42} weight="duotone" />
             <h2 id="treasury-title">{rewards.treasury.title}</h2>
             {rewards.treasury.intro
               ? <div className="markdown treasury-intro" dangerouslySetInnerHTML={{ __html: marked.parse(rewards.treasury.intro) as string }} />
-              : <p>{foundCount ? `Kronika przechowuje ${foundCount} z ${cottages.length} opowieści.` : 'Jej karty są jeszcze puste. Pierwsza odnaleziona Chatynka zostawi tu swój ślad.'}</p>}
+              : <p>{foundCount ? t('treasury.fallbackProgress', { found: foundCount, total: cottages.length }) : t('treasury.fallbackEmpty')}</p>}
             <div className="badge-grid">
               {kronikaLevels.map((level) => {
                 const earned = Boolean(stored.badges[level.id])
@@ -569,13 +561,13 @@ function App() {
                     </span>
                     <span className="badge-text">
                       <strong>{level.name}</strong>
-                      <em>{earned ? 'zdobyta' : 'do zdobycia'}</em>
+                      <em>{earned ? t('treasury.badgeEarned') : t('treasury.badgeLocked')}</em>
                     </span>
                   </button>
                 )
               })}
             </div>
-            {completed && <a className="button button-primary" href="ranking.html">Zobacz ranking</a>}
+            {completed && <a className="button button-primary" href="ranking.html">{t('treasury.seeRanking')}</a>}
           </section>
         </div>
       )}
@@ -583,11 +575,11 @@ function App() {
       {rewardDetail && (
         <div className="modal-backdrop is-stacked" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setRewardDetail(null)}>
           <article className="modal-card reward-modal" role="dialog" aria-modal="true" aria-labelledby="reward-title">
-            <button className="icon-button modal-close" type="button" onClick={() => setRewardDetail(null)} aria-label="Zamknij nagrodę"><X size={22} /></button>
+            <button className="icon-button modal-close" type="button" onClick={() => setRewardDetail(null)} aria-label={t('reward.closeAria')}><X size={22} /></button>
             <h2 id="reward-title">{rewardDetail.name}</h2>
             {rewardDetail.image && <div className="reward-art"><img src={rewardDetail.image} alt={rewardDetail.name} decoding="async" /></div>}
             {stored.badges[rewardDetail.id]
-              ? <p className="reward-status is-earned"><Trophy size={18} weight="fill" /> Nagroda zdobyta</p>
+              ? <p className="reward-status is-earned"><Trophy size={18} weight="fill" /> {t('reward.earned')}</p>
               : <p className="reward-status">{rewardLockedHint(rewardDetail, cottages.length)}</p>}
             {rewardDetail.body && <div className="markdown" dangerouslySetInnerHTML={{ __html: marked.parse(rewardDetail.body) as string }} />}
           </article>
@@ -597,22 +589,22 @@ function App() {
       {story && (
         <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setStory(null)}>
           <article className="modal-card story-modal" role="dialog" aria-modal="true" aria-labelledby="story-title">
-            <button className="icon-button modal-close" type="button" onClick={() => setStory(null)} aria-label="Zamknij opowieść"><X size={22} /></button>
+            <button className="icon-button modal-close" type="button" onClick={() => setStory(null)} aria-label={t('story.closeAria')}><X size={22} /></button>
             <div className={`story-photo${storyPhotos(story).length > 1 ? ' is-gallery' : ''}`}>
               {storyPhotos(story).map((src) => (
-                <img key={src} src={src} alt={`Chatynka: ${story.title}`} loading="lazy" decoding="async" />
+                <img key={src} src={src} alt={t('story.photoAlt', { title: story.title })} loading="lazy" decoding="async" />
               ))}
             </div>
             <div className="story-body">
-              <p className={`story-unlocked${storyPreviouslyFound ? ' is-returning' : ''}`}>
+              <p className={`story-unlocked${storyPreviouslyFound ? ' is-returning' : ''}`} data-note={t('story.revisitNote')}>
                 <CheckCircle size={18} weight="fill" />
-                {storyPreviouslyFound ? 'Chatynka odkryta wcześniej' : 'Nowa opowieść odblokowana'}
+                {storyPreviouslyFound ? t('story.foundBefore') : t('story.unlocked')}
               </p>
               <h2 id="story-title">{story.title}</h2>
-              {story.virtue && <p className="story-virtue">Mądrość tej historii: <strong>{story.virtue}</strong></p>}
+              {story.virtue && <p className="story-virtue">{t('story.virtuePrefix')} <strong>{story.virtue}</strong></p>}
               <div className="audio-card">
                 <SpeakerHigh size={28} weight="duotone" />
-                <div><strong>Posłuchaj baśni Elfa</strong><AudioPlayer src={`assets/stories/${story.slug}.mp3`} title={story.title} /></div>
+                <div><strong>{t('story.listen')}</strong><AudioPlayer src={`assets/stories/${story.slug}.mp3`} title={story.title} /></div>
               </div>
               <div className="markdown" dangerouslySetInnerHTML={{ __html: marked.parse(story.storyMarkdown) as string }} />
             </div>

@@ -47,6 +47,87 @@
 .main-nav .nav-primary span { margin-right: 5px; color: var(--accent-strong); }
 .nav-toggle { display: none; }
 
+.language-menu { position: relative; display: inline-flex; }
+
+.language-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: rgb(210 166 77 / .06);
+  color: var(--ink-soft);
+  cursor: pointer;
+  font: inherit;
+  font-size: .84rem;
+  font-weight: 600;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.language-menu-trigger svg { color: var(--accent); transition: transform 180ms ease; }
+.language-menu-trigger[aria-expanded='true'] svg { transform: rotate(180deg); }
+
+.language-menu-trigger:hover,
+.language-menu-trigger:focus-visible,
+.language-menu-trigger[aria-expanded='true'] {
+  background: rgb(210 166 77 / .14);
+  color: var(--ink);
+}
+
+.language-menu-list {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  min-width: max(100%, 150px);
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgb(210 166 77 / .07), transparent 45%),
+    var(--surface);
+  box-shadow: var(--shadow), inset 0 1px rgb(255 225 156 / .07);
+  animation: language-menu-in 160ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.language-menu-list li + li { border-top: 1px solid var(--line); }
+
+.language-menu-list button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  text-align: left;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.language-menu-list button svg { color: var(--accent-strong); }
+.language-menu-list button[aria-current] { color: var(--ink); }
+
+.language-menu-list button:hover,
+.language-menu-list button:focus-visible {
+  background: rgb(210 166 77 / .12);
+  color: var(--ink);
+}
+
+@keyframes language-menu-in {
+  from { opacity: 0; transform: translateY(-6px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .burger-icon {
   position: relative;
   display: block;
@@ -142,7 +223,8 @@
   }
 
   .main-nav::before {
-    content: 'Nawigacja wyprawy';
+    /* The label itself travels with the interface language via data-title. */
+    content: attr(data-title);
     padding: 9px 13px 10px;
     border-bottom: 1px solid var(--line);
     color: var(--accent);
@@ -192,13 +274,15 @@
     from { opacity: 0; transform: translateY(-8px) scale(.985); }
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
+  .language-menu { margin-left: auto; }
+  .language-menu-trigger { padding: 6px 11px; font-size: .78rem; }
+
   .nav-toggle {
     display: inline-grid;
     width: 44px;
     height: 44px;
     flex: 0 0 44px;
     place-items: center;
-    margin-left: auto;
     padding: 0;
     border-color: rgb(210 166 77 / .5);
     border-radius: 14px;

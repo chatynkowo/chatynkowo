@@ -1808,7 +1808,8 @@ h2 {
 }
 
 .story-unlocked.is-returning::after {
-  content: '· ponowna wizyta';
+  /* The note itself travels with the interface language via data-note. */
+  content: attr(data-note);
   color: var(--ink-faint);
   font-weight: 600;
 }
