@@ -150,6 +150,14 @@ h2 {
   text-wrap: balance;
 }
 
+/* The font's kern table fuses the small-cap pair "he" into one epigraphic
+   glyph, which English headings hit constantly (the, head) — drop the kerning
+   for non-Polish headings. See styles.css for the full story. */
+:where(:root:not(:lang(pl))) h1,
+:where(:root:not(:lang(pl))) h2 {
+  font-kerning: none;
+}
+
 .skip-link {
   position: fixed;
   z-index: 3000;

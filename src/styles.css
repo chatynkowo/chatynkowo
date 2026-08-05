@@ -179,6 +179,17 @@ h2 {
   letter-spacing: -0.025em;
 }
 
+/* Cinzel Decorative has no lowercase — minuscules render as small caps — and
+   its kern table fuses the small-cap pair "he" into one epigraphic glyph
+   (-384/1000 em). Polish headings never hit that pair, but English is full of
+   it (Where, head, the), so the fusion reads as broken letters. Dropping the
+   kerning for non-Polish headings separates the pairs while keeping the same
+   tracking as Polish. :where() keeps specificity at plain h1/h2. */
+:where(:root:not(:lang(pl))) h1,
+:where(:root:not(:lang(pl))) h2 {
+  font-kerning: none;
+}
+
 h2 {
   font-size: clamp(2rem, 4vw, 3.55rem);
   line-height: 1.08;
