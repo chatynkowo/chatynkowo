@@ -21,17 +21,26 @@ export function LanguageMenu() {
     const closeOnOutsidePress = (event: PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
     }
+    /* Tab-out closes via focusin on the document — never via blur with
+       relatedTarget: Safari does not focus buttons on click, so there a
+       blur-based close fires mid-click with relatedTarget=null and unmounts
+       the option before its click event, swallowing the selection. */
+    const closeOnFocusOutside = (event: FocusEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+    }
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
       setOpen(false)
       triggerRef.current?.focus()
     }
     document.addEventListener('pointerdown', closeOnOutsidePress)
+    document.addEventListener('focusin', closeOnFocusOutside)
     document.addEventListener('keydown', closeOnEscape)
     // Focus lands on the current language, so arrows/Enter work right away.
     listRef.current?.querySelector<HTMLButtonElement>('[aria-current]')?.focus()
     return () => {
       document.removeEventListener('pointerdown', closeOnOutsidePress)
+      document.removeEventListener('focusin', closeOnFocusOutside)
       document.removeEventListener('keydown', closeOnEscape)
     }
   }, [open])
@@ -49,13 +58,7 @@ export function LanguageMenu() {
   }
 
   return (
-    <div
-      ref={rootRef}
-      className="language-menu"
-      onBlur={(event) => {
-        if (!rootRef.current?.contains(event.relatedTarget as Node)) setOpen(false)
-      }}
-    >
+    <div ref={rootRef} className="language-menu">
       <button
         ref={triggerRef}
         type="button"
