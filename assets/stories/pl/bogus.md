@@ -4,7 +4,7 @@ Nie dawno temu…
 
 Boguś własnymi rękami ulepił chatynkę z gliny i kamieni w samym środku Jaskini Łabajowej. Każdy normalny elf powiedziałby, że wilgotno, ciemno i smierdzi , ale Boguś stwierdził, że przynajmniej sąsiedzi nie wiercą;) 
 
-Boguś jest w ciągłym ruchu Nie ma chwili, żeby nic nie robił. No… chyba że śpi. Wtedy nawet nietoperze chodzą na palcach.
+Boguś jest w ciągłym ruchu. Nie ma chwili, żeby nic nie robił. No… chyba że śpi. Wtedy nawet nietoperze chodzą na palcach.
 
 Codziennie kręci się po jaskini i sprząta po ludziach. Bo ludzie mają niezwykły dar. Potrafią zachwycić się milionletnią skałą, zrobić sobie z nią pięćdziesiąt zdjęć, a potem zostawić po sobie taki bałagan, jakby chcieli dołożyć własną warstwę geologiczną.
 
