@@ -41,6 +41,18 @@ function storyUrl(slug: string, language: Language) {
   return language === DEFAULT_LANGUAGE ? `cottages/${slug}.md` : `cottages/${language}/${slug}.md`
 }
 
+/* Recordings live in one directory per language —
+   assets/stories/<language>/<slug>.mp3, with pl/ holding the originals.
+   Static hosting offers no existence check, so the player receives the
+   Polish URL as a fallback and drops to it when the language's own file
+   turns out to be missing. */
+export function storyAudio(slug: string, language: Language) {
+  const src = `assets/stories/${language}/${slug}.mp3`
+  return language === DEFAULT_LANGUAGE
+    ? { src }
+    : { src, fallbackSrc: `assets/stories/${DEFAULT_LANGUAGE}/${slug}.mp3` }
+}
+
 async function fetchStory(slug: string, language: Language) {
   const response = await fetch(storyUrl(slug, language), { cache: 'no-cache' })
   if (response.ok) return response.text()

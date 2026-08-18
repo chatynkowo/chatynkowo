@@ -22,7 +22,7 @@ import {
 import { marked } from 'marked'
 import { useTranslation } from 'react-i18next'
 import { toLanguage } from './i18n'
-import { loadCottages, resolveCode } from './lib/content'
+import { loadCottages, resolveCode, storyAudio } from './lib/content'
 import { backfillBadges, discoverCottage, loadStoredState } from './lib/persistence'
 import { fallbackRewards, finalLevelId, loadRewards, requiredFinds } from './lib/rewards'
 import { initializeAnalytics, track } from './lib/analytics'
@@ -604,7 +604,7 @@ function App() {
               {story.virtue && <p className="story-virtue">{t('story.virtuePrefix')} <strong>{story.virtue}</strong></p>}
               <div className="audio-card">
                 <SpeakerHigh size={28} weight="duotone" />
-                <div><strong>{t('story.listen')}</strong><AudioPlayer src={`assets/stories/${story.slug}.mp3`} title={story.title} /></div>
+                <div><strong>{t('story.listen')}</strong><AudioPlayer {...storyAudio(story.slug, language)} title={story.title} /></div>
               </div>
               <div className="markdown" dangerouslySetInnerHTML={{ __html: marked.parse(story.storyMarkdown) as string }} />
             </div>

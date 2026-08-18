@@ -14,7 +14,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
      • cottages/<slug>.md      — title/occupant/virtue + the story markdown
      • data/cottages.json      — slug, lat/lng, and the photo manifest
      • private/codes.json      — the secret plaque codes (+ the public hashes)
-     • assets/stories/<slug>.mp3, assets/img/cottages/<slug>/…
+     • assets/stories/<lang>/<slug>.mp3, assets/img/cottages/<slug>/…
      • data/rewards.json       — the Kronika: intro + reward levels
 */
 
@@ -358,8 +358,10 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     // Polish is the canonical original; any other language turns both
     // categories into translation mode, editing the parallel files
     // (cottages/<lang>/<slug>.md, data/rewards.<lang>.json). The
-    // language-neutral fields (code, pin, audio, photos, thresholds, order,
-    // images) hide or lock — the Polish original owns them.
+    // language-neutral fields (code, pin, photos, thresholds, order,
+    // images) hide or lock — the Polish original owns them. Audio stays
+    // editable: each language keeps its own recording and the site falls
+    // back to the Polish one when a language has none.
     language: DEFAULT_LANGUAGE,
     trCache: new Map(),    // `${lang}/${slug}` → { fm, body, exists } last loaded/saved cottage translation
     rwTr: new Map(),       // lang → { treasury, byId, loaded } rewards translation draft + clean snapshot
@@ -425,7 +427,6 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     state.cottages = slugs.map((slug, i) => {
       const { fm, body } = parseFrontmatter(mdTexts[i]);
       const j = bySlug.get(slug) || {};
-      const audioPath = `assets/stories/${slug}.mp3`;
       // The git tree is the truth about which files exist; the manifest in
       // cottages.json only decides the ORDER the site shows them in, so a
       // photo uploaded outside the editor is still picked up here.
@@ -439,10 +440,6 @@ import '@toast-ui/editor/dist/toastui-editor.css'
         slug, frontmatter: fm, body,
         lat: j.lat ?? null, lng: j.lng ?? null,
         code: codeBySlug.get(slug) ?? null,
-        audio: {
-          exists: state.sha.has(audioPath),
-          url: state.sha.has(audioPath) ? `${baseUrl}/${audioPath}?v=${state.sha.get(audioPath).slice(0, 8)}` : null,
-        },
         photos,
       };
     });
@@ -821,10 +818,17 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   async function deleteCurrent() {
     const c = state.current;
     if (!c || translating()) return;
+    // Recordings and translated stories of this cottage — scanned from the
+    // tree, so files of a language later removed from the registry are
+    // cleaned up too. The optional path segment also catches a recording
+    // left at the legacy flat location assets/stories/<slug>.mp3.
+    const companions = [...state.sha.keys()].filter(p =>
+      new RegExp(`^assets/stories/([^/]+/)?${c.slug}\\.mp3$`).test(p)
+      || new RegExp(`^cottages/[^/]+/${c.slug}\\.md$`).test(p));
     const lines = [
       `Usunąć chatynkę „${c.frontmatter.title || c.slug}" (${c.slug})?`, '',
       'Zostaną usunięte:', `• cottages/${c.slug}.md`, '• wpis w data/cottages.json',
-      ...(c.audio?.exists ? [`• assets/stories/${c.slug}.mp3`] : []),
+      ...companions.map(p => `• ${p}`),
       ...(c.photos?.length ? [`• ${c.photos.length} zdjęcia`] : []),
       '', 'Można cofnąć przez git przed kolejną edycją.',
     ];
@@ -835,7 +839,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
       const changes = [
         { path: `cottages/${c.slug}.md`, delete: true },
         { path: 'data/cottages.json', text: serializeCottagesJson(freshJson.filter(x => x.slug !== c.slug)) },
-        ...(c.audio?.exists ? [{ path: `assets/stories/${c.slug}.mp3`, delete: true }] : []),
+        ...companions.map(p => ({ path: p, delete: true })),
         ...(c.photos || []).map(p => ({ path: `assets/img/cottages/${c.slug}/${p.name}`, delete: true })),
       ];
       const freshCodes = state.codesFile.codes.some(e => e.slug === c.slug)
@@ -849,46 +853,59 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     } catch (e) { setStatus('error', `błąd: ${e.message}`); }
   }
 
-  /* ---------- audio ---------- */
+  /* ---------- audio ----------
+     Recordings live in one directory per language:
+     assets/stories/<lang>/<slug>.mp3, with pl/ holding the originals. The
+     site prefers the current language's file and falls back to the Polish
+     one, so a translation may ship without audio. Existence comes straight
+     from the git tree (state.sha), which commitChanges keeps current. */
+
+  function audioPath(slug) {
+    return `assets/stories/${state.language}/${slug}.mp3`;
+  }
 
   function refreshAudio() {
     const c = state.current;
-    if (c?.audio.exists) {
-      els.audioPreview.src = c.audio.url;
-      els.audioMeta.textContent = `assets/stories/${c.slug}.mp3`;
+    const path = c && audioPath(c.slug);
+    if (path && state.sha.has(path)) {
+      els.audioPreview.src = rawUrl(path);
+      els.audioMeta.textContent = path;
       els.audioDelete.disabled = false;
     } else {
       els.audioPreview.removeAttribute('src'); els.audioPreview.load();
-      els.audioMeta.textContent = 'brak pliku audio';
+      els.audioMeta.textContent = c && translating()
+        ? 'brak nagrania w tym języku — strona odtwarza polski oryginał'
+        : 'brak pliku audio';
       els.audioDelete.disabled = true;
     }
   }
 
   async function uploadAudio(file) {
-    if (!state.current || !file || translating()) return;
+    const c = state.current;
+    if (!c || !file) return;
     if (file.size > MAX_AUDIO_BYTES) { setStatus('error', 'plik za duży (maks. 30 MB)'); return; }
+    const path = audioPath(c.slug);
+    const message = translating() ? `audio(${state.language}): ${c.slug}` : `audio: ${c.slug}`;
     setStatus('saving', 'wgrywam audio…');
     try {
       const buf = await file.arrayBuffer();
-      const path = `assets/stories/${state.current.slug}.mp3`;
-      await commitChanges([{ path, binary: buf }], `audio: ${state.current.slug}`);
-      const url = `${rawUrl(path)}`;
-      state.current.audio = { exists: true, url };
-      els.audioPreview.src = url;
-      els.audioMeta.textContent = `assets/stories/${state.current.slug}.mp3`;
-      els.audioDelete.disabled = false;
+      await commitChanges([{ path, binary: buf }], message);
+      refreshAudio();
       setStatus('clean', 'audio wgrane');
     } catch (e) { setStatus('error', `błąd: ${e.message}`); }
   }
 
   async function deleteAudio() {
-    if (!state.current || !state.current.audio.exists || translating()) return;
-    if (!confirm(`Usunąć plik audio dla chatynki „${state.current.slug}"?`)) return;
+    const c = state.current;
+    if (!c) return;
+    const path = audioPath(c.slug);
+    if (!state.sha.has(path)) return;
+    const what = translating() ? `nagranie (${state.language})` : 'plik audio';
+    if (!confirm(`Usunąć ${what} dla chatynki „${c.slug}"?`)) return;
+    const message = translating() ? `remove audio(${state.language}): ${c.slug}` : `remove audio: ${c.slug}`;
     setStatus('saving', 'usuwam audio…');
     try {
-      const path = `assets/stories/${state.current.slug}.mp3`;
-      await commitChanges([{ path, delete: true }], `remove audio: ${state.current.slug}`);
-      state.current.audio = { exists: false, url: null };
+      await commitChanges([{ path, delete: true }], message);
       refreshAudio();
       setStatus('clean', 'audio usunięte');
     } catch (e) { setStatus('error', `błąd: ${e.message}`); }
@@ -1235,6 +1252,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
       if (tr) void fillTranslationForm(state.current);
       else { fillForm(state.current); markClean(); }
     }
+    refreshAudio();
     if (state.rwMde) rwFillCurrent(rwSelectionKey());
     renderToolbar();
   }

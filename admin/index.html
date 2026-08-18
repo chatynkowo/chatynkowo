@@ -86,7 +86,7 @@
         <span id="cottage-actions" class="toolbar-actions">
           <button id="btn-add" class="btn" type="button">+ Dodaj nową</button>
           <button id="btn-delete" class="btn btn-quiet-danger" type="button"
-                  title="Usuń bieżącą chatynkę wraz z nagraniem i zdjęciami">Usuń</button>
+                  title="Usuń bieżącą chatynkę wraz z nagraniami, tłumaczeniami i zdjęciami">Usuń</button>
         </span>
         <span id="rewards-actions" class="toolbar-actions" hidden>
           <button id="rw-add" class="btn" type="button">+ Dodaj poziom</button>
@@ -109,9 +109,9 @@
       <section class="form-pane">
         <h2>Podstawowe dane</h2>
         <p class="meta tr-hint" data-tr-only hidden>Tryb tłumaczenia: edytujesz
-          wersję językową nazwy, mieszkańca, cnoty i treści. Kod, pinezka, audio
-          i zdjęcia są wspólne dla wszystkich języków — edytuje się je w polskim
-          oryginale. Sekcję „na miejscu&rdquo; zamyka w tłumaczeniu nagłówek w danym
+          wersję językową nazwy, mieszkańca, cnoty, treści i nagrania. Kod,
+          pinezka i zdjęcia są wspólne dla wszystkich języków — edytuje się je
+          w polskim oryginale. Sekcję „na miejscu&rdquo; zamyka w tłumaczeniu nagłówek w danym
           języku (po angielsku: <code>## What to do when you reach the cottage?</code>).</p>
         <label class="field">
           <span>Nazwa chatynki</span>
@@ -140,8 +140,10 @@
           </label>
         </div>
 
-        <h2 data-pl-only>Opowieść (audio)</h2>
-        <div class="audio-row" data-pl-only>
+        <h2>Opowieść (audio)</h2>
+        <p class="meta tr-hint" data-tr-only hidden>Nagranie dla wybranego
+          języka. Dopóki go nie wgrasz, strona odtwarza polski oryginał.</p>
+        <div class="audio-row">
           <audio id="audio-preview" controls preload="none"></audio>
           <div class="audio-actions">
             <label class="btn btn-ghost">

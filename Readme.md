@@ -37,7 +37,7 @@ Vite buduje wszystkie wejścia jednym procesem. Aktywna logika aplikacji jest za
 - `private/codes.json` — prywatne kody z tabliczek,
 - `data/code_hashes.json` — publiczny indeks solonych skrótów kodów,
 - `data/rewards.json` — Kronika: tytuł i wstęp oraz poziomy nagród (`id`, `name`, `threshold` albo `final`, `image`, `body`),
-- `assets/stories/*.mp3` — nagrania opowieści,
+- `assets/stories/<kod>/*.mp3` — nagrania opowieści, katalog per język (`pl/` to oryginały),
 - `assets/img/cottages/<slug>/` — zdjęcia chatynki,
 - `assets/img/rewards/<id>/` — ilustracje kart nagród.
 
@@ -55,11 +55,12 @@ Podział odpowiedzialności:
 - `src/i18n/<kod>.ts` — słownik interfejsu (wszystkie napisy UI, w tym atrybuty ARIA i meta strony), rejestrowany w `DICTIONARIES` w `src/i18n/index.ts`,
 - `cottages/<kod>/<slug>.md` — tłumaczenie opowieści; brak pliku = automatyczny fallback do polskiego oryginału `cottages/<slug>.md`,
 - `data/rewards.<kod>.json` — tłumaczenie Kroniki i kart nagród; brak pliku = fallback do `data/rewards.json`,
+- `assets/stories/<kod>/<slug>.mp3` — nagranie opowieści w danym języku; brak pliku = strona odtwarza polski oryginał `assets/stories/pl/<slug>.mp3` (odtwarzacz próbuje pliku językowego i przy błędzie wczytania przełącza się na polski),
 - `legal/` — strony prawne mają osobne dokumenty per język, a ich adresy wskazują klucze `footer.termsHref` / `footer.privacyHref` w słowniku.
 
 Aby dodać nowy język: dopisz wpis w `registry.ts`, skopiuj `src/i18n/pl.ts`, przetłumacz słownik i zarejestruj go w `DICTIONARIES` (brakujący wpis nie przejdzie kompilacji) — to wystarczy, żeby język pojawił się w selektorach z kompletnym interfejsem. Treści (`cottages/<kod>/`, `data/rewards.<kod>.json`) tłumaczy się wygodnie w `/admin/` i można je uzupełniać stopniowo; do czasu przetłumaczenia gracze zobaczą polskie oryginały. Parser opowieści rozpoznaje nagłówek sekcji „na miejscu" po dokładnym brzmieniu — jego wariant dla nowego języka dopisz do `ARRIVAL_HEADINGS` w `src/lib/content.ts`.
 
-Tłumaczenia w edytorze: selektor języka w pasku `/admin/` przełącza obie kategorie w tryb tłumaczenia. Formularze edytują wtedy pliki równoległe (`cottages/<kod>/<slug>.md`, `data/rewards.<kod>.json`), a pola wspólne dla języków (kod z tabliczki, pinezka, audio, zdjęcia, progi, kolejność i obrazki nagród) chowają się — należą do polskiego oryginału i przy zapisie tłumaczenia nagród przenoszą się do pliku automatycznie. Chatynka bez tłumaczenia jest oznaczona w liście („brak tłumaczenia"), a formularz podpowiada polski oryginał jako punkt wyjścia. Po edycji polskiego oryginału tłumaczenie nie aktualizuje się samo — trzeba je odświeżyć w tym trybie. Nagrania `assets/stories/*.mp3` istnieją tylko po polsku i są odtwarzane w każdej wersji językowej.
+Tłumaczenia w edytorze: selektor języka w pasku `/admin/` przełącza obie kategorie w tryb tłumaczenia. Formularze edytują wtedy pliki równoległe (`cottages/<kod>/<slug>.md`, `data/rewards.<kod>.json`), a pola wspólne dla języków (kod z tabliczki, pinezka, zdjęcia, progi, kolejność i obrazki nagród) chowają się — należą do polskiego oryginału i przy zapisie tłumaczenia nagród przenoszą się do pliku automatycznie. Sekcja audio pozostaje aktywna: w trybie tłumaczenia wgrywa i usuwa nagranie danego języka (`assets/stories/<kod>/<slug>.mp3`), a dopóki go nie ma, strona odtwarza polski oryginał. Chatynka bez tłumaczenia jest oznaczona w liście („brak tłumaczenia"), a formularz podpowiada polski oryginał jako punkt wyjścia. Po edycji polskiego oryginału tłumaczenie nie aktualizuje się samo — trzeba je odświeżyć w tym trybie.
 
 ## Panel administracyjny (edytor zawartości)
 

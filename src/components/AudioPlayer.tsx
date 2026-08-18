@@ -8,18 +8,21 @@ function formatTime(seconds: number) {
   return `${minutes}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`
 }
 
-export function AudioPlayer({ src, title }: { src: string; title: string }) {
+export function AudioPlayer({ src, fallbackSrc, title }: { src: string; fallbackSrc?: string; title: string }) {
   const { t } = useTranslation()
   const audioRef = useRef<HTMLAudioElement>(null)
   const [playing, setPlaying] = useState(false)
   const [current, setCurrent] = useState(0)
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(1)
+  const [activeSrc, setActiveSrc] = useState(src)
+
+  useEffect(() => { setActiveSrc(src) }, [src])
 
   useEffect(() => {
     setPlaying(false); setCurrent(0); setDuration(0)
     audioRef.current?.load()
-  }, [src])
+  }, [activeSrc])
 
   async function togglePlayback() {
     const audio = audioRef.current
@@ -41,8 +44,11 @@ export function AudioPlayer({ src, title }: { src: string; title: string }) {
     <div className="custom-audio">
       <audio
         ref={audioRef}
-        src={src}
+        src={activeSrc}
         preload="metadata"
+        // A missing file surfaces only as a load error (static hosting), so a
+        // language without its own recording falls back this way.
+        onError={() => { if (fallbackSrc && fallbackSrc !== activeSrc) setActiveSrc(fallbackSrc) }}
         onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
         onTimeUpdate={(event) => setCurrent(event.currentTarget.currentTime)}
         onPlay={() => setPlaying(true)}
