@@ -26,5 +26,6 @@
   { "slug": "mrok",           "lat": 50.304618,  "lng": 19.593799 },
   { "slug": "konkurs",        "lat": 50.325047,  "lng": 19.628238 },
   { "slug": "bogus",          "lat": 50.190455,  "lng": 19.772754 },
-  { "slug": "halinka",        "lat": 50.5740161, "lng": 19.5312161 }
+  { "slug": "halinka",        "lat": 50.5740161, "lng": 19.5312161 },
+  { "slug": "olala",          "lat": 50.32,      "lng": 19.6 }
 ]
