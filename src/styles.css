@@ -850,14 +850,23 @@ h2 {
   transition: opacity 220ms ease, visibility 220ms ease;
 }
 
-.fantasy-map[data-level='kraina'] .leaflet-cottages-pane {
+/* data-atlas (set by MapExplorer) is "on" only in the zoom band where the
+   hand-drawn Jura atlas fills the view — there the region labels replace the
+   markers; everywhere else (country/Europe zooms, trails, abroad) the
+   clustered markers are the story. */
+.fantasy-map[data-atlas='on'] .leaflet-cottages-pane {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
 
-.fantasy-map[data-level='region'] .leaflet-regionLabels-pane,
-.fantasy-map[data-level='szlak'] .leaflet-regionLabels-pane {
+.fantasy-map[data-atlas='off'] .leaflet-regionLabels-pane {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.fantasy-map[data-level='europa'] .leaflet-atlas-pane {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -913,9 +922,36 @@ h2 {
 
 .region-label-shell,
 .cottage-marker-shell,
-.cottage-cluster-shell {
+.cottage-cluster-shell,
+.user-location-shell {
   border: 0 !important;
   background: transparent !important;
+}
+
+.user-location-dot {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 3px solid #f6ecd3;
+  border-radius: 50%;
+  background: #3d7fd9;
+  box-shadow: 0 0 0 2px rgb(28 52 84 / 0.35), 0 3px 8px rgb(22 15 9 / 0.4);
+}
+
+.user-location-dot::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border: 2px solid rgb(77 144 210 / 0.55);
+  border-radius: 50%;
+  animation: user-location-pulse 2.2s ease-out infinite;
+}
+
+@keyframes user-location-pulse {
+  0% { opacity: 0.9; transform: scale(0.55); }
+  70% { opacity: 0; transform: scale(1.25); }
+  100% { opacity: 0; transform: scale(1.25); }
 }
 
 .region-label {
@@ -2879,16 +2915,27 @@ h2 {
   .map-legend,
   .map-tip { transition: opacity 160ms ease; }
 
+  /* Only reset + locate are visible here (the zoom pair is hidden), laid out
+     as a row so the controls stay below the map tip instead of piercing it. */
   .map-controls {
     top: auto;
     bottom: 14px;
     left: 10px;
+    grid-auto-flow: column;
   }
 
   .map-controls button:nth-child(1),
   .map-controls button:nth-child(2) { display: none; }
 
-  .map-controls button:last-child { border-bottom: 0; }
+  .map-controls button {
+    border-bottom: 0;
+    border-right: 1px solid rgb(225 184 99 / 0.25);
+  }
+
+  .map-controls button:last-child { border-right: 0; }
+
+  /* Clear the horizontal controls row in the same corner. */
+  .leaflet-control-attribution { margin-left: 106px !important; }
   .map-legend { display: none; }
 
   .map-touch-exit {

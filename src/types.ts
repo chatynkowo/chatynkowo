@@ -10,9 +10,15 @@ export type CottageLocation = {
      the map marker shows this image instead of the default house icon. Path is
      relative to the site root, e.g. "assets/img/skull.png". */
   pin_custom_img?: string
+  /* ISO 3166-1 alpha-2 country code ("PL", "CZ"). Optional in the JSON —
+     entries without it are the original Polish cottages (DEFAULT_COUNTRY).
+     Drives the map's per-country framing. */
+  country?: string
 }
 
 export type Cottage = CottageLocation & {
+  /* Always present on a loaded cottage — normalized in loadCottage(). */
+  country: string
   title: string
   occupant: string
   virtue: string

@@ -1,5 +1,6 @@
 import type { Cottage, CottageLocation } from '../types'
 import { DEFAULT_LANGUAGE, type Language } from '../i18n/registry'
+import { DEFAULT_COUNTRY } from './geo'
 
 const FRONTMATTER = /^---\n([\s\S]*?)\n---\n?/
 
@@ -73,6 +74,7 @@ async function loadCottage(location: CottageLocation, language: Language): Promi
 
   return {
     ...location,
+    country: location.country ?? DEFAULT_COUNTRY,
     title: frontmatterValue(frontmatter, 'title') || location.slug,
     occupant: frontmatterValue(frontmatter, 'occupant'),
     virtue: frontmatterValue(frontmatter, 'virtue'),

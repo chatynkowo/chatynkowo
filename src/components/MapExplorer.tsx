@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import {
   ArrowCounterClockwise,
   CheckCircle,
+  GpsFix,
   HouseLine,
   MagnifyingGlass,
   MapPin,
@@ -13,6 +14,7 @@ import {
 } from '@phosphor-icons/react'
 import L from 'leaflet'
 import 'leaflet.markercluster'
+import { COUNTRY_BOUNDS, detectCountry, EUROPE_BOUNDS } from '../lib/geo'
 import { marked } from '../lib/markdown'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
@@ -24,13 +26,17 @@ type MapExplorerProps = {
   onOpenCode: () => void
 }
 
-type MapLevel = 'kraina' | 'region' | 'szlak'
+type MapLevel = 'europa' | 'kraj' | 'kraina' | 'region' | 'szlak'
 
 const LEVEL_KEYS: Record<MapLevel, string> = {
+  europa: 'map.levelEuropa',
+  kraj: 'map.levelKraj',
   kraina: 'map.levelKraina',
   region: 'map.levelRegion',
   szlak: 'map.levelSzlak',
 }
+
+const EUROPE = L.latLngBounds(EUROPE_BOUNDS)
 
 const REGION_AREAS = [
   {
@@ -50,8 +56,23 @@ const REGION_AREAS = [
   },
 ]
 
+/* The hand-drawn atlas area (region polygons + labels) — Jura-specific, so the
+   presentation code shows it only when the view is actually over it. */
+const ATLAS_BOUNDS = L.latLngBounds(REGION_AREAS.flatMap((region) => region.points as L.LatLngTuple[])).pad(0.35)
+
+/* The Jura regions only make sense for the Polish cottages; a cottage abroad
+   gets no region and the side panel shows its country name instead. */
 function regionFor(cottage: Cottage) {
+  if (cottage.country !== 'PL') return null
   return REGION_AREAS.find((region) => cottage.lat >= region.minLat) ?? REGION_AREAS[2]
+}
+
+function countryName(code: string, locale: string) {
+  try {
+    return new Intl.DisplayNames([locale], { type: 'region' }).of(code) ?? code
+  } catch {
+    return code
+  }
 }
 
 function cottageIcon(pinImg: string | undefined, found: boolean, active: boolean) {
@@ -70,7 +91,7 @@ function cottageIcon(pinImg: string | undefined, found: boolean, active: boolean
 function createAtlas(map: L.Map, cottages: Cottage[], t: TFunction) {
   const group = L.layerGroup().addTo(map)
   REGION_AREAS.forEach((region, index) => {
-    const matching = cottages.filter((cottage) => regionFor(cottage).labelKey === region.labelKey)
+    const matching = cottages.filter((cottage) => regionFor(cottage)?.labelKey === region.labelKey)
     L.polygon(region.points, {
       pane: 'atlas',
       className: `atlas-area atlas-area-${index + 1}`,
@@ -110,11 +131,28 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
   const [canZoomOut, setCanZoomOut] = useState(false)
   const [query, setQuery] = useState('')
   const [searchMissed, setSearchMissed] = useState(false)
+  const [locating, setLocating] = useState(false)
+  const [locateError, setLocateError] = useState<string | null>(null)
+  const userLocationRef = useRef<L.LayerGroup | null>(null)
+  const levelForZoomRef = useRef<(zoom: number) => MapLevel>(() => 'kraina')
   const [touchMapActive, setTouchMapActive] = useState(() => !window.matchMedia('(max-width: 760px)').matches)
-  const bounds = useMemo(
-    () => L.latLngBounds(cottages.map((cottage) => [cottage.lat, cottage.lng] as L.LatLngTuple)).pad(0.24),
-    [cottages],
-  )
+  /* The country whose cottages the map opens on: the visitor's country when it
+     has cottages (detected from the browser's languages — never geolocation),
+     otherwise the only country in the data, otherwise none (Europe overview). */
+  const homeCountry = useMemo(() => {
+    const present = new Set(cottages.map((cottage) => cottage.country))
+    const detected = detectCountry()
+    if (detected && present.has(detected)) return detected
+    return present.size === 1 ? [...present][0] : null
+  }, [cottages])
+  /* The "whole country" frame the map opens and resets to. Countries without a
+     preset box (and the no-country Europe overview) frame their cottages. */
+  const homeBounds = useMemo(() => {
+    const preset = homeCountry ? COUNTRY_BOUNDS[homeCountry] : undefined
+    if (preset) return L.latLngBounds(preset)
+    const own = homeCountry ? cottages.filter((cottage) => cottage.country === homeCountry) : cottages
+    return L.latLngBounds(own.map((cottage) => [cottage.lat, cottage.lng] as L.LatLngTuple)).pad(0.24)
+  }, [cottages, homeCountry])
   // Lookup so the setIcon loops (which iterate markers by slug) can find each
   // cottage's optional custom pin image without re-scanning the array.
   const cottageBySlug = useMemo(() => new Map(cottages.map((cottage) => [cottage.slug, cottage])), [cottages])
@@ -161,13 +199,73 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
     clearArea()
     markersRef.current.forEach((marker, slug) => marker.setIcon(cottageIcon(cottageBySlug.get(slug)?.pin_custom_img, foundSlugs.has(slug), false)))
     const zoom = mapRef.current?.getZoom() ?? 9
-    setLevel(zoom < 10.5 ? 'kraina' : 'region')
+    setLevel(levelForZoomRef.current(zoom))
   }, [clearArea, cottageBySlug, foundSlugs])
 
   const resetMap = useCallback(() => {
     closeCottage()
-    mapRef.current?.flyToBounds(bounds, { animate: true, duration: 1.15 })
-  }, [bounds, closeCottage])
+    mapRef.current?.flyToBounds(homeBounds, { animate: true, duration: 1.15 })
+  }, [homeBounds, closeCottage])
+
+  /* Geolocation is requested here and only here — the browser's permission
+     prompt appears the first time the visitor presses the locate button,
+     never on page load. */
+  const locateMe = useCallback(() => {
+    if (!('geolocation' in navigator)) {
+      setLocateError('map.locateUnsupported')
+      return
+    }
+    setLocating(true)
+    setLocateError(null)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocating(false)
+        const map = mapRef.current
+        if (!map) return
+        const where = L.latLng(position.coords.latitude, position.coords.longitude)
+        userLocationRef.current?.removeFrom(map)
+        userLocationRef.current = null
+        if (!EUROPE.contains(where)) {
+          setLocateError('map.locateOutside')
+          return
+        }
+        userLocationRef.current = L.layerGroup([
+          L.circle(where, {
+            pane: 'searchArea',
+            radius: Math.max(position.coords.accuracy, 25),
+            className: 'user-location-accuracy',
+            color: '#4d90d2',
+            fillColor: '#4d90d2',
+            weight: 1,
+            opacity: 0.6,
+            fillOpacity: 0.12,
+          }),
+          L.marker(where, {
+            pane: 'searchArea',
+            keyboard: false,
+            icon: L.divIcon({
+              className: 'user-location-shell',
+              html: '<span class="user-location-dot"></span>',
+              iconSize: [18, 18],
+              iconAnchor: [9, 9],
+            }),
+          }).bindTooltip(t('map.youAreHere'), { direction: 'top', offset: [0, -12], className: 'fantasy-tooltip' }),
+        ]).addTo(map)
+        map.flyTo(where, Math.max(map.getZoom(), 14), { duration: 1.3 })
+      },
+      (error) => {
+        setLocating(false)
+        setLocateError(error.code === error.PERMISSION_DENIED ? 'map.locateDenied' : 'map.locateFail')
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 },
+    )
+  }, [t])
+
+  useEffect(() => {
+    if (!locateError) return
+    const timer = window.setTimeout(() => setLocateError(null), 6000)
+    return () => window.clearTimeout(timer)
+  }, [locateError])
 
   useEffect(() => {
     const container = containerRef.current
@@ -178,9 +276,9 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
       attributionControl: false,
       zoomSnap: 0.25,
       zoomDelta: 0.5,
-      minZoom: 5,
+      minZoom: 3,
       maxZoom: 18,
-      maxBounds: bounds.pad(0.42),
+      maxBounds: EUROPE.pad(0.08),
       maxBoundsViscosity: 0.82,
       keyboard: true,
       scrollWheelZoom: true,
@@ -199,7 +297,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
-      minZoom: 5,
+      minZoom: 3,
       maxZoom: 18,
       noWrap: true,
       keepBuffer: 2,
@@ -240,33 +338,57 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
       markersRef.current.set(cottage.slug, marker)
     })
 
-    let krainaMaxZoom = 10.5
+    /* Zoom tiers, recomputed on resize: the map floor fits Europe, the kraj
+       tier starts where the home country fills the view, and the atlas band —
+       kraina, the enchanted land itself — brackets the zooms where the
+       hand-drawn Jura regions fill the view (the map's only reachable range
+       before the multi-country expansion). Without a home country there is no
+       kraj rung and the ladder goes straight from europa to kraina. */
+    let krajMinZoom = 7
+    let atlasMinZoom = 8
+    let atlasMaxZoom = 10.5
+    const levelForZoom = (zoom: number): MapLevel => {
+      if (zoom < krajMinZoom - 0.45) return 'europa'
+      if (zoom < atlasMinZoom) return homeCountry ? 'kraj' : 'europa'
+      if (zoom <= atlasMaxZoom) return 'kraina'
+      return zoom < 13.5 ? 'region' : 'szlak'
+    }
+    levelForZoomRef.current = levelForZoom
     const updatePresentation = () => {
       const zoom = map.getZoom()
       const reality = Math.max(0, Math.min(1, (zoom - 9) / 4))
       container.style.setProperty('--map-reality', reality.toFixed(3))
-      const nextLevel = zoom <= krainaMaxZoom ? 'kraina' : zoom < 13.5 ? 'region' : 'szlak'
+      const nextLevel = levelForZoom(zoom)
       container.dataset.level = nextLevel
+      /* The fixed-size region labels are legible only while the Jura atlas
+         area fills the view; at country/Europe zooms — and anywhere outside
+         the atlas — the clustered markers tell the story instead. */
+      const atlasVisible = zoom >= atlasMinZoom && zoom <= atlasMaxZoom && ATLAS_BOUNDS.contains(map.getCenter())
+      container.dataset.atlas = atlasVisible ? 'on' : 'off'
       setCanZoomOut(zoom > map.getMinZoom() + 0.01)
       setCanZoomIn(zoom < map.getMaxZoom() - 0.01)
       if (!selectedRef.current) setLevel(nextLevel)
     }
-    const syncMinimumZoom = () => {
+    const syncZoomTiers = () => {
       const padding = L.point(container.clientWidth < 760 ? 32 : 64, container.clientWidth < 760 ? 80 : 64)
-      const nextMinimum = Math.max(8, map.getBoundsZoom(bounds, false, padding))
+      const nextMinimum = Math.max(3, map.getBoundsZoom(EUROPE, false, padding))
       map.setMinZoom(nextMinimum)
-      krainaMaxZoom = nextMinimum + 0.55
+      krajMinZoom = Math.max(nextMinimum, map.getBoundsZoom(homeBounds, false, padding))
+      const atlasFit = map.getBoundsZoom(ATLAS_BOUNDS, false, padding)
+      atlasMinZoom = Math.max(krajMinZoom + 0.5, atlasFit - 1.4)
+      atlasMaxZoom = atlasFit + 0.55
       if (map.getZoom() < nextMinimum) map.setZoom(nextMinimum, { animate: false })
     }
     map.on('zoom', updatePresentation)
     map.on('zoomend', updatePresentation)
-    map.fitBounds(bounds, { animate: false, padding: [48, 48] })
-    syncMinimumZoom()
+    map.on('moveend', updatePresentation)
+    map.fitBounds(homeBounds, { animate: false, padding: [48, 48] })
+    syncZoomTiers()
     updatePresentation()
 
     const resizeObserver = new ResizeObserver(() => {
       map.invalidateSize({ animate: false })
-      syncMinimumZoom()
+      syncZoomTiers()
       updatePresentation()
     })
     resizeObserver.observe(container)
@@ -278,10 +400,11 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
       mapRef.current = null
       markersRef.current.clear()
       searchAreaRef.current = null
+      userLocationRef.current = null
     }
     // The region labels and marker titles are markup injected into Leaflet, so
     // the whole map is rebuilt when the interface language changes.
-  }, [bounds, chooseCottage, cottages, foundSlugs, i18n.resolvedLanguage, t])
+  }, [homeBounds, homeCountry, chooseCottage, cottages, foundSlugs, i18n.resolvedLanguage, t])
 
   useEffect(() => {
     const map = mapRef.current
@@ -325,6 +448,8 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
     chooseCottage(match)
   }
 
+  const selectedRegion = selected ? regionFor(selected) : null
+
   return (
     <div className={`map-explorer${selected ? ' has-selection' : ''}${touchMapActive ? '' : ' is-touch-locked'}`}>
       <div ref={containerRef} className="fantasy-map" aria-label={t('map.interactiveAria')} />
@@ -361,11 +486,13 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
       </div>
 
       {searchMissed && <p className="map-search-error" role="alert">{t('map.searchMiss')}</p>}
+      {locateError && <p className="map-search-error" role="alert">{t(locateError)}</p>}
 
       <nav className="map-controls" aria-label={t('map.controlsAria')}>
         <button type="button" disabled={!canZoomIn} onClick={() => mapRef.current?.zoomIn(0.5)} aria-label={t('map.zoomIn')}><Plus size={20} /></button>
         <button type="button" disabled={!canZoomOut} onClick={() => mapRef.current?.zoomOut(0.5)} aria-label={t('map.zoomOut')}><Minus size={20} /></button>
         <button type="button" onClick={resetMap} aria-label={t('map.resetView')}><ArrowCounterClockwise size={20} /></button>
+        <button type="button" onClick={locateMe} disabled={locating} aria-busy={locating} aria-label={t('map.locate')}><GpsFix size={20} /></button>
       </nav>
 
       <div className="map-legend" aria-label={t('map.legendAria')}>
@@ -382,7 +509,9 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
         <aside className="cottage-panel" aria-label={t('map.panelAria', { title: selected.title })}>
           <div className="cottage-panel-handle" aria-hidden="true" />
           <button type="button" className="icon-button panel-close" onClick={closeCottage} aria-label={t('map.closePanel')}><X size={20} /></button>
-          <p className="cottage-region">{t(regionFor(selected).labelKey)}</p>
+          <p className="cottage-region">
+            {selectedRegion ? t(selectedRegion.labelKey) : countryName(selected.country, i18n.resolvedLanguage ?? 'pl')}
+          </p>
           <h3>{selected.title}</h3>
           <p className="cottage-resident">{t('map.residentPrefix')} <strong>{selected.occupant || t('map.defaultOccupant')}</strong></p>
           {foundSlugs.has(selected.slug) ? (
