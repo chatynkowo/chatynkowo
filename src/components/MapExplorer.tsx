@@ -13,7 +13,7 @@ import {
 } from '@phosphor-icons/react'
 import L from 'leaflet'
 import 'leaflet.markercluster'
-import { marked } from 'marked'
+import { marked } from '../lib/markdown'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import type { Cottage } from '../types'

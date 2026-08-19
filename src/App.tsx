@@ -19,7 +19,7 @@ import {
   Trophy,
   X,
 } from '@phosphor-icons/react'
-import { marked } from 'marked'
+import { marked } from './lib/markdown'
 import { useTranslation } from 'react-i18next'
 import { toLanguage } from './i18n'
 import { loadCottages, resolveCode, storyAudio } from './lib/content'

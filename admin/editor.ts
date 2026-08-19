@@ -1,6 +1,6 @@
 import L from 'leaflet'
 import Editor from '@toast-ui/editor'
-import { marked } from 'marked'
+import { marked } from '../src/lib/markdown'
 import { DEFAULT_LANGUAGE, LANGUAGES } from '../src/i18n/registry'
 import 'leaflet/dist/leaflet.css'
 import '@toast-ui/editor/dist/toastui-editor.css'

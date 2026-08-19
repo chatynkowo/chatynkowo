@@ -19,8 +19,10 @@ function frontmatterValue(frontmatter: string, key: string) {
   return plainDash((match?.[1] ?? match?.[2] ?? match?.[3] ?? '').trim())
 }
 
+/* The body keeps its typographic dashes: a "– " at the start of a dialogue
+   line must not become "- ", which markdown parses as a bullet list. */
 function splitMarkdown(raw: string) {
-  const body = plainDash(raw.replace(FRONTMATTER, ''))
+  const body = raw.replace(FRONTMATTER, '')
     .replace(/^#\s+.*\n+/, '')
     .trim()
   for (const heading of ARRIVAL_HEADINGS) {
