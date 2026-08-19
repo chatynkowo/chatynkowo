@@ -1770,6 +1770,9 @@ h2 {
   display: grid;
   width: min(1040px, 100%);
   grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+  /* Cap the single row at the card's max-height so .story-body scrolls
+     instead of the whole card being clipped. */
+  grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
 }
 
