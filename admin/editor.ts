@@ -2,6 +2,7 @@ import L from 'leaflet'
 import Editor from '@toast-ui/editor'
 import { marked } from '../src/lib/markdown'
 import { DEFAULT_LANGUAGE, LANGUAGES } from '../src/i18n/registry'
+import { COUNTRY_BOUNDS, DEFAULT_COUNTRY } from '../src/lib/geo'
 import 'leaflet/dist/leaflet.css'
 import '@toast-ui/editor/dist/toastui-editor.css'
 
@@ -12,7 +13,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
    The editor edits exactly what the published site reads, and nothing else:
      • cottages/<slug>.md      — title/occupant/virtue + the story markdown
-     • data/cottages.json      — slug, lat/lng, and the photo manifest
+     • data/cottages.json      — slug, lat/lng, country, and the photo manifest
      • private/codes.json      — the secret plaque codes (+ the public hashes)
      • assets/stories/<lang>/<slug>.mp3, assets/img/cottages/<slug>/…
      • data/rewards.json       — the Kronika: intro + reward levels
@@ -258,7 +259,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     // NOTE: every save rewrites the whole file through this whitelist, so any
     // field missing here is silently dropped from ALL records — when adding a
     // new optional field to cottages.json, it MUST be listed here too.
-    const fields = ['slug', 'lat', 'lng', 'photos'];
+    const fields = ['slug', 'lat', 'lng', 'country', 'photos', 'pin_custom_img'];
     const segMax = {};
     for (const f of fields) {
       let max = 0;
@@ -439,6 +440,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
       return {
         slug, frontmatter: fm, body,
         lat: j.lat ?? null, lng: j.lng ?? null,
+        country: j.country ?? null,
         code: codeBySlug.get(slug) ?? null,
         photos,
       };
@@ -536,6 +538,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     els.code.value = c.code ?? '';
     els.lat.value = c.lat ?? '';
     els.lng.value = c.lng ?? '';
+    els.country.value = c.country ?? '';
     state.mde.setMarkdown(c.body ?? '');
     state.cleanBody = state.mde.getMarkdown();
   }
@@ -553,6 +556,9 @@ import '@toast-ui/editor/dist/toastui-editor.css'
       body: state.mde.getMarkdown(),
       lat: numOrNull(els.lat.value),
       lng: numOrNull(els.lng.value),
+      // '' is the "default country" option — the field is then omitted from
+      // the JSON and the site falls back to DEFAULT_COUNTRY.
+      country: els.country.value || null,
       code: els.code.value.trim() || null,
     };
   }
@@ -692,11 +698,13 @@ import '@toast-ui/editor/dist/toastui-editor.css'
       const fm = { ...(payload.frontmatter || {}), slug };
       const mdText = serializeMd(fm, payload.body || '');
 
-      // cottages.json carries ONLY location + the photo manifest — no title
-      // (md frontmatter owns the text), no code (private/codes.json owns those).
+      // cottages.json carries ONLY location + country + the photo manifest —
+      // no title (md frontmatter owns the text), no code (private/codes.json
+      // owns those).
       const freshJson = cottagesJsonWith(slug, {
         lat: payload.lat ?? undefined,
         lng: payload.lng ?? undefined,
+        country: payload.country ?? undefined,
         photos: photoManifest(state.current),
       });
 
@@ -716,7 +724,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
       // Update in-memory state to the freshly committed version.
       state.cottagesJson = freshJson;
       if (freshCodes) state.codesFile = freshCodes;
-      Object.assign(state.current, { frontmatter: fm, body: payload.body, lat: payload.lat, lng: payload.lng, code: payload.code });
+      Object.assign(state.current, { frontmatter: fm, body: payload.body, lat: payload.lat, lng: payload.lng, country: payload.country, code: payload.code });
 
       // Refresh the dropdown option label to reflect the new title.
       renderItemSelect();
@@ -1715,7 +1723,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     settings: $('#btn-settings'),
     status: $('#status-pill'),
     title: $('#f-title'), occupant: $('#f-occupant'), virtue: $('#f-virtue'), code: $('#f-code'),
-    lat: $('#f-lat'), lng: $('#f-lng'),
+    lat: $('#f-lat'), lng: $('#f-lng'), country: $('#f-country'),
     bodyEditor: $('#f-body-editor'),
     audioPreview: $('#audio-preview'), audioFile: $('#audio-file'),
     audioDelete: $('#btn-audio-delete'), audioMeta: $('#audio-meta'),
@@ -1841,6 +1849,18 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     syncLangSelect();
     els.langSelect.addEventListener('change', () => { void setLanguage(els.langSelect.value); });
 
+    // Countries with a framing box on the site's map, by Polish name. The
+    // empty value means "no country field in the JSON" = DEFAULT_COUNTRY.
+    const countryNames = new Intl.DisplayNames(['pl'], { type: 'region' });
+    els.country.innerHTML = [
+      `<option value="">${countryNames.of(DEFAULT_COUNTRY)} (domyślnie)</option>`,
+      ...Object.keys(COUNTRY_BOUNDS)
+        .filter(code => code !== DEFAULT_COUNTRY)
+        .map(code => ({ code, name: countryNames.of(code) ?? code }))
+        .sort((a, b) => a.name.localeCompare(b.name, 'pl'))
+        .map(({ code, name }) => `<option value="${code}">${name} (${code})</option>`),
+    ].join('');
+
     // The shared dropdown / save / discard all dispatch on the active category.
     els.select.addEventListener('change', () => {
       if (state.mode === 'rewards') rwSelect(els.select.value);
@@ -1857,7 +1877,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     els.addSlug.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); els.addTitle.focus(); } });
     els.addTitle.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); confirmAdd(); } });
 
-    for (const id of ['title', 'occupant', 'virtue', 'code', 'lat', 'lng']) {
+    for (const id of ['title', 'occupant', 'virtue', 'code', 'lat', 'lng', 'country']) {
       els[id].addEventListener('input', () => {
         markDirty();
         if (id === 'code') checkCodeUniqueness();

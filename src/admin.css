@@ -225,6 +225,7 @@ body.is-translating .lang-select select {
   margin-bottom: 0.2rem;
 }
 .field input,
+.field select,
 .field textarea {
   width: 100%;
   padding: 0.5rem 0.65rem;
@@ -234,6 +235,7 @@ body.is-translating .lang-select select {
   background: white;
 }
 .field input:focus,
+.field select:focus,
 .field textarea:focus,
 .md-editor:focus {
   outline: none;
@@ -250,6 +252,7 @@ body.is-translating .lang-select select {
 }
 /* A four-digit code in a 700px box reads as "long text expected". */
 .field--narrow input { max-width: 11rem; }
+.field--narrow select { max-width: 16rem; }
 .input-code {
   font: 600 1.05rem/1 ui-monospace, Consolas, monospace;
   letter-spacing: 0.35em;
