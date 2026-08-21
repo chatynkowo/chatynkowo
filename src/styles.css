@@ -2357,62 +2357,6 @@ h2 {
   }
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color-scheme: light;
-    --page: #edf0e6;
-    --page-raised: #e4eadf;
-    --surface: #d9e2d5;
-    --surface-soft: #cbd8c7;
-    --ink: #1a2a23;
-    --ink-soft: #41574c;
-    --ink-faint: #617267;
-    --line: rgb(65 92 72 / 0.22);
-    --line-strong: rgb(107 88 40 / 0.45);
-    --accent: #b4842f;
-    --accent-strong: #8b6421;
-    --accent-ink: #fcf4dc;
-    --shadow: 0 26px 72px rgb(42 64 49 / 0.18);
-  }
-
-  .site-shell {
-    background:
-      linear-gradient(180deg, rgb(225 235 224 / 0.68), var(--page) 31%),
-      url('/assets/img/background.webp') top center / max(1600px, 100vw) auto no-repeat,
-      var(--page);
-  }
-
-  .site-header {
-    background: rgb(233 239 229 / 0.88);
-  }
-
-  .hero::before {
-    background: linear-gradient(90deg, rgb(15 35 28 / 0.92) 0%, rgb(15 35 28 / 0.72) 50%, rgb(15 35 28 / 0.2) 100%);
-  }
-
-  .button-primary {
-    color: #fcf4dc;
-  }
-
-  .button-ghost {
-    background: rgb(228 235 222 / 0.92);
-    color: #253a30;
-  }
-
-  .code-form:not(.code-form--gate) {
-    background: linear-gradient(155deg, #dce6d8, #cbd8c7);
-  }
-
-  .code-form:not(.code-form--gate) .pin-input input {
-    background: #f0f3eb;
-    color: #1a2a23;
-  }
-
-  .site-footer {
-    background: #dbe3d6;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -3027,14 +2971,6 @@ h2 {
   .audio-card { grid-template-columns: 1fr; padding: 15px; }
   .audio-card > svg { display: none; }
   .custom-audio { margin-right: -4px; margin-left: -4px; }
-}
-
-@media (prefers-color-scheme: light) {
-  .game-intro h1 { color: var(--ink); }
-  .game-intro-status,
-  .atlas-heading { background: rgb(228 235 222 / .9); }
-  .quest-panel { background: #e4eadf; }
-  .field-guide-steps li { background: #e4eadf; }
 }
 
 /* Consistent interaction feedback and readable game UI. */

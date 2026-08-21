@@ -293,8 +293,3 @@
   .site-footer { grid-template-columns: 1fr; gap: 22px; padding: 32px 20px 90px; }
   .site-footer nav { flex-wrap: wrap; }
 }
-
-@media (prefers-color-scheme: light) {
-  .site-header { background: rgb(233 239 229 / .88); }
-  .site-footer { background: #dbe3d6; }
-}
