@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import {
   ArrowCounterClockwise,
   CheckCircle,
+  CircleNotch,
   GpsFix,
   HouseLine,
   MagnifyingGlass,
@@ -492,7 +493,9 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
         <button type="button" disabled={!canZoomIn} onClick={() => mapRef.current?.zoomIn(0.5)} aria-label={t('map.zoomIn')}><Plus size={20} /></button>
         <button type="button" disabled={!canZoomOut} onClick={() => mapRef.current?.zoomOut(0.5)} aria-label={t('map.zoomOut')}><Minus size={20} /></button>
         <button type="button" onClick={resetMap} aria-label={t('map.resetView')}><ArrowCounterClockwise size={20} /></button>
-        <button type="button" onClick={locateMe} disabled={locating} aria-busy={locating} aria-label={t('map.locate')}><GpsFix size={20} /></button>
+        <button type="button" onClick={locateMe} disabled={locating} aria-busy={locating} aria-label={t('map.locate')}>
+          {locating ? <CircleNotch size={20} className="locate-spinner" /> : <GpsFix size={20} />}
+        </button>
       </nav>
 
       <div className="map-legend" aria-label={t('map.legendAria')}>

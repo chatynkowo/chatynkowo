@@ -1226,6 +1226,23 @@ h2 {
   opacity: 0.38;
 }
 
+/* A locate request in flight is "working", not "unavailable" — keep the
+   button fully visible and spin the icon until geolocation answers. */
+.map-controls button[aria-busy='true'] {
+  cursor: progress;
+  opacity: 1;
+}
+
+.locate-spinner {
+  animation: locate-spin 0.9s linear infinite;
+}
+
+@keyframes locate-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .map-legend {
   position: absolute;
   z-index: 600;
