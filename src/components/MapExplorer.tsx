@@ -218,7 +218,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
     }
     setLocating(true)
     setLocateError(null)
-    navigator.geolocation.getCurrentPosition(
+    const request = (timeout?: number) => navigator.geolocation.getCurrentPosition(
       (position) => {
         setLocating(false)
         const map = mapRef.current
@@ -258,8 +258,20 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
         setLocating(false)
         setLocateError(error.code === error.PERMISSION_DENIED ? 'map.locateDenied' : 'map.locateFail')
       },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 },
+      { enableHighAccuracy: true, timeout, maximumAge: 30000 },
     )
+    /* Chromium keeps the timeout clock running while the permission prompt is
+       open, so a first-ever request times out while the visitor is still
+       reading it. Enforce the timeout only when permission is already granted;
+       a pending prompt settles the call on its own (grant, deny or dismiss). */
+    if (navigator.permissions?.query) {
+      navigator.permissions
+        .query({ name: 'geolocation' })
+        .then((status) => request(status.state === 'granted' ? 12000 : undefined))
+        .catch(() => request(12000))
+    } else {
+      request(12000)
+    }
   }, [t])
 
   useEffect(() => {
