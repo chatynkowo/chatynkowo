@@ -15,6 +15,7 @@ export function SiteFooter() {
         <a href="https://www.instagram.com/chatynkowo.pl/" rel="noreferrer" target="_blank"><InstagramLogo size={20} /> Instagram</a>
         <a href="https://www.facebook.com/chatynkowo/" rel="noreferrer" target="_blank"><FacebookLogo size={20} /> Facebook</a>
       </nav>
+      <span className="footer-rev" aria-hidden="true">rev: {__COMMIT_HASH__}</span>
     </footer>
   )
 }

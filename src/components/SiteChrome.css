@@ -155,6 +155,7 @@
 .burger-icon.is-open i:nth-child(3) { top: 7px; transform: rotate(-45deg); }
 
 .site-footer {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr auto auto;
   align-items: center;
@@ -167,6 +168,9 @@
 }
 
 .site-footer nav { display: flex; gap: 18px; }
+/* The treasury toggle floats over the bottom-right corner, so the build
+   marker sits on the left. */
+.footer-rev { position: absolute; bottom: 8px; left: 14px; color: inherit; font-size: .8rem; letter-spacing: .04em; opacity: .78; }
 .site-footer nav a { display: inline-flex; align-items: center; gap: 6px; color: inherit; text-decoration: none; transition: color 180ms ease; }
 
 @media (hover: hover) and (pointer: fine) {
