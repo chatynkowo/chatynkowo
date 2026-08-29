@@ -1,13 +1,13 @@
 ---
 title: Ivgar
 slug: ivgar
-occupant: ""
-virtue: ""
+occupant: Ivgar
+virtue: Wytrwałość
 ---
 
 # Ivgar
 
-> Krótki opis chatynki.
+> opowieść pojawi się lada chwila:)
 
 ## Mieszka tu
 
