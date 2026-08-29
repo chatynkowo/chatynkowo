@@ -32,6 +32,7 @@
     { "slug": "halinka",        "code": "0981" },
     { "slug": "olala",          "code": "4589" },
     { "slug": "talarek",        "code": "0991" },
-    { "slug": "ivgar",          "code": "0986" }
+    { "slug": "ivgar",          "code": "0986" },
+    { "slug": "bluetooth",      "code": "0987" }
   ]
 }

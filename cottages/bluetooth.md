@@ -1,13 +1,13 @@
 ---
 title: Harald
 slug: bluetooth
-occupant: ""
-virtue: ""
+occupant: Harald
+virtue: dyplomacja
 ---
 
 # Harald
 
-> Krótki opis chatynki.
+Lada chwila usłyszycie jego historię , 
 
 ## Mieszka tu
 
