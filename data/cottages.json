@@ -28,5 +28,6 @@
   { "slug": "bogus",          "lat": 50.190455,  "lng": 19.772754 },
   { "slug": "halinka",        "lat": 50.5740161, "lng": 19.5312161 },
   { "slug": "ivgar",          "lat": 56.475091,  "lng": 14.743145,  "country": "SE" },
-  { "slug": "bluetooth",      "lat": 57.218097,  "lng": 16.94714 }
+  { "slug": "bluetooth",      "lat": 57.218097,  "lng": 16.94714 },
+  { "slug": "oskar",          "lat": 50.32,      "lng": 19.6 }
 ]
