@@ -27,6 +27,6 @@
   { "slug": "konkurs",        "lat": 50.325047,  "lng": 19.628238 },
   { "slug": "bogus",          "lat": 50.190455,  "lng": 19.772754 },
   { "slug": "halinka",        "lat": 50.5740161, "lng": 19.5312161 },
-  { "slug": "ivgar",          "lat": 56.475091,  "lng": 14.743145 },
+  { "slug": "ivgar",          "lat": 56.475091,  "lng": 14.743145,  "country": "DK" },
   { "slug": "bluetooth",      "lat": 57.218097,  "lng": 16.94714 }
 ]
