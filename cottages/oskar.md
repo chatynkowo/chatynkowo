@@ -27,7 +27,7 @@ virtue: ""
 > Ale nie ostatnim.
 > Morał:
 > Niektóre elfy budują dom. Inne budują miejsce, do którego zawsze warto wrócić… zanim znów ruszy się w drogę.
-> Ten morał zostawia otwarte drzwi – dokładnie tak, jak żyją Oskar i Marta. Nie rezygnują z podróży. Po prostu na chwilę zatrzymali się tam, gdzie pachnie chlebem.Mieszka tu
+> Ten morał zostawia otwarte drzwi – dokładnie tak, jak żyją Oskar i Marta. Nie rezygnują z podróży. Po prostu na chwilę zatrzymali się tam, gdzie pachnie chlebem.
 
 (uzupełnij: kto mieszka, jakiej cnoty uczy)
 
