@@ -2,7 +2,7 @@
 title: PIEKARNIA
 slug: oskar
 occupant: "Oskar Marta i TEODOR"
-virtue: ""
+virtue: WOLNOŚĆ
 ---
 
 # Oskar Marta i Teo
