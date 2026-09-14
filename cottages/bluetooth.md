@@ -8,10 +8,10 @@ virtue: dyplomacja
 # Harald
 
 Once upon a time, on a Northern coast where the wind had a mind of its own, there lived an elf named Harald.
-He had not always been an elf. Long time ago, he had been a great ruler. He united people, expanded his influence, build mighty fortifications and he left a great stone telling his story in Jelling. 
+He had not always been an elf. Long time ago, he had been a great ruler. He united people, expanded his influence, build mighty fortifications and he left a great stone telling his story in Jelling.
 However, after he passed he chose a quieter life.
 He built a little hut on a great stone by the sea — he had always had a soft spot for large things. He liked them big.
-But that was not the only reason he chose this particular spot. 
+But that was not the only reason he chose this particular spot.
 Directly opposite was a small island where a blue mermaid lived.
 Harald fell in love with her at the first sight.
 It was rather inconvenient for a man who had once been able to unite people and conquer entire lands to find himself completely helpless when faced with one single mermaid.
