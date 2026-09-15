@@ -66,6 +66,8 @@ Tłumaczenia w edytorze: selektor języka w pasku `/admin/` przełącza obie kat
 
 Panel zapisuje zmiany bezpośrednio do repozytorium przez GitHub API. Token PAT jest przechowywany wyłącznie w `localStorage` przeglądarki. Publikowanie wielu zmienionych plików odbywa się w jednym commicie.
 
+Pliki wspólne dla wszystkich chatynek (`data/cottages.json`, `private/codes.json` wraz z `data/code_hashes.json`) nie są zapisywane z kopii trzymanej w pamięci karty: przy każdym zapisie panel odczytuje ich aktualną wersję z gałęzi i dopiero na niej nanosi swoją zmianę, więc karta otwarta od dawna nie nadpisze wpisów dodanych w międzyczasie z innego urządzenia. Zapis, który usunąłby z tych plików cokolwiek poza świadomie kasowaną chatynką, zostaje wstrzymany z komunikatem. Karta wracająca z tła po dłuższej przerwie sama odświeża dane, o ile nie ma niezapisanych zmian.
+
 Pasek u góry przełącza dwie kategorie:
 
 - **Chatynki** — nazwa, mieszkaniec, cnota, kod z tabliczki, pinezka na mapie (`lat`/`lng`), nagranie, zdjęcia i treść opowieści. Wszystko przed nagłówkiem `## Co zrobić, gdy trafisz pod chatynkę?` odblokowuje się dopiero po wpisaniu kodu; sekcja poniżej jest publiczna i widnieje w panelu chatynki na mapie.

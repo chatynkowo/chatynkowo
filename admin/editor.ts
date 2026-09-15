@@ -26,6 +26,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
   const CONFIG_KEY = 'chatynkowo_editor_v1';
   const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
   const MAX_AUDIO_BYTES = 30 * 1024 * 1024;
+  const REFRESH_AFTER_MS = 5 * 60 * 1000;   // a tab back from the background reloads if its data is older
 
   /* ---------- config ---------- */
 
@@ -97,18 +98,20 @@ import '@toast-ui/editor/dist/toastui-editor.css'
      content (re-picking the same image is the easy way to trigger it), because
      the flag tracks "the user did something", not "the bytes differ".
 
-     Compare each change against the blob SHA we already know for that path and
-     drop the no-ops. Needs crypto.subtle (HTTPS/localhost) — where it is
-     missing we commit as before rather than skip a real change. */
-  async function effectiveChanges(changes) {
+     Compare each change against the blob SHA of its path — the one read from
+     the branch tip for this very commit when there is one, else the one from
+     the last load — and drop the no-ops. Needs crypto.subtle (HTTPS/localhost)
+     — where it is missing we commit as before rather than skip a real change. */
+  async function effectiveChanges(changes, tipSha = new Map()) {
     if (!window.isSecureContext || !window.crypto?.subtle) return changes;
+    const knownSha = path => tipSha.has(path) ? tipSha.get(path) : state.sha.get(path);
     const out = [];
     for (const ch of changes) {
       if (ch.delete) {
-        if (state.sha.has(ch.path)) out.push(ch);   // deleting a missing file: no-op
+        if (knownSha(ch.path)) out.push(ch);   // deleting a missing file: no-op
         continue;
       }
-      const known = state.sha.get(ch.path);
+      const known = knownSha(ch.path);
       if (known) {
         const bytes = ch.binary ? ch.binary : new TextEncoder().encode(ch.text || '');
         if (await gitBlobSha(bytes) === known) continue;   // byte-identical already
@@ -118,64 +121,119 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     return out;
   }
 
+  /* Files as they are at one commit, read on demand: resolves to the text,
+     or null when the path does not exist there. Each path is fetched once per
+     reader, and its blob SHA (null when missing) is recorded in `shaOut`. */
+  function tipReader(commitSha, shaOut) {
+    const pending = new Map();
+    return path => {
+      if (!pending.has(path)) {
+        const encoded = path.split('/').map(encodeURIComponent).join('/');
+        pending.set(path, ghFetch('GET', `contents/${encoded}?ref=${commitSha}`).then(
+          file => { shaOut.set(path, file.sha); return base64ToUtf8(file.content); },
+          e => { if (e.status !== 404) throw e; shaOut.set(path, null); return null; },
+        ));
+      }
+      return pending.get(path);
+    };
+  }
+
+  let commitsInFlight = 0;
+
   /* Commit multiple files (add/modify/delete) in a single Git commit.
      changes: [{path, text?, binary?: ArrayBuffer, delete?: true}]
+              or {resolve: async tip => [...such changes]}
      Returns null when nothing would change — callers must not report a save
-     that never happened. */
+     that never happened.
+
+     A `resolve` change is worked out against the branch tip AT COMMIT TIME:
+     `tip(path)` reads a file as it is in the repository right now, and the
+     function returns the concrete changes to commit. Every write to a file
+     shared by all cottages (data/cottages.json, private/codes.json) goes this
+     way rather than through a copy held in memory since the page loaded. Such
+     a copy is what erased two cottages once: a tab left open for eleven days
+     re-published its stale list with one new entry appended, and everything
+     added from elsewhere in the meantime was gone from the map. Reading the
+     tip right before writing makes the age of the tab irrelevant. */
   async function commitChanges(rawChanges, message) {
-    const changes = await effectiveChanges(rawChanges);
-    if (!changes.length) return null;
+    // Blobs are content-addressed, so a retry re-uploads nothing that did not change.
+    const blobShas = new Map();   // text | ArrayBuffer → blob SHA
+    const uploadBlob = ch => {
+      const key = ch.binary || ch.text || '';
+      if (!blobShas.has(key)) {
+        const content = ch.binary ? arrayBufferToBase64(ch.binary) : utf8ToBase64(ch.text || '');
+        blobShas.set(key, ghFetch('POST', 'git/blobs', { content, encoding: 'base64' }).then(b => b.sha));
+      }
+      return blobShas.get(key);
+    };
 
-    const ref = await ghFetch('GET', `git/refs/heads/${cfg.branch}`);
-    const parentSha = ref.object.sha;
-    const parentCommit = await ghFetch('GET', `git/commits/${parentSha}`);
+    /* One attempt: resolve against the current tip, build the tree and the
+       commit, move the branch. Marks its error `branchMoved` when somebody
+       else committed in between — the whole attempt is then redone on the new
+       tip, resolvers included, so their result is still computed on fresh
+       files rather than re-sent from before the race. */
+    const attempt = async () => {
+      const ref = await ghFetch('GET', `git/refs/heads/${cfg.branch}`);
+      const parentSha = ref.object.sha;
+      const parentCommit = await ghFetch('GET', `git/commits/${parentSha}`);
 
-    const treeItems = await Promise.all(changes.map(async ch => {
-      if (ch.delete) return { path: ch.path, mode: '100644', type: 'blob', sha: null };
-      const content = ch.binary ? arrayBufferToBase64(ch.binary) : utf8ToBase64(ch.text || '');
-      const blob = await ghFetch('POST', 'git/blobs', { content, encoding: 'base64' });
-      return { path: ch.path, mode: '100644', type: 'blob', sha: blob.sha };
-    }));
+      const tipSha = new Map();
+      const tip = tipReader(parentSha, tipSha);
+      const concrete = [];
+      for (const ch of rawChanges) {
+        if (typeof ch.resolve === 'function') concrete.push(...await ch.resolve(tip));
+        else concrete.push(ch);
+      }
+      const changes = await effectiveChanges(concrete, tipSha);
+      if (!changes.length) return { commit: null, treeItems: [], tipSha };
 
-    let newTree = await ghFetch('POST', 'git/trees', {
-      base_tree: parentCommit.tree.sha,
-      tree: treeItems,
-    });
-    let newCommit = await ghFetch('POST', 'git/commits', {
-      message, tree: newTree.sha, parents: [parentSha],
-    });
-    try {
-      await ghFetch('PATCH', `git/refs/heads/${cfg.branch}`, { sha: newCommit.sha });
-    } catch (e) {
-      if (e.status !== 422) throw e;
-      // Branch moved between our GET and PATCH — rebuild tree on the new HEAD and retry once.
-      const freshRef = await ghFetch('GET', `git/refs/heads/${cfg.branch}`);
-      const freshParent = await ghFetch('GET', `git/commits/${freshRef.object.sha}`);
-      newTree = await ghFetch('POST', 'git/trees', {
-        base_tree: freshParent.tree.sha,
+      const treeItems = await Promise.all(changes.map(async ch => ({
+        path: ch.path, mode: '100644', type: 'blob',
+        sha: ch.delete ? null : await uploadBlob(ch),
+      })));
+      const newTree = await ghFetch('POST', 'git/trees', {
+        base_tree: parentCommit.tree.sha,
         tree: treeItems,
       });
-      newCommit = await ghFetch('POST', 'git/commits', {
-        message, tree: newTree.sha, parents: [freshRef.object.sha],
+      const newCommit = await ghFetch('POST', 'git/commits', {
+        message, tree: newTree.sha, parents: [parentSha],
       });
-      await ghFetch('PATCH', `git/refs/heads/${cfg.branch}`, { sha: newCommit.sha });
-    }
+      try {
+        await ghFetch('PATCH', `git/refs/heads/${cfg.branch}`, { sha: newCommit.sha });
+      } catch (e) {
+        if (e.status === 422) e.branchMoved = true;
+        throw e;
+      }
+      return { commit: newCommit, treeItems, tipSha };
+    };
 
-    // Update the local SHA cache from the blobs we just created — NOT from
-    // newTree.tree. Git trees are hierarchical, so the create-tree response
-    // lists the root's DIRECT children ("data", "assets", … as type "tree"),
-    // never "data/rewards.json". Reading SHAs back from it cached directory
-    // SHAs under directory names and left every real file path stale, which
-    // broke two things at once: rawUrl() kept minting the pre-save "?v=" so the
-    // browser re-served the cached OLD image after an upload, and
-    // effectiveChanges() compared against SHAs that never moved.
-    for (const item of treeItems) {
-      if (item.sha) state.sha.set(item.path, item.sha);
+    commitsInFlight++;
+    let result;
+    try {
+      try {
+        result = await attempt();
+      } catch (e) {
+        if (!e.branchMoved) throw e;
+        // Branch moved between our GET and PATCH — redo on the new HEAD, once.
+        result = await attempt();
+      }
+    } finally { commitsInFlight--; }
+
+    // Update the local SHA cache: what we read from the tip, then the blobs we
+    // just created — NOT newTree.tree. Git trees are hierarchical, so the
+    // create-tree response lists the root's DIRECT children ("data", "assets",
+    // … as type "tree"), never "data/rewards.json". Reading SHAs back from it
+    // cached directory SHAs under directory names and left every real file
+    // path stale, which broke two things at once: rawUrl() kept minting the
+    // pre-save "?v=" so the browser re-served the cached OLD image after an
+    // upload, and effectiveChanges() compared against SHAs that never moved.
+    for (const [path, sha] of result.tipSha) {
+      if (sha) state.sha.set(path, sha); else state.sha.delete(path);
     }
-    for (const ch of changes) {
-      if (ch.delete) state.sha.delete(ch.path);
+    for (const item of result.treeItems) {
+      if (item.sha) state.sha.set(item.path, item.sha); else state.sha.delete(item.path);
     }
-    return newCommit;
+    return result.commit;
   }
 
   /* ---------- encoding helpers ---------- */
@@ -325,12 +383,77 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     return { ...file, codes };
   }
 
-  /* The two generated/secret files every code change must rewrite together. */
-  async function codeFileChanges(codesFile) {
-    return [
-      { path: 'private/codes.json', text: serializeCodesJson(codesFile) },
-      { path: 'data/code_hashes.json', text: await buildCodeHashesJson(codesFile) },
-    ];
+  function emptyCodesFile() {
+    return {
+      _comment: 'TAJNE pary slug → code. Nigdy nie publikować — patrz private/build-code-hashes.ts.',
+      salt: Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2, '0')).join(''),
+      codes: [],
+    };
+  }
+
+  /* ---------- shared manifests ----------
+     data/cottages.json and private/codes.json list EVERY cottage, so each
+     write rewrites the whole file. These helpers build that write as a
+     `resolve` change (see commitChanges): the update runs on the file as it
+     is in the repository at commit time, never on a copy from page load.
+
+     Belt and braces: a rewrite that would drop an entry nobody asked to
+     remove is refused. `removing` names the one slug the caller deletes on
+     purpose; any other slug missing from the result aborts the commit. */
+
+  function assertNothingLost(before, after, removing, what) {
+    const kept = new Set(after);
+    const lost = before.filter(slug => slug !== removing && !kept.has(slug));
+    if (!lost.length) return;
+    throw new Error(`zapis wstrzymany — z pliku zniknęłyby ${what}: ${lost.join(', ')}. Odśwież panel i spróbuj ponownie.`);
+  }
+
+  /* data/cottages.json: `update(records)` gets the current list (copies, in
+     file order) and returns the list to write. */
+  function cottagesChange(update, { removing } = {}) {
+    return {
+      resolve: async tip => {
+        const before = JSON.parse(await tip('data/cottages.json') ?? '[]');
+        const after = update(before.map(e => ({ ...e })));
+        assertNothingLost(before.map(e => e.slug), after.map(e => e.slug), removing, 'chatynki');
+        return [{ path: 'data/cottages.json', text: serializeCottagesJson(after) }];
+      },
+    };
+  }
+
+  /* One cottage's entry in data/cottages.json. `patch` is an object of fields
+     to set (undefined removes a field), or a function of the current entry
+     returning one; a missing entry is appended. */
+  function cottageEntryChange(slug, patch) {
+    return cottagesChange(records => {
+      let entry = records.find(c => c.slug === slug);
+      if (!entry) { entry = { slug }; records.push(entry); }
+      const fields = typeof patch === 'function' ? patch(entry) : patch;
+      for (const [k, v] of Object.entries(fields)) {
+        if (v === undefined) delete entry[k];
+        else entry[k] = v;
+      }
+      return records;
+    });
+  }
+
+  /* private/codes.json plus the public hash file derived from it — the two
+     must always change together. `update(file)` returns the file to write, or
+     the very same object to leave the codes alone. */
+  function codesChange(update, { removing } = {}) {
+    return {
+      resolve: async tip => {
+        const raw = await tip('private/codes.json');
+        const before = raw != null ? JSON.parse(raw) : emptyCodesFile();
+        const after = update(before);
+        if (after === before) return [];
+        assertNothingLost(before.codes.map(e => e.slug), after.codes.map(e => e.slug), removing, 'kody chatynek');
+        return [
+          { path: 'private/codes.json', text: serializeCodesJson(after) },
+          { path: 'data/code_hashes.json', text: await buildCodeHashesJson(after) },
+        ];
+      },
+    };
   }
 
 
@@ -338,8 +461,8 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
   const state = {
     cottages: [],
-    cottagesJson: [],      // in-memory copy of data/cottages.json
-    codesFile: null,       // in-memory copy of private/codes.json ({_comment, salt, codes})
+    // No copy of data/cottages.json or private/codes.json lives here on
+    // purpose: writes to them read the repository first (see commitChanges).
     sha: new Map(),        // path → git blob SHA (for writes)
     current: null,
     dirty: false,
@@ -382,12 +505,28 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
   /* ---------- load all ---------- */
 
-  async function loadAll(preferSlug) {
+  /* Loads run one at a time: the reload a tab kicks off when it comes back to
+     the foreground must not interleave with the one a fresh add or delete
+     asks for — a later call simply waits for the earlier one to finish. */
+  let loadQueue = Promise.resolve();
+  let loadsPending = 0;
+  let loadedAt = 0;   // when the tree now on screen was fetched
+
+  function loadAll(preferSlug) {
+    loadsPending++;
+    const run = loadQueue.catch(() => {}).then(() => loadAllNow(preferSlug))
+      .finally(() => { loadsPending--; });
+    loadQueue = run;
+    return run;
+  }
+
+  async function loadAllNow(preferSlug) {
     setStatus('saving', 'wczytuję…');
 
     // One API call fetches the entire tree with all SHAs.
     const tree = await ghFetch('GET', `git/trees/${cfg.branch}?recursive=1`);
     if (tree.truncated) console.warn('Tree truncated — some files may be missing');
+    loadedAt = Date.now();
 
     state.sha.clear();
     for (const item of tree.tree) state.sha.set(item.path, item.sha);
@@ -416,13 +555,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
       ...slugs.map(s => fetchBlob(state.sha.get(`cottages/${s}.md`))),
     ]);
 
-    state.cottagesJson = jsonRaw;
-    state.codesFile = codesRaw || {
-      _comment: 'TAJNE pary slug → code. Nigdy nie publikować — patrz private/build-code-hashes.ts.',
-      salt: Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2, '0')).join(''),
-      codes: [],
-    };
-    const codeBySlug = new Map(state.codesFile.codes.map(e => [e.slug, e.code]));
+    const codeBySlug = new Map((codesRaw?.codes || []).map(e => [e.slug, e.code]));
     const bySlug = new Map(jsonRaw.map(c => [c.slug, c]));
 
     state.cottages = slugs.map((slug, i) => {
@@ -581,24 +714,23 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     els.code.reportValidity();
   }
 
-  /* The photo manifest the site reads for one cottage: file names in display
-     order, or undefined when there are none (keeps the JSON clean). */
-  function photoManifest(c) {
-    const names = (c?.photos || []).map(p => p.name);
+  /* The photo manifest to write for one cottage: the names the repository
+     lists for it right now, then any this tab knows of that are missing there
+     (files seen in the tree at load, or just uploaded). Never shorter than
+     the repository's list, so a tab that loaded before a photo was added from
+     elsewhere cannot hide it again. */
+  function mergedPhotoNames(entry, names) {
+    const listed = Array.isArray(entry.photos) ? entry.photos : [];
+    return [...listed, ...names.filter(n => !listed.includes(n))];
+  }
+
+  /* The manifest field: the names, or undefined when there are none (keeps
+     the JSON clean). */
+  function photosField(names) {
     return names.length ? names : undefined;
   }
 
-  /* A fresh copy of data/cottages.json with one cottage's entry updated. */
-  function cottagesJsonWith(slug, patch) {
-    const fresh = state.cottagesJson.map(e => ({ ...e }));
-    let entry = fresh.find(c => c.slug === slug);
-    if (!entry) { entry = { slug }; fresh.push(entry); }
-    for (const [k, v] of Object.entries(patch)) {
-      if (v === undefined) delete entry[k];
-      else entry[k] = v;
-    }
-    return fresh;
-  }
+  const photoNames = c => (c?.photos || []).map(p => p.name);
 
   /* ---------- status ----------
      One status pill and one discard/save pair serve both categories, so each
@@ -701,29 +833,30 @@ import '@toast-ui/editor/dist/toastui-editor.css'
       // cottages.json carries ONLY location + country + the photo manifest —
       // no title (md frontmatter owns the text), no code (private/codes.json
       // owns those).
-      const freshJson = cottagesJsonWith(slug, {
-        lat: payload.lat ?? undefined,
-        lng: payload.lng ?? undefined,
-        country: payload.country ?? undefined,
-        photos: photoManifest(state.current),
-      });
-
       const changes = [
         { path: `cottages/${slug}.md`, text: mdText },
-        { path: 'data/cottages.json', text: serializeCottagesJson(freshJson) },
+        cottageEntryChange(slug, entry => ({
+          lat: payload.lat ?? undefined,
+          lng: payload.lng ?? undefined,
+          country: payload.country ?? undefined,
+          photos: photosField(mergedPhotoNames(entry, photoNames(state.current))),
+        })),
       ];
       // The plaque code is secret — it goes to private/codes.json (plus the
-      // regenerated public hash file), never into data/cottages.json.
-      const oldCode = state.codesFile.codes.find(e => e.slug === slug)?.code ?? null;
-      const freshCodes = payload.code !== oldCode
-        ? withCode(state.codesFile, slug, payload.code) : null;
-      if (freshCodes) changes.push(...await codeFileChanges(freshCodes));
+      // regenerated public hash file), never into data/cottages.json. Written
+      // only when the form changed it, so a code set from elsewhere since this
+      // tab loaded is left alone.
+      if (payload.code !== (state.current.code ?? null)) {
+        changes.push(codesChange(file => {
+          const taken = payload.code && file.codes.find(e => e.code === payload.code && e.slug !== slug);
+          if (taken) throw new Error(`kod ${payload.code} zajęty przez „${taken.slug}"`);
+          return withCode(file, slug, payload.code);
+        }, { removing: slug }));
+      }
 
       const commit = await commitChanges(changes, `edit: ${slug}`);
 
       // Update in-memory state to the freshly committed version.
-      state.cottagesJson = freshJson;
-      if (freshCodes) state.codesFile = freshCodes;
       Object.assign(state.current, { frontmatter: fm, body: payload.body, lat: payload.lat, lng: payload.lng, country: payload.country, code: payload.code });
 
       // Refresh the dropdown option label to reflect the new title.
@@ -803,21 +936,26 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     if (!title) { showAddError('Podaj tytuł.'); return; }
     if (state.cottages.some(c => c.slug === slug)) { showAddError(`Chatynka „${slug}" już istnieje.`); return; }
     els.addConfirm.disabled = true;
+    const exists = new Error(`Chatynka „${slug}" już istnieje.`);
     try {
       const fm = { title, slug, occupant: '', virtue: '' };
-      const freshJson = state.cottagesJson.map(e => ({ ...e }));
-      if (freshJson.some(c => c.slug === slug)) { showAddError(`Chatynka „${slug}" już istnieje.`); return; }
-      freshJson.push({ slug, lat: DEFAULT_LAT, lng: DEFAULT_LNG });
       await commitChanges([
-        { path: `cottages/${slug}.md`, text: serializeMd(fm, newCottageBody(title)) },
-        { path: 'data/cottages.json', text: serializeCottagesJson(freshJson) },
+        // Both checks run against the repository as it is right now — the
+        // list this tab shows may predate a cottage added from elsewhere.
+        { resolve: async tip => {
+          if (await tip(`cottages/${slug}.md`) != null) throw exists;
+          return [{ path: `cottages/${slug}.md`, text: serializeMd(fm, newCottageBody(title)) }];
+        } },
+        cottagesChange(records => {
+          if (records.some(c => c.slug === slug)) throw exists;
+          return [...records, { slug, lat: DEFAULT_LAT, lng: DEFAULT_LNG }];
+        }),
       ], `add: ${slug}`);
-      state.cottagesJson = freshJson;
       state.dirty = false;
       els.addDialog.close();
       await loadAll(slug);
     } catch (e) {
-      showAddError(`Błąd: ${e.message}`);
+      showAddError(e === exists ? e.message : `Błąd: ${e.message}`);
     } finally { els.addConfirm.disabled = false; }
   }
 
@@ -843,19 +981,15 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     if (!confirm(lines.join('\n'))) return;
     setStatus('saving', 'usuwam…');
     try {
-      const freshJson = state.cottagesJson;
       const changes = [
         { path: `cottages/${c.slug}.md`, delete: true },
-        { path: 'data/cottages.json', text: serializeCottagesJson(freshJson.filter(x => x.slug !== c.slug)) },
+        cottagesChange(records => records.filter(x => x.slug !== c.slug), { removing: c.slug }),
         ...companions.map(p => ({ path: p, delete: true })),
         ...(c.photos || []).map(p => ({ path: `assets/img/cottages/${c.slug}/${p.name}`, delete: true })),
+        codesChange(file => file.codes.some(e => e.slug === c.slug) ? withCode(file, c.slug, null) : file,
+          { removing: c.slug }),
       ];
-      const freshCodes = state.codesFile.codes.some(e => e.slug === c.slug)
-        ? withCode(state.codesFile, c.slug, null) : null;
-      if (freshCodes) changes.push(...await codeFileChanges(freshCodes));
       await commitChanges(changes, `delete: ${c.slug}`);
-      state.cottagesJson = freshJson.filter(x => x.slug !== c.slug);
-      if (freshCodes) state.codesFile = freshCodes;
       state.dirty = false; state.current = null;
       await loadAll();
     } catch (e) { setStatus('error', `błąd: ${e.message}`); }
@@ -958,16 +1092,17 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     }
     if (!changes.length) return;
     try {
-      const merged = [...(state.current.photos || []).filter(p => !newPhotos.some(n => n.name === p.name)), ...newPhotos]
-        .sort((a, b) => a.name.localeCompare(b.name));
-      const freshJson = cottagesJsonWith(slug, { photos: merged.map(p => p.name) });
-      changes.push({ path: 'data/cottages.json', text: serializeCottagesJson(freshJson) });
+      let names = [];
+      changes.push(cottageEntryChange(slug, entry => {
+        names = mergedPhotoNames(entry, [...photoNames(state.current), ...newPhotos.map(p => p.name)])
+          .sort((a, b) => a.localeCompare(b));
+        return { photos: names };
+      }));
 
       await commitChanges(changes, `photos: ${slug}`);
-      state.cottagesJson = freshJson;
-      // Replace blob URLs with raw.githubusercontent.com now that SHA is known.
-      for (const p of merged) p.url = rawUrl(`assets/img/cottages/${slug}/${p.name}`);
-      state.current.photos = merged;
+      // The committed manifest, by raw.githubusercontent.com URLs now that the
+      // SHAs are known (the staged blob: URLs are dropped).
+      state.current.photos = names.map(name => ({ name, url: rawUrl(`assets/img/cottages/${slug}/${name}`) }));
       refreshPhotos();
       setStatus('clean', `wgrano ${newPhotos.length} zdjęci${newPhotos.length === 1 ? 'e' : 'a'}`);
     } catch (e) { setStatus('error', `błąd: ${e.message}`); }
@@ -979,16 +1114,16 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     const slug = state.current.slug;
     setStatus('saving', 'usuwam zdjęcie…');
     try {
-      const remaining = state.current.photos.filter(p => p.name !== name);
-      const freshJson = cottagesJsonWith(slug, {
-        photos: remaining.length ? remaining.map(p => p.name) : undefined,
-      });
+      let remaining = [];
       await commitChanges([
         { path: `assets/img/cottages/${slug}/${name}`, delete: true },
-        { path: 'data/cottages.json', text: serializeCottagesJson(freshJson) },
+        cottageEntryChange(slug, entry => {
+          remaining = mergedPhotoNames(entry, photoNames(state.current)).filter(n => n !== name);
+          return { photos: photosField(remaining) };
+        }),
       ], `remove photo: ${slug}/${name}`);
-      state.cottagesJson = freshJson;
-      state.current.photos = remaining;
+      state.current.photos = remaining.map(n =>
+        state.current.photos.find(p => p.name === n) || { name: n, url: rawUrl(`assets/img/cottages/${slug}/${n}`) });
       refreshPhotos();
       setStatus('clean', 'zdjęcie usunięte');
     } catch (e) { setStatus('error', `błąd: ${e.message}`); }
@@ -1932,6 +2067,17 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     });
     window.addEventListener('beforeunload', ev => {
       if (state.dirty || state.rwDirty) { ev.preventDefault(); ev.returnValue = ''; }
+    });
+
+    // A tab left in the background for days shows a list that is days old.
+    // Writes are safe regardless (commitChanges reads the repository first),
+    // but the picture should be current too: coming back to the tab reloads
+    // it — when nothing is unsaved or in flight and the data is not brand new.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible' || els.editorRoot.hidden) return;
+      if (state.dirty || state.rwDirty || loadsPending || commitsInFlight) return;
+      if (Date.now() - loadedAt < REFRESH_AFTER_MS) return;
+      loadAll(state.current?.slug).catch(e => setModeStatus(state.mode, 'error', `błąd odświeżania: ${e.message}`));
     });
   }
 
