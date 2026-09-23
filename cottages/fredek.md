@@ -21,7 +21,7 @@ virtue: cisza
 > 
 > Wieczorami siedzi przed chatką razem z nietoperzami i słucha ich melodyjnych pisków. A kiedy wiatr wpada do jaskini, melodia wraca cicho między skałami, jakby samo miejsce śpiewało elfom kołysankę.
 > 
-> A morał tej historii jest taki: czasem trzeba długo szukać i zaufać nawet najdziwniejszej melodii, żeby odnaleźć miejsce, w którym serce czuje się jak w domu. Fredek opowie Ci, że najważniejsze skarby leśni mieszkańcy chowają wcale nie w kufrach, lecz w ciszy. Jeśli usłyszysz, jak mchy szepczą, a paprocie przytakują, wiedz, że to Fredek ćwiczy właśnie swoją najnowszą pieśń.
+> A morał tej historii jest taki: czasem trzeba długo szukać i zaufać nawet najdziwniejszej melodii, żeby odnaleźć miejsce, w którym serce czuje się jak w domu. Ferdek opowie Ci, że najważniejsze skarby leśni mieszkańcy chowają wcale nie w kufrach, lecz w ciszy. Jeśli usłyszysz, jak mchy szepczą, a paprocie przytakują, wiedz, że to Ferdek ćwiczy właśnie swoją najnowszą pieśń.
 
 ## Mieszka tu
 
