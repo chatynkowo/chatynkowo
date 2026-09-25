@@ -42,14 +42,17 @@ jobs:
         # Runs before the Vite build; the build copies data/ into dist/, while
         # private/ is never copied, so the plaintext codes never reach the artifact.
         run: pnpm codes:build
+      - name: Type-check every workspace package
+        run: pnpm check
       - name: Build the React static site
-        # tsc -b && vite build -> dist/. The copy-static plugin in vite.config.ts
-        # pulls assets/, data/, cottages/, legal/, style.css and CNAME into dist/;
-        # private/ is deliberately excluded, so no separate strip step is needed.
+        # apps/web: tsc -b && vite build -> apps/web/dist. The content plugin in
+        # apps/web/vite.config.ts copies assets/, data/ and cottages/ from the
+        # repository root; public/ (legal pages, CNAME, robots, sitemap) goes
+        # through Vite's publicDir. private/ is never copied.
         run: pnpm build
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: apps/web/dist
 
   deploy:
     needs: build

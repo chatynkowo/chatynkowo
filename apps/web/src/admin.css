@@ -1,0 +1,597 @@
+/* Chatynkowo internal editor — keep it plain and functional. */
+:root {
+  --bg: #faf6ee;
+  --surface: #fffdf6;
+  --ink: #2c2417;
+  --muted: #6b5f48;
+  --accent: #8a6a1f;
+  --accent-strong: #5b4612;
+  --border: #d8cfb8;
+  --danger: #b3431f;
+  --ok: #2f7d3b;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+/* Section headings double as dividers: the form is long, and a hairline above
+   each heading is what makes "where does Zdjęcia end and Treść begin" legible
+   without wrapping every block in its own card. */
+h2 {
+  margin: 1.75rem 0 0.6rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+h2:first-child,
+#rw-treasury-fields h2,
+#rw-level-fields h2 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+code { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 0.85em; }
+
+/* The bar wraps into tidy rows instead of overflowing: at ~900px the save
+   button and the settings cog used to be pushed clean off the right edge,
+   which left no way to save at all. */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  /* Has to clear everything that scrolls underneath it. Toast UI stacks its
+     editor container at 20 and its tooltips at 40; Leaflet goes up to 800 for
+     map controls. Anything lower and the story text (or a zoom button) paints
+     straight over the toolbar. */
+  z-index: 900;
+}
+.brand {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-right: 0.25rem;
+  white-space: nowrap;
+}
+@media (max-width: 620px) {
+  .brand { display: none; }   /* the tabs already say where you are */
+}
+/* The save/discard/status cluster stays together and always lands at the end
+   of whichever row it wraps onto. */
+.toolbar-end {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+.cottage-select {
+  flex: 1;
+  min-width: 0;           /* a long cottage title must not widen the bar */
+  max-width: 340px;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+  font: inherit;
+}
+
+/* Language of the content being edited; anything but Polish = translation mode. */
+.lang-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+.lang-select select {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+  font: inherit;
+}
+body.is-translating .lang-select select {
+  border-color: var(--accent);
+  background: #f6efdc;
+}
+
+.tr-hint {
+  padding: 0.5rem 0.65rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  background: #f6efdc;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: #eee;
+  color: var(--muted);
+  white-space: nowrap;
+}
+/* A coloured dot makes the state readable before the word is. */
+.status-pill::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+.status-pill[data-state="dirty"] { background: #fff2c2; color: #836200; }
+.status-pill[data-state="saving"] { background: #d6e8ff; color: #2548a8; }
+.status-pill[data-state="clean"] { background: #e1f1d8; color: var(--ok); }
+.status-pill[data-state="error"] { background: #f6d4c8; color: var(--danger); }
+.status-pill[data-state="saving"]::before { animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.25; } }
+
+.btn {
+  font: inherit;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--ink);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.btn:hover { background: #fdf6e1; }
+.btn:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(138, 106, 31, 0.25);
+}
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn:disabled:hover { background: white; }
+.btn-primary { background: var(--accent); color: white; border-color: var(--accent-strong); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); }
+.btn-ghost { background: transparent; }
+.btn-ghost:disabled:hover { background: transparent; }
+.btn-icon { padding: 0.45rem 0.6rem; }
+
+/* Inline icons from the shared sprite (public/icons.svg, see
+   scripts/build-icon-sprite.mjs). Sized by the surrounding font. */
+.icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  vertical-align: -0.15em;
+  fill: currentColor;
+}
+.btn .icon { font-size: 1.05em; }
+.btn-icon .icon { font-size: 1.2em; }
+.lang-select .icon { font-size: 1.15em; color: var(--muted); }
+/* Destructive, but not shouting: red only once you are actually on it, so the
+   permanent "Usuń" next to "+ Dodaj" stops competing for attention. */
+.btn-quiet-danger {
+  background: transparent;
+  color: var(--muted);
+  /* Keep the border: without it the button reads as a static label. */
+  border-color: var(--border);
+}
+.btn-quiet-danger:hover:not(:disabled) {
+  background: #fbe9e1;
+  color: var(--danger);
+  border-color: #e8c7bb;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+.form-pane, .map-pane {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+/* The form is far taller than the map / reward preview, which used to leave a
+   tall empty column beside it. Pin the right pane so the thing you are
+   previewing stays on screen while you scroll the fields.
+
+   The offset comes from --topbar-h, measured in editor.ts: the toolbar wraps to
+   two or three rows as the window narrows, so any fixed guess here tucks the
+   pane under the bar at some width. */
+@media (min-width: 1001px) {
+  .map-pane {
+    position: sticky;
+    top: calc(var(--topbar-h, 3.5rem) + 0.75rem);
+    align-self: start;
+    max-height: calc(100vh - var(--topbar-h, 3.5rem) - 2.25rem);
+    overflow: auto;
+  }
+}
+
+.field {
+  display: block;
+  margin: 0 0 0.6rem;
+}
+.field span {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.md-editor:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(138, 106, 31, 0.18);
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+@media (max-width: 560px) {
+  .field-row { grid-template-columns: 1fr; }
+}
+/* A four-digit code in a 700px box reads as "long text expected". */
+.field--narrow input { max-width: 11rem; }
+.field--narrow select { max-width: 16rem; }
+.input-code {
+  font: 600 1.05rem/1 ui-monospace, Consolas, monospace;
+  letter-spacing: 0.35em;
+  text-align: center;
+}
+
+.audio-row { display: flex; flex-direction: column; gap: 0.5rem; }
+.audio-row audio { width: 100%; }
+.audio-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+.meta { color: var(--muted); font-size: 0.85rem; margin: 0.25rem 0 0.6rem; }
+
+.md-editor {
+  width: 100%;
+  min-height: 360px;
+  padding: 0.75rem;
+  font: 13px/1.55 ui-monospace, Consolas, monospace;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+  resize: vertical;
+}
+
+/* Photos --------------------------------------------------------------- */
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  min-height: 60px;
+}
+.photos-grid:empty {
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: white;
+  place-items: center;
+}
+.photos-grid:empty::before {
+  content: "Brak zdjęć — strona pokaże wspólną ilustrację.";
+  color: var(--muted);
+  font-size: 0.85rem;
+  grid-column: 1 / -1;
+  align-self: center;
+  padding: 0.75rem;
+}
+.photo-thumb {
+  position: relative;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: white;
+  aspect-ratio: 1 / 1;
+}
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.photo-thumb figcaption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.72rem;
+  background: linear-gradient(transparent, rgba(0,0,0,0.65));
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.3rem;
+}
+.photo-thumb figcaption .photo-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.photo-thumb .photo-delete {
+  background: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 0 0.2rem;
+  font-size: 1rem;
+  line-height: 1;
+  border-radius: 3px;
+}
+.photo-thumb .photo-delete:hover {
+  background: var(--danger);
+}
+.photos-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Geo map --------------------------------------------------------------- */
+.geo-map {
+  width: 100%;
+  height: min(58vh, 520px);
+  min-height: 300px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #eee;
+}
+
+/* Publish dialog -------------------------------------------------------- */
+.publish-dialog {
+  max-width: 540px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+.publish-dialog h2 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+.publish-dialog::backdrop { background: rgba(44, 36, 23, 0.45); }
+.publish-log {
+  background: #1f1a13;
+  color: #f4ecd8;
+  padding: 0.75rem;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  max-height: 240px;
+  overflow: auto;
+  font: 12px/1.4 ui-monospace, Consolas, monospace;
+}
+.dialog-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+
+/* Auth overlay ---------------------------------------------------------- */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 36, 23, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+.auth-overlay[hidden] { display: none; }
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.75rem;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+.auth-card h1 { margin: 0 0 0.75rem; font-size: 1.25rem; }
+.auth-card p { color: var(--muted); font-size: 0.875rem; margin: 0 0 1rem; }
+.auth-advanced {
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.auth-advanced summary { cursor: pointer; padding: 0.3rem 0; }
+.auth-advanced[open] summary { margin-bottom: 0.5rem; }
+.auth-warning {
+  margin: 0.5rem 0 0 !important;
+  padding: 0.5rem 0.6rem;
+  border-left: 3px solid var(--danger);
+  border-radius: 0 4px 4px 0;
+  background: #fbe9e1;
+  color: var(--ink) !important;
+  font-size: 0.82rem !important;
+}
+.auth-error {
+  color: var(--danger) !important;
+  margin: 0.5rem 0;
+  font-size: 0.85rem;
+}
+.auth-error[hidden] { display: none; }
+
+/* Hide editor-root until auth succeeds */
+#editor-root[hidden] { display: none; }
+
+/* Toast UI Editor overrides -------------------------------------------- */
+.toastui-editor-defaultUI {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: inherit;
+}
+.toastui-editor-toolbar {
+  border-radius: 6px 6px 0 0;
+  background: var(--surface);
+}
+.toastui-editor-contents { font-family: inherit; font-size: 0.95rem; }
+.toastui-editor-defaultUI-chart { background: var(--bg); }
+
+/* Mode tabs (Chatynki / Nagrody) ---------------------------------------- */
+.mode-tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: #ece3cf;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.mode-tab {
+  position: relative;
+  font: inherit;
+  padding: 0.35rem 0.8rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mode-tab:hover { color: var(--ink); }
+.mode-tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(138, 106, 31, 0.45);
+}
+.mode-tab.is-active {
+  background: white;
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08);
+}
+/* Each category has its own dirty flag, so unsaved work in the one you are NOT
+   looking at is otherwise invisible — the toolbar only ever describes the
+   active category. This dot is the only hint that the other tab owes a save. */
+.mode-tab.has-unsaved::after {
+  content: "";
+  position: absolute;
+  top: 0.25rem;
+  right: 0.3rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: #d99b00;
+}
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+/* Mode-specific add/delete pair inside the shared toolbar. */
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+/* A class rule with `display` beats the UA's `[hidden] { display: none }`
+   (attribute selectors lose on specificity), so every element we hide from
+   JS needs its own [hidden] rule — otherwise the attribute is a no-op and
+   both modes render at once. Same trap as .layout[hidden] below. */
+.toolbar-group[hidden],
+.toolbar-actions[hidden] { display: none; }
+.layout[hidden] { display: none; }
+
+/* Rewards mode ---------------------------------------------------------- */
+.field--check {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: end;
+  padding-bottom: 0.5rem;
+}
+.field--check input { width: auto; }
+.field--check span { margin: 0; }
+
+.reward-order {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.reward-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  padding: 0.5rem;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: white;
+  margin-bottom: 0.5rem;
+}
+.reward-image img {
+  max-width: 100%;
+  max-height: 260px;
+  border-radius: 6px;
+  display: block;
+}
+/* Same [hidden] trap as .layout — without this the "brak obrazka" state
+   still renders an empty, broken <img>. */
+.reward-image img[hidden] { display: none; }
+
+/* Live preview of a reward card as it appears in the Kronika. */
+.reward-preview {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  padding: 1rem;
+  min-height: 200px;
+}
+.reward-preview .rp-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 0.6rem;
+  color: var(--accent-strong);
+}
+.reward-preview .rp-art {
+  max-width: 360px;
+  margin: 0 auto 0.8rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.reward-preview .rp-art img { width: 100%; height: auto; display: block; }
+.reward-preview .rp-body { font-size: 0.95rem; line-height: 1.5; }
+.reward-preview .rp-body h2 { font-size: 1.05rem; margin: 0.8rem 0 0.4rem; }
+.reward-preview .rp-body ul { padding-left: 1.2rem; }
+.reward-preview .rp-empty { color: var(--muted); font-style: italic; text-align: center; }

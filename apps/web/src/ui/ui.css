@@ -1,0 +1,171 @@
+/* ==========================================================================
+   Shared interface layer: design tokens and the primitives every page uses
+   (buttons, icon buttons, modal dialogs). Each entry point imports this
+   file first, so page stylesheets (styles.css, ranking.css) extend or
+   override these rules and never redefine them.
+   ========================================================================== */
+
+/* ---------- Design tokens ---------- */
+:root {
+  color-scheme: dark;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --page: #0d1c18;
+  --page-raised: #132620;
+  --surface: #172d25;
+  --surface-soft: #1d352b;
+  --ink: #f1e8d3;
+  --ink-soft: #c7bda8;
+  --ink-faint: #9d9483;
+  --line: rgb(211 177 100 / 0.27);
+  --line-strong: rgb(211 177 100 / 0.55);
+  --accent: #d2a64d;
+  --accent-strong: #ebc66f;
+  --accent-ink: #241a0c;
+  --danger: #f0a28e;
+  --success: #9ecb9a;
+  --radius: 18px;
+  --radius-small: 12px;
+  --shadow: 0 26px 72px rgb(3 12 9 / 0.42);
+  --header-height: 72px;
+  --control-size: 42px;
+}
+
+/* ---------- Buttons (ui/Button.tsx) ---------- */
+.button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 19px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: filter 180ms ease, transform 180ms ease, background 180ms ease;
+}
+
+.button:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.button:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.button-primary {
+  border-color: #e4bb62;
+  background: var(--accent);
+  box-shadow: inset 0 1px 0 rgb(247 220 153 / 0.48), 0 10px 30px rgb(210 166 77 / 0.16);
+  color: var(--accent-ink);
+}
+
+.button-ghost {
+  border-color: var(--line-strong);
+  background: rgb(20 42 34 / 0.84);
+  color: var(--ink);
+}
+
+.button-subtle {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+}
+
+/* ---------- Icon buttons (ui/Button.tsx) ---------- */
+.icon-button {
+  display: inline-grid;
+  width: var(--control-size);
+  min-width: var(--control-size);
+  height: var(--control-size);
+  min-height: var(--control-size);
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  background: var(--surface);
+  color: inherit;
+  cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease,
+    box-shadow 180ms ease, filter 180ms ease, opacity 180ms ease, transform 180ms ease;
+}
+
+.icon-button:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .icon-button:hover {
+    border-color: var(--line-strong);
+    background: rgb(210 166 77 / 0.12);
+    color: var(--accent-strong);
+    transform: translateY(-1px);
+  }
+}
+
+/* ---------- Modal dialogs (ui/Modal.tsx) ---------- */
+body.modal-open {
+  overflow: hidden;
+}
+
+.modal-backdrop {
+  position: fixed;
+  z-index: 1600;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 24px;
+  background: rgb(4 13 10 / 0.82);
+  backdrop-filter: blur(12px);
+  animation: fade-in 180ms ease both;
+}
+
+/* A card opened on top of another card. */
+.modal-backdrop.is-stacked {
+  z-index: 1700;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-card {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--page-raised);
+  box-shadow: 0 35px 100px rgb(1 8 6 / 0.62);
+  animation: modal-in 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-close {
+  position: absolute;
+  z-index: 2;
+  top: 16px;
+  right: 16px;
+}
+
+.modal-emblem {
+  color: var(--accent-strong);
+}

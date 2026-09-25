@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Deliberately no "DOM": this package must behave the same in the
+    // browser, in React Native and in Node (scripts). fetch and crypto come
+    // in through the adapters in src/platform.ts.
+    "lib": ["ES2022"],
+    "types": []
+  },
+  "include": ["src"]
+}

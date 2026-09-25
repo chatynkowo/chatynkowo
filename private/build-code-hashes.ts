@@ -1,4 +1,4 @@
-/* Build the public code-validation file from the SECRET slug→code pairs.
+/* Build the public code-validation file from the SECRET slug->code pairs.
 
    The site is fully static, so the 4-digit plaque codes can't be checked by
    a server. Instead the page compares a salted SHA-256 of the entered code
@@ -6,8 +6,8 @@
    in private/codes.json, which the deploy workflow strips from the artifact
    and which must never be published.
 
-     Source : private/codes.json        (SECRET — slug→code pairs + salt)
-     Output : data/code_hashes.json     (public — sha256(salt:code) → slug)
+     Source : private/codes.json        (SECRET — slug->code pairs + salt)
+     Output : data/code_hashes.json     (public — sha256(salt:code) -> slug)
 
    Run from anywhere:  node private/build-code-hashes.mjs
    The /admin/ editor regenerates the same file in-browser when codes change;

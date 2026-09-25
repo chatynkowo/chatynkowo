@@ -11,3 +11,20 @@ Thumbs.db
 /scrape/
 node_modules
 dist
+
+# Secrets and local overrides
+.env
+.env.*.local
+
+# Build caches
+*.tsbuildinfo
+
+# Supabase CLI
+supabase/.temp/
+supabase/.branches/
+
+# Expo
+.expo/
+
+# Generated icon sprite (apps/web/scripts/build-icon-sprite.mjs)
+apps/web/public/icons.svg
