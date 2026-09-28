@@ -7,24 +7,26 @@ virtue: dyplomacja
 
 # Harald
 
-Once upon a time, on a Northern coast where the wind had a mind of its own, there lived an elf named Harald.
-He had not always been an elf. Long time ago, he had been a great ruler. He united people, expanded his influence, build mighty fortifications and he left a great stone telling his story in Jelling.
-However, after he passed he chose a quieter life.
-He built a little hut on a great stone by the sea — he had always had a soft spot for large things. He liked them big.
-But that was not the only reason he chose this particular spot.
-Directly opposite was a small island where a blue mermaid lived.
-Harald fell in love with her at the first sight.
-It was rather inconvenient for a man who had once been able to unite people and conquer entire lands to find himself completely helpless when faced with one single mermaid.
-So he waited.
-And so that the days would not drag on too much, he started looking after the birds along the coast. Seagulls, cormorants and the whole feathered crowd quickly decided he was one of them. Harald knew their habits, made sure everyone got something to eat and apparently could recognise a cormorant simply by the way it complained.
-The seagulls especially liked him. Mainly because Harald never asked questions when his food went missing.
-To keep himself from going mad, he moved his window so he wouldn’t have to spend his days staring out at the island. He insisted it was simply because of the wind.
-No one believed him.
-Rumours spread that witches sometimes flew to the island on their broomsticks. Sometimes, they took Harald with them.
-Harald says it is simply a matter of convenient transport. The seagulls have a different opinion.
-And so he still lives on his stone, looking after his feathered companions, gazing out at the sea and waiting for the blue mermaid.
-For Harald eventually discovered that the hardest thing is not to win an entire kingdom, but to win a single heart.
-Mieszka tu
+> Dawno, dawno temu, na północnym wybrzeżu, gdzie wiatr miał własne zdanie, żył elf imieniem Harald.
+> Nie zawsze był elfem. Wieki temu był wielkim władcą. Jednoczył ludzi, poszerzał swoje wpływy, wznosił potężne warownie, a w Jelling zostawił wielki kamień opowiadający jego historię.
+> Kiedy jednak odszedł z tego świata, wybrał spokojniejsze życie.
+> Zbudował małą chatkę na wielkim kamieniu nad morzem – zawsze miał słabość do dużych rzeczy. Lubił, gdy były wielkie.
+> Ale nie tylko dlatego wybrał właśnie to miejsce.
+> Dokładnie naprzeciwko leżała mała wyspa, na której mieszkała błękitna syrenka.
+> Harald zakochał się w niej od pierwszego wejrzenia.
+> Dla kogoś, kto potrafił kiedyś jednoczyć ludy i podbijać całe krainy, było to dość niewygodne: stanąć zupełnie bezradnym wobec jednej jedynej syrenki.
+> Czekał więc.
+> A żeby dni nie dłużyły mu się zanadto, zaczął opiekować się ptakami na wybrzeżu. Mewy, kormorany i cała pierzasta gromada szybko uznały go za swojego. Harald znał ich zwyczaje, pilnował, żeby każdy dostał coś do jedzenia, i podobno potrafił rozpoznać kormorana po samym sposobie, w jaki narzeka.
+> Mewy lubiły go szczególnie. Głównie dlatego, że Harald nigdy nie zadawał pytań, kiedy znikało mu jedzenie.
+> Żeby nie oszaleć, przeniósł okno, by nie spędzać całych dni na wpatrywaniu się w wyspę. Upierał się, że chodzi wyłącznie o wiatr.
+> Nikt mu nie uwierzył.
+> Rozeszły się pogłoski, że na wyspę przylatują czasem na miotłach czarownice. Czasem zabierają ze sobą Haralda.
+> Harald mówi, że to po prostu kwestia wygodnego transportu. Mewy są innego zdania.
+> I tak wciąż mieszka na swoim kamieniu, opiekuje się pierzastymi towarzyszami, spogląda na morze i czeka na błękitną syrenkę.
+> Bo Harald odkrył w końcu, że najtrudniej nie jest zdobyć całe królestwo, lecz jedno jedyne serce.
+
+## Mieszka tu
+
 (uzupełnij: kto mieszka, jakiej cnoty uczy)
 
 ## Co zrobić, gdy trafisz pod chatynkę?

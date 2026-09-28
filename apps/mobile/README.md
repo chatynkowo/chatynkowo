@@ -34,6 +34,39 @@ Configuration comes from `EXPO_PUBLIC_*` variables in `apps/mobile/.env`
 (template: `.env.example`); without the file the app uses the production
 Supabase project and `https://www.chatynkowo.pl` as the content origin.
 
+Because the content origin is the published site, a change under
+`packages/content/public` (a new cottage, a translation) reaches the app
+only once the site is deployed. To review it earlier, serve the package
+from the site's dev server and point the app at it through the emulator's
+port forwarding:
+
+```bash
+pnpm --filter @chatynkowo/web dev                   # serves packages/content/public at http://127.0.0.1:5173
+adb reverse tcp:5173 tcp:5173                       # the emulator's localhost:5173 -> the host
+echo 'EXPO_PUBLIC_CONTENT_BASE_URL=http://localhost:5173' > apps/mobile/.env
+npx expo start --dev-client --clear                 # the variable is inlined at bundle time
+adb shell pm clear pl.chatynkowo.app                # the content cache keeps files for up to a day
+```
+
+Remove the `.env` line afterwards; with it, the app needs that server.
+
+### A standalone APK for a phone
+
+The release variant embeds the JS bundle, so the installed app needs
+neither Metro nor the computer, like one from a store. Build it with no
+`.env` in place (the `EXPO_PUBLIC_*` values are inlined at build time):
+
+```bash
+cd apps/mobile/android
+./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a   # phones; drop the flag for a universal APK (all four ABIs, ~2.5x larger)
+# -> app/build/outputs/apk/release/app-release.apk
+adb install -r app/build/outputs/apk/release/app-release.apk     # over USB or Wi-Fi debugging, or copy the file to the phone and open it
+```
+
+The release variant is signed with the debug keystore of the generated
+project, which is fine for your own devices but not for Google Play; a
+store build needs its own keystore or EAS Build.
+
 Checks, run from the repository root:
 
 ```bash
