@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "Chatynkowo",
+    "slug": "chatynkowo",
+    "scheme": "chatynkowo",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0d1c18",
+    "newArchEnabled": true,
+    "locales": {
+      "pl": "./locales/pl.json",
+      "en": "./locales/en.json"
+    },
+    "ios": {
+      "bundleIdentifier": "pl.chatynkowo.app",
+      "supportsTablet": false,
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      }
+    },
+    "android": {
+      "package": "pl.chatynkowo.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0d1c18",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      "expo-dev-client",
+      "expo-apple-authentication",
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Chatynkowo reads the QR code on a cottage plaque.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": true
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
