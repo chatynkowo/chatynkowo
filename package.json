@@ -10,11 +10,11 @@
     "preview": "pnpm --filter @chatynkowo/web preview",
     "check": "pnpm -r run check && node scripts/check-conventions.mjs",
     "icons:build": "pnpm --filter @chatynkowo/web icons:build",
-    "codes:build": "tsx private/build-code-hashes.ts"
+    "codes:build": "pnpm --filter @chatynkowo/content codes:build",
+    "codes:check": "pnpm --filter @chatynkowo/content codes:check"
   },
   "devDependencies": {
     "@types/node": "^24.0.15",
-    "tsx": "^4.23.1",
     "typescript": "~5.9.3"
   }
 }

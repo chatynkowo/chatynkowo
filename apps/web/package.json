@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@chatynkowo/api": "workspace:*",
+    "@chatynkowo/content": "workspace:*",
     "@chatynkowo/core": "workspace:*",
     "@chatynkowo/i18n": "workspace:*",
     "@phosphor-icons/react": "^2.1.10",

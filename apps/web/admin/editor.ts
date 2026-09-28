@@ -1,7 +1,7 @@
 import L from 'leaflet'
 import Editor from '@toast-ui/editor'
 import { marked } from '../src/lib/markdown'
-import { COUNTRY_BOUNDS, DEFAULT_COUNTRY, DEFAULT_LANGUAGE, LANGUAGES } from '@chatynkowo/core'
+import { COUNTRY_BOUNDS, DEFAULT_COUNTRY, DEFAULT_LANGUAGE, LANGUAGES, hashCode, webCryptoSha256Hex } from '@chatynkowo/core'
 import 'leaflet/dist/leaflet.css'
 import '@toast-ui/editor/dist/toastui-editor.css'
 
@@ -16,6 +16,9 @@ import '@toast-ui/editor/dist/toastui-editor.css'
      - private/codes.json      — the secret plaque codes (+ the public hashes)
      - assets/stories/<lang>/<slug>.mp3, assets/img/cottages/<slug>/…
      - data/rewards.json       — the Kronika: intro + reward levels
+   Those are the paths the site publishes; in the repository they live in
+   packages/content (public/ for the published tree, private/ for the secret
+   file), and toRepo/toLocal translate at the GitHub API boundary.
 */
 
 (() => {
@@ -23,6 +26,16 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
   const GH = 'https://api.github.com';
   const CONFIG_KEY = 'chatynkowo_editor_v1';
+  /* Where the content lives in the repository (see packages/content/README.md).
+     Every path this editor handles is a published path (data/…, cottages/…,
+     assets/…) or private/codes.json; only the GitHub API sees repository paths. */
+  const CONTENT_PACKAGE = 'packages/content';
+  const toRepo = local => `${CONTENT_PACKAGE}/${local.startsWith('private/') ? local : `public/${local}`}`;
+  const toLocal = repo => {
+    if (repo.startsWith(`${CONTENT_PACKAGE}/public/`)) return repo.slice(`${CONTENT_PACKAGE}/public/`.length);
+    if (repo.startsWith(`${CONTENT_PACKAGE}/private/`)) return repo.slice(`${CONTENT_PACKAGE}/`.length);
+    return null;   // not content: the editor never touches it
+  };
   const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
   const MAX_AUDIO_BYTES = 30 * 1024 * 1024;
   const REFRESH_AFTER_MS = 5 * 60 * 1000;   // a tab back from the background reloads if its data is older
@@ -127,7 +140,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     const pending = new Map();
     return path => {
       if (!pending.has(path)) {
-        const encoded = path.split('/').map(encodeURIComponent).join('/');
+        const encoded = toRepo(path).split('/').map(encodeURIComponent).join('/');
         pending.set(path, ghFetch('GET', `contents/${encoded}?ref=${commitSha}`).then(
           file => { shaOut.set(path, file.sha); return base64ToUtf8(file.content); },
           e => { if (e.status !== 404) throw e; shaOut.set(path, null); return null; },
@@ -187,7 +200,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
       if (!changes.length) return { commit: null, treeItems: [], tipSha };
 
       const treeItems = await Promise.all(changes.map(async ch => ({
-        path: ch.path, mode: '100644', type: 'blob',
+        path: toRepo(ch.path), mode: '100644', type: 'blob',
         sha: ch.delete ? null : await uploadBlob(ch),
       })));
       const newTree = await ghFetch('POST', 'git/trees', {
@@ -230,7 +243,8 @@ import '@toast-ui/editor/dist/toastui-editor.css'
       if (sha) state.sha.set(path, sha); else state.sha.delete(path);
     }
     for (const item of result.treeItems) {
-      if (item.sha) state.sha.set(item.path, item.sha); else state.sha.delete(item.path);
+      const local = toLocal(item.path);
+      if (item.sha) state.sha.set(local, item.sha); else state.sha.delete(local);
     }
     return result.commit;
   }
@@ -258,7 +272,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
   function rawUrl(path) {
     const sha = state.sha.get(path) || 'HEAD';
-    return `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${path}?v=${sha.slice(0, 8)}`;
+    return `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${toRepo(path)}?v=${sha.slice(0, 8)}`;
   }
 
   /* git's blob object hash: sha1("blob <byteLength>\0" + bytes). Computing it
@@ -340,9 +354,10 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
   /* ---------- secret plaque codes (private/codes.json) ----------
      The codes never enter any published file in plaintext. The site validates
-     an entered code against data/code_hashes.json — sha256(`${salt}:${code}`)
-     hex, the same algorithm as private/build-code-hashes.ts — so whenever
-     the codes change, BOTH files must be rewritten in the same commit. */
+     an entered code against data/code_hashes.json, built with hashCode from
+     @chatynkowo/core (the same function the clients and
+     packages/content/scripts/build-code-hashes.ts use), so whenever the codes
+     change, BOTH files must be rewritten in the same commit. */
 
   function serializeCodesJson(file) {
     const w = Math.max(0, ...file.codes.map(e => e.slug.length));
@@ -361,14 +376,13 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     if (!window.isSecureContext || !window.crypto?.subtle) {
       throw new Error(`zapis kodów wymaga bezpiecznego połączenia (HTTPS lub localhost), a edytor działa na „${location.origin}”`);
     }
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-    return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('');
+    return webCryptoSha256Hex(text);
   }
 
   async function buildCodeHashesJson(file) {
     const entries = {};
     for (const { slug, code } of file.codes) {
-      entries[await sha256Hex(`${file.salt}:${code}`)] = slug;
+      entries[await hashCode(file.salt, code, sha256Hex)] = slug;
     }
     return JSON.stringify({ salt: file.salt, entries }, null, 2) + '\n';
   }
@@ -384,7 +398,7 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 
   function emptyCodesFile() {
     return {
-      _comment: 'TAJNE pary slug -> code. Nigdy nie publikować — patrz private/build-code-hashes.ts.',
+      _comment: 'TAJNE pary slug -> code. Nigdy nie publikować — patrz packages/content/scripts/build-code-hashes.ts.',
       salt: Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2, '0')).join(''),
       codes: [],
     };
@@ -528,17 +542,21 @@ import '@toast-ui/editor/dist/toastui-editor.css'
     loadedAt = Date.now();
 
     state.sha.clear();
-    for (const item of tree.tree) state.sha.set(item.path, item.sha);
+    const content = [];
+    for (const item of tree.tree) {
+      const local = toLocal(item.path);
+      if (local === null) continue;
+      state.sha.set(local, item.sha);
+      content.push({ ...item, path: local });
+    }
     // A fresh tree invalidates any cached translations.
     state.trCache.clear();
     state.rwTr.clear();
 
-    const baseUrl = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}`;
-
     // Identify cottage slugs from tree. Subdirectories hold translations
     // (cottages/<lang>/<slug>.md) — only the top-level Polish originals are
     // the cottages this editor manages.
-    const slugs = tree.tree
+    const slugs = content
       .filter(i => i.type === 'blob' && i.path.startsWith('cottages/') && i.path.endsWith('.md'))
       .map(i => i.path.slice('cottages/'.length, -'.md'.length))
       .filter(slug => !slug.includes('/'));
@@ -563,12 +581,12 @@ import '@toast-ui/editor/dist/toastui-editor.css'
       // The git tree is the truth about which files exist; the manifest in
       // cottages.json only decides the ORDER the site shows them in, so a
       // photo uploaded outside the editor is still picked up here.
-      const present = tree.tree
+      const present = content
         .filter(item => item.type === 'blob' && item.path.startsWith(`assets/img/cottages/${slug}/`))
         .map(item => item.path.split('/').pop());
       const manifest = Array.isArray(j.photos) ? j.photos.filter(n => present.includes(n)) : [];
       const photos = [...manifest, ...present.filter(n => !manifest.includes(n)).sort()]
-        .map(name => ({ name, url: `${baseUrl}/assets/img/cottages/${slug}/${name}?v=${state.sha.get(`assets/img/cottages/${slug}/${name}`).slice(0, 8)}` }));
+        .map(name => ({ name, url: rawUrl(`assets/img/cottages/${slug}/${name}`) }));
       return {
         slug, frontmatter: fm, body,
         lat: j.lat ?? null, lng: j.lng ?? null,

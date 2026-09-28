@@ -1,5 +1,5 @@
 {
-  "_comment": "TAJNE pary slug -> code (kody z tabliczek na chatynkach). Plik istnieje tylko w private/, które workflow deployu usuwa z artefaktu — kody nigdy nie trafiają na stronę. Publiczna walidacja kodów działa na solonych haszach w data/code_hashes.json; po KAŻDEJ zmianie tego pliku uruchom: node private/build-code-hashes.mjs (edytor /admin/ robi to automatycznie).",
+  "_comment": "TAJNE pary slug -> code (kody z tabliczek na chatynkach). Plik istnieje tylko w packages/content/private, którego build strony nigdy nie kopiuje — kody nigdy nie trafiają na stronę. Publiczna walidacja kodów działa na solonych haszach w public/data/code_hashes.json; po KAŻDEJ ręcznej zmianie tego pliku uruchom: pnpm codes:build (edytor /admin/ robi to automatycznie).",
   "salt": "6bbd23916c523969b92a6fca",
   "codes": [
     { "slug": "fredek",         "code": "6667" },

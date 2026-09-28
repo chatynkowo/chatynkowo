@@ -36,19 +36,23 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Rebuild the public code-hash lookup from the secret codes
-        # Regenerates data/code_hashes.json from private/codes.json so the
-        # published validation data can never drift from the real plaque codes.
-        # Runs before the Vite build; the build copies data/ into dist/, while
-        # private/ is never copied, so the plaintext codes never reach the artifact.
-        run: pnpm codes:build
+      - name: Verify the public code-hash lookup against the secret codes
+        # Fails when the committed public/data/code_hashes.json of
+        # packages/content does not match its private/codes.json (the /admin/
+        # editor commits both together; after a hand edit run `pnpm codes:build`
+        # and commit the result), so the published validation data can never
+        # drift from the real plaque codes. The build copies the package's
+        # public/ tree into dist/, while private/ is never copied, so the
+        # plaintext codes never reach the artifact.
+        run: pnpm codes:check
       - name: Type-check every workspace package
         run: pnpm check
       - name: Build the React static site
         # apps/web: tsc -b && vite build -> apps/web/dist. The content plugin in
-        # apps/web/vite.config.ts copies assets/, data/ and cottages/ from the
-        # repository root; public/ (legal pages, CNAME, robots, sitemap) goes
-        # through Vite's publicDir. private/ is never copied.
+        # apps/web/vite.config.ts copies assets/, data/ and cottages/ from
+        # packages/content/public; apps/web/public (legal pages, CNAME, robots,
+        # sitemap) goes through Vite's publicDir. packages/content/private is
+        # never copied.
         run: pnpm build
       - uses: actions/upload-pages-artifact@v3
         with:

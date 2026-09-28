@@ -4,13 +4,14 @@
    the interface copy into their bundles.
 
    To add a new language:
-   1. add an entry below and create its dictionary: copy
-      packages/i18n/src/pl.ts, translate it, and register it in DICTIONARIES
-      in packages/i18n/src/index.ts (the Record type errors until it is added);
+   1. add an entry below and create its dictionaries: copy the pl.ts of
+      packages/i18n/src/shared, web and mobile, translate them, and register
+      them in packages/i18n/src/index.ts (the Record types error until every
+      set is added);
    2. translate the content — cottages/<code>/<slug>.md and
-      data/rewards.<code>.json, most conveniently via the language select
-      in /admin/; any file that is missing simply falls back to the Polish
-      original;
+      data/rewards.<code>.json in packages/content/public, most conveniently
+      via the language select in /admin/; any file that is missing simply
+      falls back to the Polish original;
    3. if translated legal pages exist under legal/, point the new
       dictionary's footer.termsHref / footer.privacyHref at them
       (otherwise keep the Polish hrefs). */

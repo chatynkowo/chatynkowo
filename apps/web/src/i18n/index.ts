@@ -2,12 +2,13 @@ import i18n from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 import { DEFAULT_LANGUAGE, LANGUAGES } from '@chatynkowo/core'
-import { DICTIONARIES } from '@chatynkowo/i18n'
+import { webResources } from '@chatynkowo/i18n/web'
 
 export { DEFAULT_LANGUAGE, LANGUAGES, toLanguage, type Language } from '@chatynkowo/core'
 
-/* The site's i18next instance: shared dictionaries from @chatynkowo/i18n,
-   browser-side language detection remembered in localStorage. */
+/* The site's i18next instance: the shared and site-only dictionaries from
+   @chatynkowo/i18n, browser-side language detection remembered in
+   localStorage. */
 i18n.use(LanguageDetector).use(initReactI18next)
 
 /* Assistive tech and the browser's translate prompt follow this attribute, so
@@ -17,7 +18,7 @@ i18n.on('languageChanged', () => {
 })
 
 void i18n.init({
-  resources: DICTIONARIES,
+  resources: webResources(),
   fallbackLng: DEFAULT_LANGUAGE,
   supportedLngs: LANGUAGES.map((language) => language.code),
   load: 'languageOnly',

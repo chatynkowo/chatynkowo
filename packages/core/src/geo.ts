@@ -70,3 +70,56 @@ export function detectCountry(languages: readonly string[] = browserLanguages())
   }
   return null
 }
+
+/* ------------------------------------------------------------------------
+   Framing and distances — shared by the Leaflet map on the site and the
+   MapLibre map in the app, so both open on the same view.
+   ------------------------------------------------------------------------ */
+
+export type LatLng = { lat: number; lng: number }
+
+/* The box around a set of points, or null for an empty set. */
+function boundsOf(points: readonly LatLng[]): BoundsTuple | null {
+  if (!points.length) return null
+  let south = Infinity
+  let west = Infinity
+  let north = -Infinity
+  let east = -Infinity
+  for (const point of points) {
+    south = Math.min(south, point.lat)
+    west = Math.min(west, point.lng)
+    north = Math.max(north, point.lat)
+    east = Math.max(east, point.lng)
+  }
+  return [[south, west], [north, east]]
+}
+
+/* Grow a box by a fraction of its size on every side (what Leaflet's
+   LatLngBounds.pad does), so a lone cottage still gets some map around it. */
+function padBounds(bounds: BoundsTuple, ratio: number, minimumSpanDegrees = 0.02): BoundsTuple {
+  const [[south, west], [north, east]] = bounds
+  const latSpan = Math.max(north - south, minimumSpanDegrees)
+  const lngSpan = Math.max(east - west, minimumSpanDegrees)
+  const latPad = latSpan * ratio
+  const lngPad = lngSpan * ratio
+  return [[south - latPad, west - lngPad], [north + latPad, east + lngPad]]
+}
+
+/* The country whose cottages the map opens on: the visitor's country when it
+   has cottages (detected from the device languages, never geolocation),
+   otherwise the only country in the data, otherwise none (Europe overview). */
+export function homeCountry(cottages: readonly { country?: string }[], detected: string | null): string | null {
+  const present = new Set(cottages.map((cottage) => cottage.country ?? DEFAULT_COUNTRY))
+  if (detected && present.has(detected)) return detected
+  return present.size === 1 ? [...present][0] : null
+}
+
+/* The "whole country" frame the map opens and resets to. Countries without a
+   preset box (and the no-country Europe overview) frame their cottages. */
+export function homeBounds(cottages: readonly (LatLng & { country?: string })[], country: string | null): BoundsTuple {
+  const preset = country ? COUNTRY_BOUNDS[country] : undefined
+  if (preset) return preset
+  const own = country ? cottages.filter((cottage) => (cottage.country ?? DEFAULT_COUNTRY) === country) : cottages
+  const bounds = boundsOf(own)
+  return bounds ? padBounds(bounds, 0.24) : EUROPE_BOUNDS
+}

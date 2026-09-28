@@ -3,7 +3,7 @@ import { AtlasIcon, Button, ChronicleIcon, CottageIcon, CreedIcon, ElfIcon, Fore
 import { marked } from './lib/markdown'
 import { useTranslation } from 'react-i18next'
 import { toLanguage } from './i18n'
-import { loadCottages, loadRewards, resolveCode, storyAudio } from './lib/content'
+import { content, loadCottages, loadRewards, resolveCode, storyAudio } from './lib/content'
 import { backfillBadges, discoverCottage, loadStoredState } from './lib/persistence'
 import { fallbackRewards, finalLevelId, requiredFinds } from '@chatynkowo/core'
 import { initializeAnalytics, track } from './lib/analytics'
@@ -40,24 +40,11 @@ const GALLERY_IMAGES = [
   },
 ]
 
-const STORY_IMAGES = GALLERY_IMAGES.map((image) => image.full)
-
 const EMPTY_PIN = ['', '', '', '']
 
 const MapExplorer = lazy(() =>
   import('./components/MapExplorer').then((module) => ({ default: module.MapExplorer })),
 )
-
-/* Photos uploaded for this cottage in /admin/, or — while none exist — one of
-   the shared illustrations, picked from the slug so a cottage always shows the
-   same one. */
-function storyPhotos(cottage: Cottage) {
-  if (cottage.photos?.length) {
-    return cottage.photos.map((name) => `assets/img/cottages/${cottage.slug}/${name}`)
-  }
-  const index = Array.from(cottage.slug).reduce((sum, character) => sum + character.charCodeAt(0), 0)
-  return [STORY_IMAGES[index % STORY_IMAGES.length]]
-}
 
 function App() {
   const { t, i18n } = useTranslation()
@@ -521,8 +508,8 @@ function App() {
 
       {story && (
         <Modal as="article" className="story-modal" labelledBy="story-title" closeLabel={t('story.closeAria')} onClose={() => setStory(null)}>
-          <div className={`story-photo${storyPhotos(story).length > 1 ? ' is-gallery' : ''}`}>
-            {storyPhotos(story).map((src) => (
+          <div className={`story-photo${content.storyPhotos(story).length > 1 ? ' is-gallery' : ''}`}>
+            {content.storyPhotos(story).map((src) => (
               <img key={src} src={src} alt={t('story.photoAlt', { title: story.title })} loading="lazy" decoding="async" />
             ))}
           </div>

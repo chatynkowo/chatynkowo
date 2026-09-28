@@ -1,0 +1,70 @@
+/* Polish copy that exists only in the mobile app: tab names, the QR scanner,
+   offline notices, native sign-in, recordings kept on the device. Everything
+   the app shares with the site (the code gate, the story, the Kronika, the
+   ranking) comes from the main dictionary in ../pl.ts. */
+export const mobilePl = {
+  tabs: {
+    atlas: 'Atlas',
+    code: 'Kod',
+    kronika: 'Kronika',
+    ranking: 'Ranking',
+  },
+  common: {
+    retry: 'Spróbuj ponownie',
+    close: 'Zamknij',
+    loading: 'Wczytuję...',
+    offline: 'Brak połączenia. Pokazuję zapisaną wersję.',
+    offlineNoData: 'Brak połączenia, a na tym urządzeniu nie ma jeszcze zapisanej mapy. Połącz się raz, aby pobrać Chatynki.',
+    pendingSync_one: '{{count}} odkrycie czeka na zapis w koncie.',
+    pendingSync_few: '{{count}} odkrycia czekają na zapis w koncie.',
+    pendingSync_many: '{{count}} odkryć czeka na zapis w koncie.',
+    pendingSync_other: '{{count}} odkryć czeka na zapis w koncie.',
+    language: 'Język',
+  },
+  atlas: {
+    title: 'Atlas Chatynkowa',
+    progress: '{{found}} z {{total}} Chatynek',
+    story: 'Otwórz opowieść',
+  },
+  code: {
+    scan: 'Zeskanuj kod QR',
+    scanTitle: 'Skanowanie kodu',
+    scanHint: 'Nakieruj aparat na kod QR z tabliczki.',
+    scanNoCode: 'Ten kod QR nie należy do Chatynkowa.',
+    cameraRequest: 'Aparat jest potrzebny, aby odczytać kod QR z tabliczki.',
+    cameraAllow: 'Zezwól na aparat',
+    cameraDenied: 'Bez dostępu do aparatu wpisz kod ręcznie.',
+    offlineHint: 'Kody sprawdzamy także bez zasięgu. Odkrycie zapisze się w koncie, gdy wrócisz do sieci.',
+    pasteAria: 'Wpisz kod',
+  },
+  story: {
+    download: 'Zapisz nagranie na urządzeniu',
+    downloading: 'Pobieram nagranie...',
+    downloaded: 'Nagranie zapisane na urządzeniu',
+    downloadFailed: 'Nie udało się pobrać nagrania.',
+    playerUnavailable: 'Odtwarzacz nie jest dostępny.',
+    arrivalHeading: 'Co zrobić przy Chatynce?',
+    notFound: 'Nie znaleziono tej opowieści.',
+  },
+  kronika: {
+    subtitle: 'Pieczęcie i odznaki z Twojej wyprawy',
+    earnedOn: 'Zdobyta {{date}}',
+  },
+  ranking: {
+    signInTitle: 'Dołącz do rankingu',
+    signInLead: 'Zaloguj się, aby zapisać odkrycia w koncie i zobaczyć swoje miejsce.',
+    signInGoogle: 'Zaloguj przez Google',
+    signInApple: 'Zaloguj przez Apple',
+    signInUnavailable: 'Logowanie w aplikacji pojawi się wkrótce. Twoje odkrycia są bezpieczne na tym urządzeniu.',
+    signInFailed: 'Nie udało się zalogować. Spróbuj ponownie.',
+    profile: 'Profil',
+    yourPlace: 'Twoje miejsce: {{place}}',
+    notRanked: 'Zapisz pierwsze odkrycie w koncie, aby pojawić się w rankingu.',
+  },
+  profile: {
+    title: 'Profil zdobywcy',
+    signedOut: 'Nie jesteś zalogowany.',
+    saved: 'Zapisano.',
+    finds: 'Odkrycia w koncie: {{count}}',
+  },
+}

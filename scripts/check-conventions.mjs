@@ -6,22 +6,25 @@
       Icons come from the Phosphor vocabulary (apps/web/src/ui/icons.ts) or
       the generated SVG sprite. Typographic punctuation (dashes, quotes,
       ellipsis, middle dot) is fine.
-   2. @phosphor-icons/react is imported only by the icon vocabulary module,
-      and @phosphor-icons/core only by the sprite generator.
+   2. @phosphor-icons/react is imported only by the web icon vocabulary,
+      phosphor-react-native only by the mobile one, and @phosphor-icons/core
+      only by the sprite generator.
 
-   Authored content (cottages/, data/, assets/) is not checked: it is data,
-   not code. */
+   Authored content (packages/content/public and private) is not checked:
+   it is data, not code. */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
-const SCAN_ROOTS = ['apps', 'packages', 'supabase', 'scripts', 'private', 'Readme.md', '.github']
+const SCAN_ROOTS = ['apps', 'packages', 'supabase', 'scripts', 'Readme.md', '.github']
 /* Only code can import a library; manifests and docs may name it. */
 const CODE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.mjs', '.cjs'])
 const SCAN_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.css', '.html', '.json', '.sql', '.md', '.yml', '.yaml'])
-const SKIP_DIRS = new Set(['node_modules', 'dist', '.expo', 'build', 'origs'])
+const SKIP_DIRS = new Set(['node_modules', 'dist', '.expo', 'build', 'android', 'ios'])
+/* Authored content and image originals: data, not code. */
+const SKIP_PATHS = new Set(['packages/content/public', 'packages/content/private'])
 /* Generated files and third-party assets are not ours to police. */
 const SKIP_FILES = new Set(['apps/web/public/icons.svg', 'pnpm-lock.yaml'])
 
@@ -36,9 +39,11 @@ const GLYPH = /[\u00D7\u2022\u2190-\u21FF\u2300-\u23FF\u25A0-\u27BF\u2900-\u297F
 const ICON_LIBRARY_RULES = [
   { pattern: /['"]@phosphor-icons\/react['"]/, allowed: ['apps/web/src/ui/icons.ts'], hint: 'import icons from the vocabulary in apps/web/src/ui/icons.ts' },
   { pattern: /['"]@phosphor-icons\/core['"]/, allowed: ['apps/web/scripts/build-icon-sprite.mjs'], hint: 'static markup uses the sprite built by apps/web/scripts/build-icon-sprite.mjs' },
+  { pattern: /['"]phosphor-react-native['"]/, allowed: ['apps/mobile/src/ui/icons.ts'], hint: 'import icons from the vocabulary in apps/mobile/src/ui/icons.ts' },
 ]
 
 function* walk(path) {
+  if (SKIP_PATHS.has(relative(repoRoot, path).replaceAll('\\', '/'))) return
   const stats = statSync(path)
   if (stats.isFile()) {
     yield path

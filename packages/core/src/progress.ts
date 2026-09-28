@@ -93,3 +93,14 @@ export function mergeFinds(state: StoredState, incoming: Record<string, StoredFi
   }
   return next
 }
+
+/* Every level the seeker has a record of: the published ones, plus any level
+   earned before it was renamed or removed in the editor, so collected
+   progress is never hidden from the Kronika. */
+export function kronikaLevels(levels: RewardLevel[], badges: StoredState['badges']): RewardLevel[] {
+  const published = new Set(levels.map((level) => level.id))
+  const orphans = Object.entries(badges)
+    .filter(([id]) => !published.has(id))
+    .map(([id, meta]) => ({ id, name: meta.name || id, threshold: null, final: false, image: '', body: '' }))
+  return [...levels, ...orphans]
+}

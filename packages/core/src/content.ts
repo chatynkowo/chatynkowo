@@ -27,10 +27,12 @@ function frontmatterValue(frontmatter: string, key: string) {
 }
 
 /* The body keeps its typographic dashes: a "– " at the start of a dialogue
-   line must not become "- ", which markdown parses as a bullet list. */
+   line must not become "- ", which markdown parses as a bullet list. The
+   title heading the editor writes under the frontmatter (after a blank
+   line) is dropped: the frontmatter `title` is the one clients show. */
 function splitMarkdown(raw: string) {
   const body = raw.replace(FRONTMATTER, '')
-    .replace(/^#\s+.*\n+/, '')
+    .replace(/^\s*#\s+.*\n+/, '')
     .trim()
   for (const heading of ARRIVAL_HEADINGS) {
     const arrivalIndex = body.indexOf(heading)
@@ -60,6 +62,7 @@ export function parseStoryFile(raw: string, slug: string): ParsedStory {
 
 /* ------------------------------------------------------------------------
    Paths — the published layout of the static site, shared by every client.
+   In the repository the same tree is packages/content/public.
    ------------------------------------------------------------------------ */
 
 export const CONTENT_PATHS = {
@@ -78,15 +81,49 @@ export const CONTENT_PATHS = {
   cottagePhoto: (slug: string, name: string) => `assets/img/cottages/${slug}/${name}`,
 } as const
 
+/* Shared illustrations shown for a cottage that has no photos of its own
+   yet, site-relative like every other content path. */
+const SHARED_ILLUSTRATIONS = [
+  'assets/img/WhatsApp-Image-2026-01-26-at-23.08.00-1.webp',
+  'assets/img/683x1024/WhatsApp-Image-2026-01-26-at-23.08.04-1-683x1024.webp',
+  'assets/img/WhatsApp-Image-2026-01-27-at-22.45.46.webp',
+  'assets/img/683x1024/WhatsApp-Image-2026-01-27-at-22.51.33-683x1024.webp',
+  'assets/img/WhatsApp-Image-2026-02-12-at-13.25.30.webp',
+] as const
+
+/* Photos uploaded for a cottage in /admin/, or — while none exist — one of
+   the shared illustrations, picked from the slug so a cottage always shows
+   the same one. Site-relative paths; the client's storyPhotos turns them
+   into URLs. */
+function storyPhotoPaths(cottage: Pick<CottageLocation, 'slug' | 'photos'>): string[] {
+  if (cottage.photos?.length) return cottage.photos.map((name) => CONTENT_PATHS.cottagePhoto(cottage.slug, name))
+  const index = Array.from(cottage.slug).reduce((sum, character) => sum + character.charCodeAt(0), 0)
+  return [SHARED_ILLUSTRATIONS[index % SHARED_ILLUSTRATIONS.length]]
+}
+
 /* ------------------------------------------------------------------------
-   Plaque codes — salted SHA-256 lookup, the same algorithm as
-   private/build-code-hashes.ts and the admin editor.
+   Plaque codes — salted SHA-256 lookup. packages/content/scripts/build-code-hashes.ts builds
+   the public file with these functions; the admin editor keeps an
+   in-browser copy of the same algorithm.
    ------------------------------------------------------------------------ */
 
 export const CODE_PATTERN = /^\d{4}$/
 
 export function isValidCode(code: string) {
   return CODE_PATTERN.test(code)
+}
+
+/* The QR on a plaque carries the same four digits as the printed code, either
+   bare or inside a link to the site. A `kod`/`code` query or hash parameter
+   wins; otherwise the first stand-alone four-digit group counts. Returns null
+   when the scan holds no code at all, so a stray QR never enters the flow. */
+export function codeFromScan(text: string): string | null {
+  const trimmed = text.trim()
+  if (isValidCode(trimmed)) return trimmed
+  const parameter = trimmed.match(/[?&#](?:kod|code)=(\d{4})(?!\d)/i)
+  if (parameter) return parameter[1]
+  const standalone = trimmed.match(/(?<!\d)(\d{4})(?!\d)/)
+  return standalone ? standalone[1] : null
 }
 
 export function hashCode(salt: string, code: string, sha256Hex: Sha256Hex) {
@@ -220,8 +257,13 @@ export function createContentClient(options: ContentClientOptions = {}) {
     return (cottage.photos ?? []).map((name) => url(CONTENT_PATHS.cottagePhoto(cottage.slug, name)))
   }
 
+  /* The cottage's own photos or its shared illustration, as URLs. */
+  function storyPhotos(cottage: Pick<CottageLocation, 'slug' | 'photos'>): string[] {
+    return storyPhotoPaths(cottage).map(url)
+  }
+
   /* Plain functions, no `this`: safe to destructure or re-export. */
-  return { url, loadLocations, loadCottages, loadRewards, loadCodeLookup, resolveCode, storyAudio, cottagePhotos }
+  return { url, loadLocations, loadCottages, loadRewards, loadCodeLookup, resolveCode, storyAudio, cottagePhotos, storyPhotos }
 }
 
 export type ContentClient = ReturnType<typeof createContentClient>

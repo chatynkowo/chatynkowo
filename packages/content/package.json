@@ -1,0 +1,25 @@
+{
+  "name": "@chatynkowo/content",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The authored Chatynkowo content: the tree the site publishes (stories, manifests, recordings, images) under public/, the secret plaque codes and image originals under private/, and the tooling that derives public files from private ones.",
+  "sideEffects": false,
+  "exports": {
+    "./package.json": "./package.json",
+    "./public/*": "./public/*"
+  },
+  "scripts": {
+    "check": "tsc -p tsconfig.json",
+    "codes:build": "tsx scripts/build-code-hashes.ts",
+    "codes:check": "tsx scripts/build-code-hashes.ts --check"
+  },
+  "dependencies": {
+    "@chatynkowo/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.15",
+    "tsx": "^4.23.1",
+    "typescript": "~5.9.3"
+  }
+}
