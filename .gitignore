@@ -19,9 +19,11 @@ dist
 # Build caches
 *.tsbuildinfo
 
-# Supabase CLI
+# Supabase CLI. The schema is not versioned here: a `supabase db pull` dump
+# stays local.
 supabase/.temp/
 supabase/.branches/
+supabase/migrations/
 
 # Expo
 .expo/

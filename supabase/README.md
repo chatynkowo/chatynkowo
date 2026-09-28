@@ -1,8 +1,9 @@
 # Chatynkowo backend
 
 The backend shared by the web site and the mobile app. Today it is a single
-Supabase project; this directory keeps its schema as migrations so that every
-change goes through the repository rather than the dashboard.
+Supabase project; this directory describes it. The schema itself is not
+versioned in the repository: changes are made in the project, and a local
+`supabase db pull` dump (`supabase/migrations/`) is ignored by git.
 
 ## What the backend does today
 
@@ -31,7 +32,7 @@ instance in `apps/web/src/lib/sync.ts`; the mobile app does the same with its
 own session storage (see `apps/mobile/README.md`).
 
 Schema types: `packages/api/src/database.types.ts`. Regenerate them after
-every migration:
+every schema change:
 
 ```bash
 supabase gen types typescript --linked > packages/api/src/database.types.ts
@@ -39,33 +40,29 @@ supabase gen types typescript --linked > packages/api/src/database.types.ts
 
 ## Working with the schema
 
-The migration `20260713000000_ranking.sql` is the script that was applied to
-the production project through the SQL editor (it used to live in
-`private/supabase/`). It is idempotent, so a fresh project can run it as is.
-The first step with the CLI is to confirm that production still matches it:
+The tables, policies and the `leaderboard()` function were created through
+the project's SQL editor and live there. To look at the live schema from a
+checkout, link the project and pull it; the dump lands in
+`supabase/migrations/`, which git ignores:
 
 ```bash
 pnpm dlx supabase login
 pnpm dlx supabase link --project-ref wqlodfnukdjrulcvzvtk
-pnpm dlx supabase db pull            # dumps the real schema into a new migration
+pnpm dlx supabase db pull            # dumps the real schema into a local, ignored migration
 ```
 
-If `db pull` shows differences, keep the dump as the baseline. From then on
-every schema change is a new file in `migrations/`:
+Schema changes go through the SQL editor of the project (or `supabase db
+push` from a local dump); regenerate the types in `packages/api` afterwards.
 
-```bash
-pnpm dlx supabase migration new <name>
-pnpm dlx supabase db push
-```
-
-Local environment (Docker): `pnpm dlx supabase start` brings up Postgres, Auth
-and the dashboard on localhost and applies the migrations from this directory.
-Put the local project's URL and key into `apps/web/.env`.
+Local environment (Docker): after a `db pull`, `pnpm dlx supabase start`
+brings up Postgres, Auth and the dashboard on localhost with the pulled
+schema. Put the local project's URL and key into `apps/web/.env`.
 
 ## Where to add things for the app
 
 - **New per-user tables** (child profile, elf, inventory, visits with a
-  verification level): another migration + "own rows" RLS + types.
+  verification level): a schema change in the project + "own rows" RLS +
+  regenerated types.
 - **Logic that cannot trust the client** (code verification, purchase
   entitlements, physical product codes): `supabase/functions/<name>/` as an
   Edge Function; the client calls it through `client.functions.invoke`.

@@ -1,8 +1,9 @@
 /* Database schema types — written by hand in the shape that
-   `supabase gen types typescript` produces. Once the schema in
-   supabase/migrations grows, replace this file with the generated one:
+   `supabase gen types typescript` produces. Once the schema grows, replace
+   this file with the generated one:
      supabase gen types typescript --linked > packages/api/src/database.types.ts
-   The source of truth for the schema is supabase/migrations/*.sql. */
+   The source of truth for the schema is the Supabase project itself; see
+   supabase/README.md. */
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
@@ -59,7 +60,7 @@ export type Database = {
     }
     Views: Record<never, never>
     Functions: {
-      /* supabase/migrations/20260713000000_ranking.sql. elapsed_seconds is a
+      /* The leaderboard() SQL function of the project. elapsed_seconds is a
          bigint, which PostgREST serialises as a number within JS range. */
       leaderboard: {
         Args: { p_total?: number }
