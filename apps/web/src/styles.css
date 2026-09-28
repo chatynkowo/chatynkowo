@@ -722,7 +722,7 @@ h2 {
   isolation: isolate;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
-  background: #2a2419;
+  background: var(--map-frame);
   box-shadow: var(--shadow);
 }
 
@@ -760,34 +760,6 @@ h2 {
     brightness(calc(0.83 + var(--map-reality) * 0.15));
 }
 
-.leaflet-regionLabels-pane,
-.leaflet-cottages-pane,
-.leaflet-atlas-pane {
-  transition: opacity 220ms ease, visibility 220ms ease;
-}
-
-/* data-atlas (set by MapExplorer) is "on" only in the zoom band where the
-   hand-drawn Jura atlas fills the view — there the region labels replace the
-   markers; everywhere else (country/Europe zooms, trails, abroad) the
-   clustered markers are the story. */
-.fantasy-map[data-atlas='on'] .leaflet-cottages-pane {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.fantasy-map[data-atlas='off'] .leaflet-regionLabels-pane {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.fantasy-map[data-level='europa'] .leaflet-atlas-pane {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
 .map-vignette {
   z-index: 480;
   border: 6px solid rgb(40 29 16 / 0.58);
@@ -823,20 +795,6 @@ h2 {
   color: #ead08c !important;
 }
 
-.atlas-area {
-  filter: drop-shadow(0 2px 3px rgb(53 35 18 / 0.22));
-  transition: opacity 160ms linear;
-}
-
-.atlas-area-1 { fill: #5b7357; }
-.atlas-area-2 { fill: #96763e; }
-.atlas-area-3 { fill: #5d5c74; }
-
-.fantasy-map[data-level='szlak'] .leaflet-atlas-pane {
-  opacity: 0.08;
-}
-
-.region-label-shell,
 .cottage-marker-shell,
 .cottage-cluster-shell,
 .user-location-shell {
@@ -849,9 +807,9 @@ h2 {
   display: block;
   width: 18px;
   height: 18px;
-  border: 3px solid #f6ecd3;
+  border: 3px solid var(--map-user-dot-border);
   border-radius: 50%;
-  background: #3d7fd9;
+  background: var(--map-user-dot);
   box-shadow: 0 0 0 2px rgb(28 52 84 / 0.35), 0 3px 8px rgb(22 15 9 / 0.4);
 }
 
@@ -870,46 +828,16 @@ h2 {
   100% { opacity: 0; transform: scale(1.25); }
 }
 
-.region-label {
-  display: grid;
-  width: 190px;
-  min-height: 58px;
-  place-content: center;
-  border: 1px solid rgb(95 68 35 / 0.5);
-  border-radius: 13px;
-  background: linear-gradient(#ddca98, #c7ad72);
-  box-shadow: 0 8px 16px rgb(44 30 17 / 0.25), inset 0 1px rgb(245 226 174 / 0.72);
-  color: #49321e;
-  cursor: pointer;
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  line-height: 1.15;
-  transition: transform 180ms ease, filter 180ms ease;
-}
-
-.region-label:hover {
-  filter: brightness(1.06);
-  transform: translateY(-2px);
-}
-
-.region-label strong {
-  font-size: 15px;
-}
-
-.region-label span {
-  margin-top: 4px;
-  font-size: 10px;
-}
-
 .cottage-marker {
   display: grid;
   width: 50px;
   height: 50px;
   place-items: center;
-  border: 2px solid #f0cf7f;
+  border: 2px solid var(--map-pin-border);
   border-radius: 50% 50% 50% 18%;
-  background: linear-gradient(145deg, #7d3f27, #45281c);
+  background: linear-gradient(145deg, var(--map-pin-top), var(--map-pin-bottom));
   box-shadow: 0 7px 14px rgb(44 25 13 / 0.38), inset 0 0 0 3px rgb(247 211 129 / 0.14);
-  color: #f4d37f;
+  color: var(--map-pin-ink);
   transform: rotate(-45deg);
   transition: transform 190ms ease, filter 190ms ease;
 }
@@ -925,9 +853,9 @@ h2 {
 }
 
 .cottage-marker.is-found {
-  border-color: #d9edbd;
-  background: linear-gradient(145deg, #517948, #294c36);
-  color: #e3f4c6;
+  border-color: var(--map-pin-found-border);
+  background: linear-gradient(145deg, var(--map-pin-found-top), var(--map-pin-found-bottom));
+  color: var(--map-pin-found-ink);
 }
 
 /* Optional per-cottage custom pin (data/cottages.json -> pin_custom_img), e.g.
@@ -950,11 +878,11 @@ h2 {
   place-content: center;
   align-items: center;
   gap: 4px;
-  border: 2px solid #edc671;
+  border: 2px solid var(--map-cluster-border);
   border-radius: 50%;
-  background: linear-gradient(145deg, #76502a, #3d2a1d);
+  background: linear-gradient(145deg, var(--map-cluster-top), var(--map-cluster-bottom));
   box-shadow: 0 8px 18px rgb(45 28 15 / 0.35), 0 0 0 5px rgb(225 184 99 / 0.18);
-  color: #f5d783;
+  color: var(--map-cluster-ink);
 }
 
 .cottage-cluster strong {
@@ -1009,7 +937,7 @@ h2 {
   border: 1px solid rgb(225 184 99 / 0.5);
   background: rgb(40 32 23 / 0.92);
   box-shadow: 0 9px 22px rgb(22 15 9 / 0.25), inset 0 1px rgb(245 215 145 / 0.09);
-  color: #efdcab;
+  color: var(--map-chrome-ink);
   backdrop-filter: blur(12px);
   pointer-events: auto;
 }
@@ -1125,7 +1053,7 @@ h2 {
   border: 0;
   border-bottom: 1px solid rgb(225 184 99 / 0.25);
   background: transparent;
-  color: #efcf82;
+  color: var(--map-chrome-icon);
   cursor: pointer;
 }
 
@@ -1210,7 +1138,7 @@ h2 {
   width: min(390px, calc(100% - 40px));
   overflow: auto;
   padding: 28px;
-  border: 1px solid #b58b47;
+  border: 1px solid var(--map-panel-border);
   border-radius: var(--radius);
   background:
     linear-gradient(rgb(232 216 178 / 0.93), rgb(211 187 139 / 0.96)),
@@ -1235,12 +1163,12 @@ h2 {
   right: 16px;
   border-color: rgb(78 54 31 / 0.28);
   background: rgb(250 239 211 / 0.48);
-  color: #48321f;
+  color: var(--map-panel-ink);
 }
 
 .cottage-region {
   margin-bottom: 9px;
-  color: #76572f;
+  color: var(--map-panel-muted);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -1269,7 +1197,7 @@ h2 {
   border: 1px solid rgb(69 101 61 / 0.3);
   border-radius: var(--radius-small);
   background: rgb(74 111 62 / 0.1);
-  color: #3f5835;
+  color: var(--map-clue-found-ink);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -1277,11 +1205,11 @@ h2 {
 .cottage-clue {
   border-color: rgb(111 76 35 / 0.28);
   background: rgb(138 97 43 / 0.1);
-  color: #604421;
+  color: var(--map-clue-ink);
 }
 
 .arrival-guide {
-  color: #4a3824;
+  color: var(--map-panel-text);
   font-size: 13px;
 }
 
@@ -1301,9 +1229,9 @@ h2 {
 }
 
 .cottage-panel .button-ghost {
-  border-color: #775630;
+  border-color: var(--map-panel-button-border);
   background: transparent;
-  color: #3e2d1d;
+  color: var(--map-panel-button-ink);
 }
 
 .code-form {
@@ -2115,10 +2043,6 @@ h2 {
     transform: none;
   }
 
-  .region-label {
-    transform: scale(0.82);
-  }
-
   .cottage-panel {
     top: auto;
     right: 0;
@@ -2894,7 +2818,6 @@ h2 {
 .map-search-error { font-size: 13px; }
 .map-legend { font-size: 12px; }
 .map-tip { font-size: 13px; }
-.region-label span { font-size: 12px; }
 .cottage-region { font-size: 12px; }
 .found-notice,
 .cottage-clue,
@@ -2913,13 +2836,7 @@ h2 {
 }
 
 .leaflet-marker-icon:focus-visible .cottage-marker,
-.leaflet-marker-icon:focus-visible .region-label {
-  outline: 3px solid #f2ca70;
-  outline-offset: 5px;
-  filter: brightness(1.12);
-}
-
-.main-nav button:focus-visible,
+.leaflet-marker-icon:focus-visible .main-nav button:focus-visible,
 .main-nav a:focus-visible,
 .quest-progress-mini:focus-visible,
 .quest-kronika:focus-visible,
@@ -2976,11 +2893,7 @@ h2 {
     transform: scale(1.06);
   }
 
-  .region-label:hover {
-    box-shadow: 0 12px 22px rgb(44 30 17 / .32), inset 0 1px rgb(245 226 174 / .82);
-  }
-
-  .treasury-toggle:hover {
+    .treasury-toggle:hover {
     filter: brightness(1.08);
     box-shadow: 0 16px 34px rgb(5 16 12 / .52), 0 0 0 5px rgb(210 166 77 / .13);
     transform: translateY(-3px) rotate(-3deg);

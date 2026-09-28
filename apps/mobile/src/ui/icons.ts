@@ -1,5 +1,7 @@
 /* The icon vocabulary of the app — the same semantic names and size scale
-   as apps/web/src/ui/icons.ts, so a design decision is made once.
+   as apps/web/src/ui/icons.ts, so a design decision is made once. The role
+   names are the shared lists in @chatynkowo/theme; the `satisfies` checks
+   at the end fail the build when a role is missing on this side.
 
    Rules:
    - phosphor-react-native is the only icon library, and this file is the
@@ -9,8 +11,8 @@
      icons, in markup or in comments — the same script rejects them.
    - Sizes come from `iconSize`, not from ad-hoc numbers.
 
-   When a role is added here, add it to the web vocabulary too (and the
-   other way round), keeping the two files in step. */
+   When a shared role is added, add it to SHARED_ICON_ROLES in the theme and
+   to both vocabularies; app-only roles go to MOBILE_ICON_ROLES. */
 import {
   ArrowCounterClockwiseIcon,
   ArrowLeftIcon,
@@ -58,23 +60,11 @@ import {
   XIcon,
 } from 'phosphor-react-native'
 
+import type { Icon } from 'phosphor-react-native'
+import { iconSize, type MobileIconRole, type SharedIconRole } from '@chatynkowo/theme'
+
 export type { Icon, IconProps, IconWeight } from 'phosphor-react-native'
-
-/* One scale for every icon in the app, identical to the site's. Pick by
-   role, not by taste: xs/sm inline with small text, md inside controls and
-   next to body copy, lg for standalone controls, xl for section markers,
-   hero and emblem for decorative headers. */
-export const iconSize = {
-  xs: 14,
-  sm: 16,
-  md: 20,
-  lg: 24,
-  xl: 28,
-  hero: 34,
-  emblem: 42,
-} as const
-
-export type IconSize = keyof typeof iconSize
+export { iconSize, type IconSize } from '@chatynkowo/theme'
 
 /* ---------- Interface roles ---------- */
 export const CloseIcon = XIcon
@@ -130,3 +120,14 @@ export const SyncIcon = CloudArrowUpIcon
 export const DownloadIcon = DownloadSimpleIcon
 export const WarningIcon = PhosphorWarning
 export const LanguageIcon = TranslateIcon
+
+/* The vocabulary as one object, checked against the shared and app-only
+   roles: a missing role is a compile error. */
+export const ICON_VOCABULARY = {
+  CloseIcon, BackIcon, ForwardIcon, PreviousIcon, NextIcon, ExpandIcon, CheckIcon, PlayIcon, PauseIcon,
+  SoundOnIcon, SoundOffIcon, ZoomInIcon, ZoomOutIcon, ResetViewIcon, LocateIcon, SpinnerIcon, SearchIcon,
+  CottageIcon, FoundIcon, PinIcon, NavigateIcon, AtlasIcon, TrailIcon, KeyIcon, SealIcon, QrIcon, ShieldIcon,
+  ChronicleIcon, RewardIcon, NotebookIcon, StoryAudioIcon, LoreIcon, CreedIcon, ElfIcon, ForestIcon,
+  InstagramIcon, FacebookIcon,
+  CameraIcon, ProfileIcon, SignOutIcon, OfflineIcon, SyncIcon, DownloadIcon, WarningIcon, LanguageIcon,
+} satisfies Record<SharedIconRole | MobileIconRole, Icon>

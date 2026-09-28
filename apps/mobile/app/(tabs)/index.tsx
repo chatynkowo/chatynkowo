@@ -1,18 +1,19 @@
-import { useMemo, useRef, useState } from 'react'
-import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { ActivityIndicator, StyleSheet, View, type LayoutChangeEvent } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
-import { EUROPE_BOUNDS, isWithinBounds, nextLevel, type Cottage, type LatLng } from '@chatynkowo/core'
-import { AtlasMap, type AtlasMapHandle } from '../../src/features/atlas/AtlasMap'
+import { EUROPE_BOUNDS, isWithinBounds, nextLevel, type Cottage } from '@chatynkowo/core'
+import { AtlasMap, LEVEL_KEYS, type AtlasMapHandle, type MapPresentation } from '../../src/features/atlas/AtlasMap'
 import { CottageList } from '../../src/features/atlas/CottageList'
-import { CottageSheet } from '../../src/features/atlas/CottageSheet'
-import { locate } from '../../src/lib/location'
+import { CottagePanel } from '../../src/features/atlas/CottagePanel'
+import { ControlBar, LevelCard, MapTip } from '../../src/features/atlas/MapChrome'
+import { MapVignette } from '../../src/features/atlas/MapVignette'
+import { locate, type Position } from '../../src/lib/location'
 import { openInMaps } from '../../src/lib/navigate'
 import { useContent, useProgress } from '../../src/providers'
 import {
   AtlasIcon,
   Button,
-  IconButton,
   LocateIcon,
   OfflineIcon,
   ResetViewIcon,
@@ -22,25 +23,53 @@ import {
   Text,
   colors,
   iconSize,
+  mapPalette,
+  radius,
   space,
 } from '../../src/ui'
 
-/* The Atlas tab: the map with every cottage, the quest line (stage and the
-   next reward), the map controls of the site (reset the frame, my
-   position, search) and the cottage sheet on a tapped marker. */
+const DEFAULT_PANEL_HEIGHT = 320
+
+/* The Atlas tab: the quest line, then the site's fairy-tale map in its
+   frame — the level indicator, the search, reset and locate controls, the
+   tip, and the parchment panel that rises when a marker is chosen. */
 export default function AtlasScreen() {
   const { t } = useTranslation()
   const router = useRouter()
   const { cottages, rewards, status, offline, stale, refresh, total } = useContent()
   const { state, foundSlugs, foundCount } = useProgress()
   const map = useRef<AtlasMapHandle>(null)
+  const panelHeight = useRef(DEFAULT_PANEL_HEIGHT)
   const [selected, setSelected] = useState<Cottage | null>(null)
   const [listOpen, setListOpen] = useState(false)
-  const [position, setPosition] = useState<LatLng | null>(null)
+  const [position, setPosition] = useState<Position | null>(null)
   const [locating, setLocating] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
+  const [presentation, setPresentation] = useState<MapPresentation>({ level: 'kraj', reality: 0 })
 
   const upcoming = useMemo(() => nextLevel(state, rewards.levels, total), [state, rewards.levels, total])
+  const onPresentationChange = useCallback((next: MapPresentation) => {
+    setPresentation((current) => (current.level === next.level && Math.abs(current.reality - next.reality) < 0.02 ? current : next))
+  }, [])
+
+  function choose(cottage: Cottage) {
+    setListOpen(false)
+    setSelected(cottage)
+    map.current?.frameCottage(cottage, panelHeight.current + space.lg)
+  }
+
+  function closePanel() {
+    setSelected(null)
+    map.current?.releasePadding()
+  }
+
+  function onPanelLayout(event: LayoutChangeEvent) {
+    const height = event.nativeEvent.layout.height
+    if (Math.abs(height - panelHeight.current) > 8) {
+      panelHeight.current = height
+      if (selected) map.current?.frameCottage(selected, height + space.lg)
+    }
+  }
 
   async function locateMe() {
     setLocating(true)
@@ -54,10 +83,16 @@ export default function AtlasScreen() {
     map.current?.showPosition(result.position)
   }
 
-  function pickFromList(cottage: Cottage) {
-    setListOpen(false)
-    setSelected(cottage)
-  }
+  const controls = [
+    { key: 'reset', label: t('map.resetView'), icon: <ResetViewIcon size={iconSize.md} color={mapPalette.chromeIcon} />, onPress: () => { closePanel(); map.current?.resetView() } },
+    {
+      key: 'locate',
+      label: t('map.locate'),
+      icon: locating ? <ActivityIndicator color={mapPalette.chromeIcon} /> : <LocateIcon size={iconSize.md} color={mapPalette.chromeIcon} />,
+      onPress: () => void locateMe(),
+      disabled: locating,
+    },
+  ]
 
   return (
     <ScreenFrame scroll={false} padded={false} contentStyle={styles.frame}>
@@ -90,13 +125,6 @@ export default function AtlasScreen() {
           </Text>
         </View>
       ) : null}
-      {notice ? (
-        <View style={styles.notice} accessibilityLiveRegion="polite">
-          <Text variant="small" tone="danger">
-            {notice}
-          </Text>
-        </View>
-      ) : null}
 
       {status === 'loading' ? (
         <View style={styles.center} accessibilityRole="progressbar" accessibilityLabel={t('atlas.loadingAria')}>
@@ -124,44 +152,57 @@ export default function AtlasScreen() {
           </Text>
         </View>
       ) : (
-        <View style={styles.map} accessibilityLabel={t('map.interactiveAria')}>
+        <View style={styles.explorer} accessibilityLabel={t('map.interactiveAria')}>
           <AtlasMap
             ref={map}
             cottages={cottages}
             foundSlugs={foundSlugs}
             selectedSlug={selected?.slug ?? null}
             userPosition={position}
-            onSelect={setSelected}
+            onSelect={choose}
+            onPresentationChange={onPresentationChange}
           />
-          <View style={styles.controls} accessibilityLabel={t('map.controlsAria')}>
-            <IconButton label={t('map.searchLabel')} onPress={() => setListOpen(true)}>
-              <SearchIcon size={iconSize.md} color={colors.ink} />
-            </IconButton>
-            <IconButton label={t('map.resetView')} onPress={() => map.current?.resetView()}>
-              <ResetViewIcon size={iconSize.md} color={colors.ink} />
-            </IconButton>
-            <IconButton label={t('map.locate')} onPress={() => void locateMe()} disabled={locating} active={Boolean(position)}>
-              {locating ? <ActivityIndicator color={colors.accentStrong} /> : <LocateIcon size={iconSize.md} color={colors.ink} />}
-            </IconButton>
+          <MapVignette reality={presentation.reality} />
+          <View style={styles.topbar} pointerEvents="box-none">
+            <LevelCard label={t('map.levelLabel')} level={t(LEVEL_KEYS[presentation.level])} />
+            <ControlBar controls={[{ key: 'search', label: t('map.searchLabel'), icon: <SearchIcon size={iconSize.md} color={mapPalette.chromeIcon} />, onPress: () => setListOpen(true) }]} />
           </View>
+          {notice ? (
+            <View style={styles.alert} accessibilityLiveRegion="polite">
+              <Text variant="small" style={styles.alertText}>
+                {notice}
+              </Text>
+            </View>
+          ) : null}
+          {selected ? null : (
+            <View style={styles.bottombar} pointerEvents="box-none">
+              <ControlBar controls={controls} />
+              <View style={styles.tip}>
+                <MapTip>{t('map.tip')}</MapTip>
+              </View>
+            </View>
+          )}
+          {selected ? (
+            <CottagePanel
+              cottage={selected}
+              found={foundSlugs.has(selected.slug)}
+              onClose={closePanel}
+              onNavigate={(cottage) => void openInMaps(cottage, cottage.title)}
+              onHaveCode={() => {
+                closePanel()
+                router.push('/code')
+              }}
+              onOpenStory={(cottage) => {
+                closePanel()
+                router.push({ pathname: '/story/[slug]', params: { slug: cottage.slug, revisit: '1' } })
+              }}
+              onLayout={onPanelLayout}
+            />
+          ) : null}
         </View>
       )}
 
-      <CottageList visible={listOpen} cottages={cottages} foundSlugs={foundSlugs} onClose={() => setListOpen(false)} onSelect={pickFromList} />
-      <CottageSheet
-        cottage={selected}
-        found={selected ? foundSlugs.has(selected.slug) : false}
-        onClose={() => setSelected(null)}
-        onNavigate={(cottage) => void openInMaps(cottage, cottage.title)}
-        onHaveCode={() => {
-          setSelected(null)
-          router.push('/code')
-        }}
-        onOpenStory={(cottage) => {
-          setSelected(null)
-          router.push({ pathname: '/story/[slug]', params: { slug: cottage.slug, revisit: '1' } })
-        }}
-      />
+      <CottageList visible={listOpen} cottages={cottages} foundSlugs={foundSlugs} onClose={() => setListOpen(false)} onSelect={choose} />
     </ScreenFrame>
   )
 }
@@ -187,16 +228,51 @@ const styles = StyleSheet.create({
     gap: space.sm,
     paddingHorizontal: space.lg,
   },
-  map: {
+  explorer: {
     flex: 1,
+    marginHorizontal: space.md,
+    marginBottom: space.md,
     overflow: 'hidden',
-    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    borderRadius: radius.card,
+    backgroundColor: mapPalette.frame,
   },
-  controls: {
+  topbar: {
     position: 'absolute',
-    top: space.md,
-    right: space.md,
+    top: space.lg,
+    left: space.lg,
+    right: space.lg,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  alert: {
+    position: 'absolute',
+    top: 84,
+    left: space.lg,
+    right: space.lg,
+    padding: space.sm,
+    borderWidth: 1,
+    borderColor: colors.danger,
+    borderRadius: radius.control,
+    backgroundColor: mapPalette.chrome,
+  },
+  alertText: {
+    color: colors.danger,
+  },
+  bottombar: {
+    position: 'absolute',
+    left: space.lg,
+    right: space.lg,
+    bottom: space.lg,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     gap: space.sm,
+  },
+  tip: {
+    flex: 1,
+    alignItems: 'flex-end',
   },
   center: {
     flex: 1,

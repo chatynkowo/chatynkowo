@@ -5,12 +5,17 @@ import type { LatLng } from '@chatynkowo/core'
    locate control — never at start-up, and never in the background. A fix
    that does not arrive in time falls back to the last known one. */
 
-export type LocateResult = { kind: 'ok'; position: LatLng } | { kind: 'denied' } | { kind: 'failed' }
+export type Position = LatLng & {
+  /* Radius of the reading's uncertainty in metres, when the device says. */
+  accuracy: number | null
+}
+
+export type LocateResult = { kind: 'ok'; position: Position } | { kind: 'denied' } | { kind: 'failed' }
 
 const FIX_TIMEOUT_MS = 12_000
 
-function toLatLng(reading: Location.LocationObject): LatLng {
-  return { lat: reading.coords.latitude, lng: reading.coords.longitude }
+function toPosition(reading: Location.LocationObject): Position {
+  return { lat: reading.coords.latitude, lng: reading.coords.longitude, accuracy: reading.coords.accuracy }
 }
 
 export async function locate(): Promise<LocateResult> {
@@ -22,7 +27,7 @@ export async function locate(): Promise<LocateResult> {
       new Promise((resolve) => setTimeout(() => resolve(null), FIX_TIMEOUT_MS)),
     ])
     const reading = fresh ?? (await Location.getLastKnownPositionAsync())
-    return reading ? { kind: 'ok', position: toLatLng(reading) } : { kind: 'failed' }
+    return reading ? { kind: 'ok', position: toPosition(reading) } : { kind: 'failed' }
   } catch {
     return { kind: 'failed' }
   }

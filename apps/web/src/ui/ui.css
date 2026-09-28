@@ -1,36 +1,17 @@
 /* ==========================================================================
-   Shared interface layer: design tokens and the primitives every page uses
-   (buttons, icon buttons, modal dialogs). Each entry point imports this
-   file first, so page stylesheets (styles.css, ranking.css) extend or
-   override these rules and never redefine them.
+   Shared interface layer: the design tokens (generated from the theme
+   package) and the primitives every page uses (buttons, icon buttons,
+   modal dialogs). Each entry point imports this file first, so page
+   stylesheets (styles.css, ranking.css) extend or override these rules and
+   never redefine them.
    ========================================================================== */
 
 /* ---------- Design tokens ---------- */
-:root {
-  color-scheme: dark;
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  --page: #0d1c18;
-  --page-raised: #132620;
-  --surface: #172d25;
-  --surface-soft: #1d352b;
-  --ink: #f1e8d3;
-  --ink-soft: #c7bda8;
-  --ink-faint: #9d9483;
-  --line: rgb(211 177 100 / 0.27);
-  --line-strong: rgb(211 177 100 / 0.55);
-  --accent: #d2a64d;
-  --accent-strong: #ebc66f;
-  --accent-ink: #241a0c;
-  --danger: #f0a28e;
-  --success: #9ecb9a;
-  --radius: 18px;
-  --radius-small: 12px;
-  --shadow: 0 26px 72px rgb(3 12 9 / 0.42);
-  --header-height: 72px;
-  --control-size: 42px;
-}
+/* Generated from @chatynkowo/theme (packages/theme/src/tokens.ts) by
+   scripts/build-tokens-css.ts: --page, --ink, --accent, --radius,
+   --space-*, --icon-*, --map-* and the type families. Edit the tokens
+   there; both clients read the same values. */
+@import './tokens.css';
 
 /* ---------- Buttons (ui/Button.tsx) ---------- */
 .button {

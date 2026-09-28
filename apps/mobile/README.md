@@ -65,6 +65,14 @@ to resolve from both `node_modules` directories, which is enough for pnpm's
 isolated layout; `node-linker=hoisted` in the root `.npmrc` stays commented
 out unless a future native module needs it.
 
+Watching the whole monorepo needs more inotify watches than Linux grants
+by default; when edits stop reaching the app (Metro logs no "Bundled"
+line), raise the limit or install Watchman:
+
+```bash
+sudo sysctl fs.inotify.max_user_watches=524288   # or: sudo apt install watchman
+```
+
 ## Structure
 
 ```
@@ -124,7 +132,7 @@ assets/                  app icon, adaptive icon layers, the splash emblem and t
 
 | Area | Library | Notes |
 |---|---|---|
-| Map | `@maplibre/maplibre-react-native` | OpenStreetMap raster tiles, markers from the manifest, the same per-country opening frame as the site (`homeCountry` / `homeBounds` in core `geo.ts`), reset and search controls; "Navigate" opens the system maps app |
+| Map | `@maplibre/maplibre-react-native` | the site's fairy-tale map: OpenStreetMap tiles washed into parchment that turn real as the seeker zooms in, teardrop pins gathered into clusters (`supercluster`), the search area around the chosen cottage, the level indicator, reset and search controls, the parchment cottage panel; the same per-country opening frame as the site (`homeCountry` / `homeBounds` in core `geo.ts`); "Navigate" opens the system maps app |
 | Position | `expo-location` | only on the locate control, foreground permission, one reading shown as a marker |
 | Splash | `expo-splash-screen` | the brand logo on the page colour until fonts and the remembered language are loaded |
 | Story audio | `expo-audio` | background playback (`UIBackgroundModes: audio` via its plugin) and lock-screen / notification controls (`setActiveForLockScreen`); a language without a recording falls back to the Polish original when the file fails to load |
@@ -132,6 +140,7 @@ assets/                  app icon, adaptive icon layers, the splash emblem and t
 | QR | `expo-camera` | `CameraView` scanning `qr` only; the code goes to the Code tab through `scanResult.ts` |
 | Fonts | `expo-font` + `@expo-google-fonts/*` | Cormorant Garamond and Cinzel Decorative, imported per weight; the repository's woff2 files cannot be used natively |
 | Locale | `expo-localization` | the device language picks the dictionary and, through `detectCountry`, the map's home country (never geolocation) |
+| Country names | `@formatjs/intl-displaynames` | Hermes has no `Intl.DisplayNames`; the polyfill with Polish and English data names a cottage's country in the map panel, as the site does |
 
 Google sign-in on iOS additionally needs the library's config plugin with
 the `iosUrlScheme` from the Google Cloud console; add it to `app.json`
@@ -143,12 +152,14 @@ the capability on the App ID; `ios.usesAppleSignIn` is already set.
 
 - Icons come only from `src/ui/icons.ts`, which mirrors the web vocabulary
   name for name (`CloseIcon`, `ChronicleIcon`, ...) and the `iconSize`
-  scale; `phosphor-react-native` is imported nowhere else, and no emoji or
-  typographic glyph is used as an icon. `scripts/check-conventions.mjs`
-  enforces both as part of `pnpm check`.
+  scale; the role names are the theme's `SHARED_ICON_ROLES` and
+  `MOBILE_ICON_ROLES`, checked at compile time. `phosphor-react-native` is
+  imported nowhere else, and no emoji or typographic glyph is used as an
+  icon. `scripts/check-conventions.mjs` enforces both as part of `pnpm check`.
 - Screens compose the primitives in `src/ui` and never restyle them; the
-  tokens in `src/ui/tokens.ts` are the `:root` values of the site's
-  `ui.css`, so a colour changes in both files together.
+  tokens come from `@chatynkowo/theme`, the same package the site's
+  stylesheet is generated from, so a colour changes in one place for both
+  clients.
 - Every user-facing string goes through i18next: the shared set
   (`packages/i18n/src/shared/`) as the `translation` namespace, the app-only
   set (`packages/i18n/src/mobile/`) as `mobile`, typed so both languages

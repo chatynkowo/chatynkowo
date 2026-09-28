@@ -14,6 +14,7 @@ packages/
   core/        @chatynkowo/core     — types, languages, content client, rewards, progress, geography, plaque codes
   api/         @chatynkowo/api      — client for the shared backend (Supabase): accounts, profiles, finds, leaderboard
   i18n/        @chatynkowo/i18n     — interface dictionaries (pl, en): shared, web-only, mobile-only
+  theme/       @chatynkowo/theme    — design tokens, map palette, button variants and icon role names shared by both clients
   content/     @chatynkowo/content  — the authored content, see packages/content/README.md
     public/    the tree the site publishes as is: cottages/ (stories), data/ (manifests), assets/ (recordings, images)
     private/   the secret plaque codes and image originals; never published
@@ -22,8 +23,9 @@ supabase/      backend description (README); the schema itself is not versioned 
 scripts/       repository-wide checks (conventions)
 ```
 
-Dependencies between packages go one way: `core` depends on nothing, `i18n`,
-`api` and `content` depend on `core`, the apps depend on the packages.
+Dependencies between packages go one way: `core` and `theme` depend on
+nothing, `i18n`, `api` and `content` depend on `core`, the apps depend on
+the packages.
 Packages are published as TypeScript sources (`main: src/index.ts`) — Vite
 and Metro compile them together with the app, with no separate build step.
 `core`, `api` and `i18n` are type-checked without the `DOM` library so that
@@ -134,9 +136,13 @@ The editor's own interface copy is Polish, for the Polish content team; that is 
 The web app has one shared interface layer, `apps/web/src/ui`, and every
 page and feature component builds on it instead of re-implementing pieces:
 
-- `ui.css` — design tokens (`:root`) and the primitives: buttons, icon
-  buttons, modal dialogs. Each entry point imports it first; page stylesheets
-  extend these rules and never redefine them.
+- `ui.css` — the primitives: buttons, icon buttons, modal dialogs. Each
+  entry point imports it first; page stylesheets extend these rules and
+  never redefine them. The design tokens it starts with (`--page`, `--ink`,
+  `--accent`, `--radius`, `--map-*`, the type families) are generated into
+  `ui/tokens.css` from `packages/theme` by `scripts/build-tokens-css.ts`
+  before every dev server start, build and check — edit the theme, not the
+  stylesheet.
 - `icons.ts` — the icon vocabulary. Phosphor is the only icon library and
   this is the only module that imports it; components use the semantic names
   (`CloseIcon`, `ChronicleIcon`, …) and the `iconSize` scale. Swapping a
@@ -165,11 +171,16 @@ glyph and on icon-library imports outside the icon modules named above.
 The admin editor keeps its own light-themed `.btn` styles on purpose: it is
 an internal tool with a different look, not a page of the site.
 
-The mobile app has the same layer in `apps/mobile/src/ui`: the tokens of
-`ui.css` as constants, an icon vocabulary on `phosphor-react-native` with the
-same semantic names (the only module allowed to import that library), and
-the same button, dialog and text contracts. Copy that exists only in the app
-lives in the typed `mobile` namespace of `packages/i18n`.
+The mobile app has the same layer in `apps/mobile/src/ui`, built on the same
+theme package: React Native primitives cannot be the site's React DOM ones,
+so what the two clients share is everything a primitive is made of — the
+palette, radii, spacing, type scale, map palette, icon sizes, the three
+button variants (`primary`, `ghost`, `subtle`, plus the ghost's parchment
+form on the map panel) and the icon vocabulary's role names. Both
+`icons.ts` modules are type-checked against `SHARED_ICON_ROLES` in the
+theme, so a role added on one side must be added on the other. Copy that
+exists only in the app lives in the typed `mobile` namespace of
+`packages/i18n`.
 
 ## Deployment
 

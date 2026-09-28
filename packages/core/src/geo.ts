@@ -129,3 +129,18 @@ export function homeBounds(cottages: readonly (LatLng & { country?: string })[],
 export function isWithinBounds({ lat, lng }: LatLng, [[south, west], [north, east]]: BoundsTuple): boolean {
   return lat >= south && lat <= north && lng >= west && lng <= east
 }
+
+/* The country whose framing box holds a point — the smallest one when
+   boxes overlap — or null over the sea or outside the presets. Drives the
+   "kraj" rung of the map's level indicator: what the view shows, not where
+   the visitor is from. */
+export function countryAt(point: LatLng): string | null {
+  let best: { code: string; area: number } | null = null
+  for (const [code, bounds] of Object.entries(COUNTRY_BOUNDS)) {
+    if (!isWithinBounds(point, bounds)) continue
+    const [[south, west], [north, east]] = bounds
+    const area = (north - south) * (east - west)
+    if (!best || area < best.area) best = { code, area }
+  }
+  return best?.code ?? null
+}

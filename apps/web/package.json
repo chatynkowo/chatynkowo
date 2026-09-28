@@ -4,17 +4,19 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/build-icon-sprite.mjs && vite",
-    "build": "node scripts/build-icon-sprite.mjs && tsc -b && vite build",
+    "dev": "node scripts/build-icon-sprite.mjs && tsx scripts/build-tokens-css.ts && vite",
+    "build": "node scripts/build-icon-sprite.mjs && tsx scripts/build-tokens-css.ts && tsc -b && vite build",
     "icons:build": "node scripts/build-icon-sprite.mjs",
     "preview": "vite preview",
-    "check": "tsc -b --pretty false"
+    "check": "tsx scripts/build-tokens-css.ts && tsc -b --pretty false",
+    "tokens:build": "tsx scripts/build-tokens-css.ts"
   },
   "dependencies": {
     "@chatynkowo/api": "workspace:*",
     "@chatynkowo/content": "workspace:*",
     "@chatynkowo/core": "workspace:*",
     "@chatynkowo/i18n": "workspace:*",
+    "@chatynkowo/theme": "workspace:*",
     "@phosphor-icons/react": "^2.1.10",
     "@toast-ui/editor": "^3.2.2",
     "i18next": "^26.3.6",
@@ -34,6 +36,7 @@
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
+    "tsx": "^4.23.1",
     "typescript": "~5.9.3",
     "vite": "^7.1.7"
   }

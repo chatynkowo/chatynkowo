@@ -13,8 +13,9 @@
      glyphs through the SVG sprite generated from @phosphor-icons/core; the
      list of sprite icons lives in sprite-icons.json next to this file.
 
-   The mobile app should mirror this vocabulary with phosphor-react-native,
-   keeping the semantic names identical. */
+   The role names are the shared list in @chatynkowo/theme (SHARED_ICON_ROLES);
+   the app's vocabulary exports the same names on phosphor-react-native, and
+   the `satisfies` check below fails the build when a role is missing. */
 import {
   ArrowCounterClockwise,
   ArrowLeft,
@@ -54,23 +55,11 @@ import {
   X,
 } from '@phosphor-icons/react'
 
+import type { Icon } from '@phosphor-icons/react'
+import { iconSize, type SharedIconRole } from '@chatynkowo/theme'
+
 export type { Icon, IconProps, IconWeight } from '@phosphor-icons/react'
-
-/* One scale for every icon on the site. Pick by role, not by taste:
-   xs/sm inline with small text, md inside controls and next to body copy,
-   lg for standalone controls, xl for section markers, hero and emblem for
-   decorative headers. */
-export const iconSize = {
-  xs: 14,
-  sm: 16,
-  md: 20,
-  lg: 24,
-  xl: 28,
-  hero: 34,
-  emblem: 42,
-} as const
-
-export type IconSize = keyof typeof iconSize
+export { iconSize, type IconSize } from '@chatynkowo/theme'
 
 /* ---------- Interface roles ---------- */
 export const CloseIcon = X
@@ -116,3 +105,13 @@ export const ForestIcon = TreeEvergreen
 /* ---------- Brands ---------- */
 export const InstagramIcon = InstagramLogo
 export const FacebookIcon = FacebookLogo
+
+/* The vocabulary as one object, checked against the shared roles: a
+   missing role is a compile error. */
+export const ICON_VOCABULARY = {
+  CloseIcon, BackIcon, ForwardIcon, PreviousIcon, NextIcon, ExpandIcon, CheckIcon, PlayIcon, PauseIcon,
+  SoundOnIcon, SoundOffIcon, ZoomInIcon, ZoomOutIcon, ResetViewIcon, LocateIcon, SpinnerIcon, SearchIcon,
+  CottageIcon, FoundIcon, PinIcon, NavigateIcon, AtlasIcon, TrailIcon, KeyIcon, SealIcon, QrIcon, ShieldIcon,
+  ChronicleIcon, RewardIcon, NotebookIcon, StoryAudioIcon, LoreIcon, CreedIcon, ElfIcon, ForestIcon,
+  InstagramIcon, FacebookIcon,
+} satisfies Record<SharedIconRole, Icon>

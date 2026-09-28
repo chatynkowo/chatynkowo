@@ -2,20 +2,26 @@ import type { ReactNode } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native'
 import { Link, type Href } from 'expo-router'
 import { Text } from './Text'
-import { colors, radius, sizes, space } from './tokens'
+import { colors, mapPalette, radius, sizes, space, type ButtonVariant } from './tokens'
 
-/* The app's buttons — the same three contracts as the site (ui/Button.tsx):
+/* The app's buttons — the three contracts of @chatynkowo/theme, the same
+   the site implements in ui/Button.tsx and ui.css:
    - primary: the single main action of a view,
    - ghost:   secondary actions on the raised surface (default),
    - subtle:  tertiary actions, e.g. sign out.
    Use Button for actions, LinkButton for navigation that looks like a
    button, IconButton for icon-only controls (the accessible name is
-   mandatory). */
+   mandatory). On the parchment surface (the map's cottage panel) the ghost
+   button takes the panel's brown border and ink, as on the site. */
 
-export type ButtonVariant = 'primary' | 'ghost' | 'subtle'
+export type { ButtonVariant }
+
+export type ButtonSurface = 'dark' | 'parchment'
 
 export type ButtonProps = Omit<PressableProps, 'style' | 'children'> & {
   variant?: ButtonVariant
+  /* What the button sits on; only the ghost variant changes with it. */
+  surface?: ButtonSurface
   /* A string becomes the label; anything else is rendered as given. */
   children: ReactNode
   /* Icons from the vocabulary, before and after the label. */
@@ -34,8 +40,9 @@ const labelTone: Record<ButtonVariant, 'accentInk' | 'ink' | 'soft'> = {
   subtle: 'soft',
 }
 
-export function Button({ variant = 'ghost', children, icon, iconAfter, busy, block, disabled, style, ...rest }: ButtonProps) {
+export function Button({ variant = 'ghost', surface = 'dark', children, icon, iconAfter, busy, block, disabled, style, ...rest }: ButtonProps) {
   const inactive = Boolean(disabled || busy)
+  const onParchment = surface === 'parchment' && variant === 'ghost'
   return (
     <Pressable
       accessibilityRole="button"
@@ -44,6 +51,7 @@ export function Button({ variant = 'ghost', children, icon, iconAfter, busy, blo
       style={({ pressed }) => [
         styles.base,
         styles[variant],
+        onParchment && styles.ghostOnParchment,
         block && styles.block,
         pressed && styles.pressed,
         inactive && styles.disabled,
@@ -53,7 +61,7 @@ export function Button({ variant = 'ghost', children, icon, iconAfter, busy, blo
     >
       {busy ? <ActivityIndicator color={variant === 'primary' ? colors.accentInk : colors.accentStrong} /> : icon}
       {typeof children === 'string' ? (
-        <Text weight="bold" tone={labelTone[variant]} numberOfLines={1}>
+        <Text weight="bold" tone={labelTone[variant]} numberOfLines={1} style={onParchment ? styles.ghostOnParchmentLabel : undefined}>
           {children}
         </Text>
       ) : (
@@ -128,6 +136,13 @@ const styles = StyleSheet.create({
   subtle: {
     backgroundColor: 'transparent',
     borderColor: colors.line,
+  },
+  ghostOnParchment: {
+    backgroundColor: 'transparent',
+    borderColor: mapPalette.panelButtonBorder,
+  },
+  ghostOnParchmentLabel: {
+    color: mapPalette.panelButtonInk,
   },
   pressed: {
     transform: [{ scale: 0.985 }],

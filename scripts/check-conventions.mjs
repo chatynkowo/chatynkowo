@@ -26,7 +26,7 @@ const SKIP_DIRS = new Set(['node_modules', 'dist', '.expo', 'build', 'android', 
 /* Authored content and image originals: data, not code. */
 const SKIP_PATHS = new Set(['packages/content/public', 'packages/content/private'])
 /* Generated files and third-party assets are not ours to police. */
-const SKIP_FILES = new Set(['apps/web/public/icons.svg', 'pnpm-lock.yaml'])
+const SKIP_FILES = new Set(['apps/web/public/icons.svg', 'apps/web/src/ui/tokens.css', 'pnpm-lock.yaml'])
 
 /* Arrows, technical and geometric symbols, dingbats, miscellaneous symbols
    and pictographs, emoji (including the supplementary planes), plus the

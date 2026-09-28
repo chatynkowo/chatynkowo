@@ -28,5 +28,7 @@ supabase/migrations/
 # Expo
 .expo/
 
-# Generated icon sprite (apps/web/scripts/build-icon-sprite.mjs)
+# Generated icon sprite (apps/web/scripts/build-icon-sprite.mjs) and design
+# tokens (apps/web/scripts/build-tokens-css.ts, from @chatynkowo/theme)
 apps/web/public/icons.svg
+apps/web/src/ui/tokens.css

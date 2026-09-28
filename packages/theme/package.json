@@ -1,0 +1,22 @@
+{
+  "name": "@chatynkowo/theme",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The Chatynkowo design tokens and interface contracts shared by the site and the app: colours, radii, spacing, type, the map palette, icon sizes and the icon vocabulary's role names. The site turns the tokens into CSS custom properties at build time; the app reads them directly.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "check": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  }
+}

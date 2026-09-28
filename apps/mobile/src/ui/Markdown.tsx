@@ -1,8 +1,8 @@
-import { useMemo, type ReactNode } from 'react'
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import { Linking, StyleSheet, Text as NativeText, View } from 'react-native'
 import { Lexer, type Token, type Tokens } from 'marked'
 import { Text } from './Text'
-import { colors, fonts, radius, space, typeScale } from './tokens'
+import { colors, fonts, mapPalette, radius, space, typeScale } from './tokens'
 
 /* Renders the authored markdown (stories, reward cards, the Kronika intro)
    as native views. The tokens come from marked, the very parser the site
@@ -29,38 +29,54 @@ function decode(text: string) {
   return text.replace(/&(?:amp|lt|gt|quot|#39|nbsp);/g, (entity) => ENTITIES[entity] ?? entity)
 }
 
-export function MarkdownView({ children }: { children: string }) {
+/* `parchment` is for the light cottage panel on the map, where the site
+   sets dark brown copy instead of cream. */
+export type MarkdownTone = 'ink' | 'parchment'
+
+type MarkdownViewProps = { children: string; tone?: MarkdownTone }
+
+export function MarkdownView({ children, tone = 'ink' }: MarkdownViewProps) {
   const tokens = useMemo(() => Lexer.lex(children, LEXER_OPTIONS), [children])
   return (
-    <View style={styles.root}>
-      {tokens.map((token, index) => (
-        <Block key={index} token={token} />
-      ))}
-    </View>
+    <ToneContext.Provider value={tone}>
+      <View style={styles.root}>
+        {tokens.map((token, index) => (
+          <Block key={index} token={token} />
+        ))}
+      </View>
+    </ToneContext.Provider>
   )
 }
 
+const ToneContext = createContext<MarkdownTone>('ink')
+
+function useInk() {
+  const tone = useContext(ToneContext)
+  return tone === 'parchment' ? parchment : null
+}
+
 function Block({ token }: { token: Token }): ReactNode {
+  const ink = useInk()
   switch (token.type) {
     case 'space':
       return null
     case 'heading': {
       const { tokens } = token as Tokens.Heading
       return (
-        <Text variant="heading" style={styles.heading} accessibilityRole="header">
+        <Text variant="heading" style={[styles.heading, ink?.text]} accessibilityRole="header">
           <Inline tokens={tokens} />
         </Text>
       )
     }
     case 'paragraph':
       return (
-        <Text style={styles.paragraph}>
+        <Text style={[styles.paragraph, ink?.text]}>
           <Inline tokens={(token as Tokens.Paragraph).tokens} />
         </Text>
       )
     case 'text': {
       const { tokens, text } = token as Tokens.Text
-      return <Text style={styles.paragraph}>{tokens ? <Inline tokens={tokens} /> : decode(text)}</Text>
+      return <Text style={[styles.paragraph, ink?.text]}>{tokens ? <Inline tokens={tokens} /> : decode(text)}</Text>
     }
     case 'blockquote':
       return (
@@ -78,12 +94,12 @@ function Block({ token }: { token: Token }): ReactNode {
           {items.map((item, index) => (
             <View key={index} style={styles.listItem}>
               {ordered ? (
-                <Text tone="accent" weight="bold" style={styles.bullet}>
+                <Text tone="accent" weight="bold" style={[styles.bullet, ink?.marker]}>
                   {`${first + index}.`}
                 </Text>
               ) : (
                 <View style={styles.bullet}>
-                  <View style={styles.dot} />
+                  <View style={[styles.dot, ink?.dot]} />
                 </View>
               )}
               <View style={styles.listBody}>
@@ -106,10 +122,10 @@ function Block({ token }: { token: Token }): ReactNode {
       )
     case 'html': {
       const text = htmlToText((token as Tokens.HTML).text).trim()
-      return text ? <Text style={styles.paragraph}>{text}</Text> : null
+      return text ? <Text style={[styles.paragraph, ink?.text]}>{text}</Text> : null
     }
     default:
-      return <Text style={styles.paragraph}>{decode(token.raw)}</Text>
+      return <Text style={[styles.paragraph, ink?.text]}>{decode(token.raw)}</Text>
   }
 }
 
@@ -233,4 +249,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.line,
   },
+})
+
+const parchment = StyleSheet.create({
+  text: { color: mapPalette.panelText },
+  marker: { color: mapPalette.panelMuted },
+  dot: { backgroundColor: mapPalette.panelMuted },
 })

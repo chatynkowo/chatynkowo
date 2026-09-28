@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { Button, CloseIcon, CottageIcon, FoundIcon, IconButton, LinkButton, LocateIcon, NavigateIcon, PinIcon, ResetViewIcon, SearchIcon, SpinnerIcon, ZoomInIcon, ZoomOutIcon, iconSize } from '../ui'
 import L from 'leaflet'
 import 'leaflet.markercluster'
-import { COUNTRY_BOUNDS, detectCountry, EUROPE_BOUNDS } from '@chatynkowo/core'
+import { COUNTRY_BOUNDS, countryAt, detectCountry, EUROPE_BOUNDS } from '@chatynkowo/core'
 import { marked } from '../lib/markdown'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
@@ -15,46 +15,23 @@ type MapExplorerProps = {
   onOpenCode: () => void
 }
 
-type MapLevel = 'europa' | 'kraj' | 'kraina' | 'region' | 'szlak'
+type MapLevel = 'europa' | 'kraj' | 'region' | 'szlak'
 
 const LEVEL_KEYS: Record<MapLevel, string> = {
   europa: 'map.levelEuropa',
   kraj: 'map.levelKraj',
-  kraina: 'map.levelKraina',
   region: 'map.levelRegion',
   szlak: 'map.levelSzlak',
 }
 
 const EUROPE = L.latLngBounds(EUROPE_BOUNDS)
 
-const REGION_AREAS = [
-  {
-    labelKey: 'map.regionNorth',
-    minLat: 50.35,
-    points: [[50.43, 19.43], [50.42, 19.7], [50.35, 19.75], [50.34, 19.48]] as L.LatLngExpression[],
-  },
-  {
-    labelKey: 'map.regionCentral',
-    minLat: 50.27,
-    points: [[50.35, 19.45], [50.35, 19.7], [50.27, 19.72], [50.26, 19.46]] as L.LatLngExpression[],
-  },
-  {
-    labelKey: 'map.regionSouth',
-    minLat: 0,
-    points: [[50.27, 19.42], [50.28, 19.8], [50.15, 19.83], [50.15, 19.46]] as L.LatLngExpression[],
-  },
-]
-
-/* The hand-drawn atlas area (region polygons + labels) — Jura-specific, so the
-   presentation code shows it only when the view is actually over it. */
-const ATLAS_BOUNDS = L.latLngBounds(REGION_AREAS.flatMap((region) => region.points as L.LatLngTuple[])).pad(0.35)
-
-/* The Jura regions only make sense for the Polish cottages; a cottage abroad
-   gets no region and the side panel shows its country name instead. */
-function regionFor(cottage: Cottage) {
-  if (cottage.country !== 'PL') return null
-  return REGION_AREAS.find((region) => cottage.lat >= region.minLat) ?? REGION_AREAS[2]
-}
+/* From this zoom the view is a neighbourhood rather than a country, and
+   from TRAIL_ZOOM a single trail. */
+const REGION_ZOOM = 9.5
+const TRAIL_ZOOM = 13.5
+/* Where the kraj rung starts over the sea or outside the country presets. */
+const DEFAULT_KRAJ_ZOOM = 5.5
 
 function countryName(code: string, locale: string) {
   try {
@@ -77,36 +54,6 @@ function cottageIcon(pinImg: string | undefined, found: boolean, active: boolean
   })
 }
 
-function createAtlas(map: L.Map, cottages: Cottage[], t: TFunction) {
-  const group = L.layerGroup().addTo(map)
-  REGION_AREAS.forEach((region, index) => {
-    const matching = cottages.filter((cottage) => regionFor(cottage)?.labelKey === region.labelKey)
-    L.polygon(region.points, {
-      pane: 'atlas',
-      className: `atlas-area atlas-area-${index + 1}`,
-      color: '#775c32',
-      weight: 2,
-      opacity: 0.76,
-      dashArray: '4 10',
-      fillOpacity: 0.18,
-      interactive: false,
-    }).addTo(group)
-
-    const center = L.polygon(region.points).getBounds().getCenter()
-    const marker = L.marker(center, {
-      pane: 'regionLabels',
-      icon: L.divIcon({
-        className: 'region-label-shell',
-        iconSize: [190, 64],
-        iconAnchor: [95, 32],
-        html: `<button type="button" class="region-label"><strong>${t(region.labelKey)}</strong><span>${t('map.regionCottages', { count: matching.length })}</span></button>`,
-      }),
-    }).addTo(group)
-    marker.on('click', () => map.flyTo(center, Math.max(map.getMinZoom() + 1, 11.5), { duration: 1.15 }))
-  })
-  return group
-}
-
 export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerProps) {
   const { t, i18n } = useTranslation()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -115,7 +62,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
   const searchAreaRef = useRef<L.Circle | null>(null)
   const [selected, setSelected] = useState<Cottage | null>(null)
   const selectedRef = useRef<Cottage | null>(null)
-  const [level, setLevel] = useState<MapLevel>('kraina')
+  const [level, setLevel] = useState<MapLevel>('kraj')
   const [canZoomIn, setCanZoomIn] = useState(true)
   const [canZoomOut, setCanZoomOut] = useState(false)
   const [query, setQuery] = useState('')
@@ -123,7 +70,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
   const [locating, setLocating] = useState(false)
   const [locateError, setLocateError] = useState<string | null>(null)
   const userLocationRef = useRef<L.LayerGroup | null>(null)
-  const levelForZoomRef = useRef<(zoom: number) => MapLevel>(() => 'kraina')
+  const levelForZoomRef = useRef<(zoom: number) => MapLevel>(() => 'kraj')
   const [touchMapActive, setTouchMapActive] = useState(() => !window.matchMedia('(max-width: 760px)').matches)
   /* The country whose cottages the map opens on: the visitor's country when it
      has cottages (detected from the browser's languages — never geolocation),
@@ -287,9 +234,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
     mapRef.current = map
 
     ;([
-      ['atlas', 260],
       ['searchArea', 360],
-      ['regionLabels', 410],
       ['cottages', 450],
     ] as const).forEach(([name, zIndex]) => {
       const pane = map.createPane(name)
@@ -305,7 +250,6 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
       className: 'base-map-tiles',
     }).addTo(map)
     L.control.attribution({ position: 'bottomleft', prefix: false }).addTo(map)
-    createAtlas(map, cottages, t)
 
     const clusters = L.markerClusterGroup({
       maxClusterRadius: (zoom) => (zoom < 11 ? 74 : 48),
@@ -339,20 +283,22 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
       markersRef.current.set(cottage.slug, marker)
     })
 
-    /* Zoom tiers, recomputed on resize: the map floor fits Europe, the kraj
-       tier starts where the home country fills the view, and the atlas band —
-       kraina, the enchanted land itself — brackets the zooms where the
-       hand-drawn Jura regions fill the view (the map's only reachable range
-       before the multi-country expansion). Without a home country there is no
-       kraj rung and the ladder goes straight from europa to kraina. */
-    let krajMinZoom = 7
-    let atlasMinZoom = 8
-    let atlasMaxZoom = 10.5
+    /* The level indicator describes what the view shows: europa until the
+       country under the map's centre fills the view's longer side (not just
+       fits inside it — a narrow view spans a country's width long before it
+       stops showing the neighbours), kraj from there, then a neighbourhood,
+       then a single trail. The map floor fits Europe and is recomputed on
+       resize. */
+    const tierPadding = () => L.point(container.clientWidth < 760 ? 32 : 64, container.clientWidth < 760 ? 80 : 64)
+    const krajMinZoom = () => {
+      const center = map.getCenter()
+      const country = countryAt({ lat: center.lat, lng: center.lng })
+      return country ? map.getBoundsZoom(L.latLngBounds(COUNTRY_BOUNDS[country]), true, tierPadding()) - 0.2 : DEFAULT_KRAJ_ZOOM
+    }
     const levelForZoom = (zoom: number): MapLevel => {
-      if (zoom < krajMinZoom - 0.45) return 'europa'
-      if (zoom < atlasMinZoom) return homeCountry ? 'kraj' : 'europa'
-      if (zoom <= atlasMaxZoom) return 'kraina'
-      return zoom < 13.5 ? 'region' : 'szlak'
+      if (zoom < krajMinZoom() - 0.45) return 'europa'
+      if (zoom < REGION_ZOOM) return 'kraj'
+      return zoom < TRAIL_ZOOM ? 'region' : 'szlak'
     }
     levelForZoomRef.current = levelForZoom
     const updatePresentation = () => {
@@ -361,23 +307,13 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
       container.style.setProperty('--map-reality', reality.toFixed(3))
       const nextLevel = levelForZoom(zoom)
       container.dataset.level = nextLevel
-      /* The fixed-size region labels are legible only while the Jura atlas
-         area fills the view; at country/Europe zooms — and anywhere outside
-         the atlas — the clustered markers tell the story instead. */
-      const atlasVisible = zoom >= atlasMinZoom && zoom <= atlasMaxZoom && ATLAS_BOUNDS.contains(map.getCenter())
-      container.dataset.atlas = atlasVisible ? 'on' : 'off'
       setCanZoomOut(zoom > map.getMinZoom() + 0.01)
       setCanZoomIn(zoom < map.getMaxZoom() - 0.01)
       if (!selectedRef.current) setLevel(nextLevel)
     }
     const syncZoomTiers = () => {
-      const padding = L.point(container.clientWidth < 760 ? 32 : 64, container.clientWidth < 760 ? 80 : 64)
-      const nextMinimum = Math.max(3, map.getBoundsZoom(EUROPE, false, padding))
+      const nextMinimum = Math.max(3, map.getBoundsZoom(EUROPE, false, tierPadding()))
       map.setMinZoom(nextMinimum)
-      krajMinZoom = Math.max(nextMinimum, map.getBoundsZoom(homeBounds, false, padding))
-      const atlasFit = map.getBoundsZoom(ATLAS_BOUNDS, false, padding)
-      atlasMinZoom = Math.max(krajMinZoom + 0.5, atlasFit - 1.4)
-      atlasMaxZoom = atlasFit + 0.55
       if (map.getZoom() < nextMinimum) map.setZoom(nextMinimum, { animate: false })
     }
     map.on('zoom', updatePresentation)
@@ -403,8 +339,8 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
       searchAreaRef.current = null
       userLocationRef.current = null
     }
-    // The region labels and marker titles are markup injected into Leaflet, so
-    // the whole map is rebuilt when the interface language changes.
+    // The marker titles are markup injected into Leaflet, so the whole map is
+    // rebuilt when the interface language changes.
   }, [homeBounds, homeCountry, chooseCottage, cottages, foundSlugs, i18n.resolvedLanguage, t])
 
   useEffect(() => {
@@ -448,8 +384,6 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
     setSearchMissed(false)
     chooseCottage(match)
   }
-
-  const selectedRegion = selected ? regionFor(selected) : null
 
   return (
     <div className={`map-explorer${selected ? ' has-selection' : ''}${touchMapActive ? '' : ' is-touch-locked'}`}>
@@ -512,9 +446,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
         <aside className="cottage-panel" aria-label={t('map.panelAria', { title: selected.title })}>
           <div className="cottage-panel-handle" aria-hidden="true" />
           <IconButton className="panel-close" label={t('map.closePanel')} onClick={closeCottage}><CloseIcon size={iconSize.md} /></IconButton>
-          <p className="cottage-region">
-            {selectedRegion ? t(selectedRegion.labelKey) : countryName(selected.country, i18n.resolvedLanguage ?? 'pl')}
-          </p>
+          <p className="cottage-region">{countryName(selected.country, i18n.resolvedLanguage ?? 'pl')}</p>
           <h3>{selected.title}</h3>
           <p className="cottage-resident">{t('map.residentPrefix')} <strong>{selected.occupant || t('map.defaultOccupant')}</strong></p>
           {foundSlugs.has(selected.slug) ? (
