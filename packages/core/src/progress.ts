@@ -104,3 +104,16 @@ export function kronikaLevels(levels: RewardLevel[], badges: StoredState['badges
     .map(([id, meta]) => ({ id, name: meta.name || id, threshold: null, final: false, image: '', body: '' }))
   return [...levels, ...orphans]
 }
+
+/* The first level still locked and how many more discoveries it needs, or
+   null once everything is earned — the "next task" line of the quest panel. */
+export function nextLevel(
+  state: StoredState,
+  levels: RewardLevel[],
+  total: number,
+): { level: RewardLevel; remaining: number } | null {
+  const level = levels.find((candidate) => !state.badges[candidate.id])
+  if (!level) return null
+  const required = requiredFinds(level, total) || total
+  return { level, remaining: Math.max(0, required - foundCount(state)) }
+}

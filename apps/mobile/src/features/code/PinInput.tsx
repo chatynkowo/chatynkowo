@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     borderColor: colors.danger,
   },
   digit: {
-    fontFamily: fonts.displayBlack,
+    fontFamily: fonts.display,
     fontSize: 30,
     lineHeight: 36,
   },

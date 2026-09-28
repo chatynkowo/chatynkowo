@@ -123,3 +123,9 @@ export function homeBounds(cottages: readonly (LatLng & { country?: string })[],
   const bounds = boundsOf(own)
   return bounds ? padBounds(bounds, 0.24) : EUROPE_BOUNDS
 }
+
+/* Whether a point falls inside a framing box — used to tell a seeker that
+   their position is outside the expedition map. */
+export function isWithinBounds({ lat, lng }: LatLng, [[south, west], [north, east]]: BoundsTuple): boolean {
+  return lat >= south && lat <= north && lng >= west && lng <= east
+}

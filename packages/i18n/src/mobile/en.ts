@@ -22,11 +22,14 @@ export const mobileEn: typeof mobilePl = {
     language: 'Language',
   },
   atlas: {
+    list: 'List of Cottages',
+    locateDenied: 'The app was not allowed to read your position.',
     title: 'Chatynkowo Atlas',
     progress: '{{found}} of {{total}} Cottages',
     story: 'Open the tale',
   },
   code: {
+    openSettings: 'Open the app settings',
     scan: 'Scan the QR code',
     scanTitle: 'Scanning',
     scanHint: 'Point the camera at the QR code on the plaque.',
@@ -62,9 +65,13 @@ export const mobileEn: typeof mobilePl = {
     notRanked: 'Save your first discovery to an account to appear on the leaderboard.',
   },
   profile: {
+    about: 'About Chatynkowo and how to start',
     title: 'Explorer profile',
     signedOut: 'You are not signed in.',
     saved: 'Saved.',
     finds: 'Discoveries in your account: {{count}}',
+  },
+  welcome: {
+    skip: 'Skip',
   },
 }

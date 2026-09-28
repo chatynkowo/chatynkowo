@@ -54,6 +54,24 @@
           "recordAudioAndroid": false,
           "enableBackgroundPlayback": true
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#0d1c18"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Chatynkowo shows your position on the Atlas so you can find the nearest cottage.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
       ]
     ],
     "experiments": {

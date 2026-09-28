@@ -103,7 +103,7 @@ The interface is translated with i18next, the content through files parallel to 
 Division of responsibility:
 
 - `packages/core/src/languages.ts` — the single registry of languages (code + native name), shared by the site, the `/admin/` editor, the content client and the mobile app,
-- `packages/i18n/src/shared/<code>.ts`, `web/<code>.ts`, `mobile/<code>.ts` — the interface dictionaries (every UI string, including ARIA attributes and page meta): the set both clients use, the site-only set and the app-only set, registered in `packages/i18n/src/index.ts`, which also builds each client's i18next resources,
+- `packages/i18n/src/shared/<code>.ts`, `web/<code>.ts`, `mobile/<code>.ts` — the interface dictionaries (every UI string, including ARIA attributes and page meta): the set both clients use (the expedition loop, the lore and guide sections, the legal links), the site-only set (page meta, the gallery) and the app-only set, registered in `packages/i18n/src/index.ts`, which also builds each client's i18next resources,
 - `apps/web/src/i18n/index.ts` — the site's i18next instance (browser language detection); the mobile app creates its own from the same dictionaries,
 - `cottages/<code>/<slug>.md` — a story translation; a missing file falls back automatically to the Polish original `cottages/<slug>.md`,
 - `data/rewards.<code>.json` — the Kronika and reward card translation; a missing file falls back to `data/rewards.json`,

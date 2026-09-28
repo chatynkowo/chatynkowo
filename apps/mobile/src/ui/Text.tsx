@@ -25,33 +25,35 @@ const toneColor: Record<TextTone, string> = {
   success: colors.success,
 }
 
+/* The site has no 700 face of Cormorant: its "bold" copy is the 600 face,
+   so both names resolve to it here. */
 const weightFamily: Record<TextWeight, string> = {
   regular: fonts.body,
   italic: fonts.bodyItalic,
   semibold: fonts.semibold,
-  bold: fonts.bold,
+  bold: fonts.semibold,
 }
 
-/* Display roles use Cinzel; the eyebrow is small caps in the accent colour,
-   as on the site's section headers. */
+/* Display roles are the site's h1/h2 in Cinzel Decorative; heading is its
+   h3 (Cormorant 600); the eyebrow is Cormorant 600 in spaced small
+   capitals, accent coloured, as on every section header of the site. */
 const variantStyles = StyleSheet.create({
   small: typeScale.small,
   body: typeScale.body,
-  lead: typeScale.lead,
-  heading: { ...typeScale.heading, fontFamily: fonts.bold },
+  heading: { ...typeScale.heading, fontFamily: fonts.semibold },
   title: { ...typeScale.title, fontFamily: fonts.display },
-  display: { ...typeScale.display, fontFamily: fonts.displayBlack },
-  eyebrow: { ...typeScale.eyebrow, fontFamily: fonts.display, textTransform: 'uppercase', color: colors.accentStrong },
+  display: { ...typeScale.display, fontFamily: fonts.display },
+  eyebrow: { ...typeScale.eyebrow, fontFamily: fonts.semibold, textTransform: 'uppercase', color: colors.accentStrong },
 })
 
 export function Text({ variant = 'body', tone, weight, align, style, ...rest }: TextProps) {
-  const isDisplay = variant === 'title' || variant === 'display' || variant === 'eyebrow' || variant === 'heading'
+  const fixedFace = variant === 'title' || variant === 'display' || variant === 'eyebrow' || variant === 'heading'
   return (
     <NativeText
       style={[
         { color: colors.ink, fontFamily: fonts.body },
         variantStyles[variant],
-        !isDisplay && weight ? { fontFamily: weightFamily[weight] } : null,
+        !fixedFace && weight ? { fontFamily: weightFamily[weight] } : null,
         tone ? { color: toneColor[tone] } : null,
         align ? { textAlign: align } : null,
         style,

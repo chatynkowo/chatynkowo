@@ -46,25 +46,26 @@ export const sizes = {
 } as const
 
 /* Family names as expo-font registers them (one name per weight, since
-   React Native cannot synthesise weights for custom fonts). Cormorant
-   Garamond is the body face, Cinzel Decorative the display face, exactly
-   as on the site. */
+   React Native cannot synthesise weights for custom fonts). The site loads
+   exactly these faces: Cormorant Garamond 400, 400 italic and 600 for the
+   body, Cinzel Decorative 700 for headings — so "bold" copy is the 600 face
+   here as well. */
 export const fonts = {
   body: 'CormorantGaramond_400Regular',
   bodyItalic: 'CormorantGaramond_400Regular_Italic',
   semibold: 'CormorantGaramond_600SemiBold',
-  bold: 'CormorantGaramond_700Bold',
   display: 'CinzelDecorative_700Bold',
-  displayBlack: 'CinzelDecorative_900Black',
 } as const
 
-/* Cormorant sets small, so the body runs a little larger than a system face. */
+/* The site's type scale in device pixels: body 18px / 1.55, meta copy at
+   0.78rem, subheadings (h3, the cottage panel, markdown headings) at
+   1.35rem, section headings in Cinzel with -0.025em tracking, eyebrows in
+   small capitals spaced 0.13em. */
 export const typeScale = {
-  small: { fontSize: 15, lineHeight: 20 },
-  body: { fontSize: 18, lineHeight: 26 },
-  lead: { fontSize: 20, lineHeight: 28 },
+  small: { fontSize: 14, lineHeight: 20 },
+  body: { fontSize: 18, lineHeight: 28 },
   heading: { fontSize: 24, lineHeight: 30 },
-  title: { fontSize: 22, lineHeight: 30 },
-  display: { fontSize: 26, lineHeight: 34 },
-  eyebrow: { fontSize: 13, lineHeight: 18, letterSpacing: 1.6 },
+  title: { fontSize: 26, lineHeight: 30, letterSpacing: -0.65 },
+  display: { fontSize: 32, lineHeight: 35, letterSpacing: -0.8 },
+  eyebrow: { fontSize: 14, lineHeight: 18, letterSpacing: 1.8 },
 } as const

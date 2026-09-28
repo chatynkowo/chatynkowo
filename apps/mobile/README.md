@@ -69,23 +69,25 @@ out unless a future native module needs it.
 
 ```
 app/                     expo-router routes
-  _layout.tsx            fonts, remembered language, providers, the root Stack
+  _layout.tsx            fonts, remembered language, providers, the root Stack, the first-launch gate
   (tabs)/                Atlas (index) / Code / Kronika / Ranking
+  welcome.tsx            the start screen: the site's lore and guide, shown once and from the profile
   story/[slug].tsx       the story, presented as a modal
   reward/[id].tsx        one reward card, modal
   scan.tsx               the QR scanner, full-screen modal
-  profile.tsx            language, nickname, avatar, sign-out, modal
+  profile.tsx            language, nickname, avatar, sign-out, about and legal links, modal
 src/
   config.ts              EXPO_PUBLIC_* with production defaults, storage keys
   i18n/                  the i18next instance: "translation" + "mobile" namespaces, device locale, remembered choice
   ui/                    the interface layer: tokens, fonts, icons, Text, Button/LinkButton/IconButton, Sheet,
                          ScreenFrame, TextField, MarkdownView
   lib/                   adapters: cached content client, progress + sync-queue storage, Supabase and native
-                         sign-in, audio (expo-audio), recordings (file system), maps hand-off, reachability
+                         sign-in, audio (expo-audio), recordings (file system), maps hand-off, position, reachability
   providers/             SessionProvider, ContentProvider, ProgressProvider
-  features/              screen-level components per area: atlas/, code/, story/, kronika/, ranking/
+  features/              screen-level components per area: atlas/, code/, story/, kronika/, ranking/, welcome/
 locales/                 native permission strings per language (iOS Info.plist)
-assets/                  app icons
+assets/                  app icon, adaptive icon layers, the splash emblem and the logo, generated from the brand logo in
+                         packages/content/private/img
 ```
 
 ## How the data flows
@@ -122,7 +124,9 @@ assets/                  app icons
 
 | Area | Library | Notes |
 |---|---|---|
-| Map | `@maplibre/maplibre-react-native` | OpenStreetMap raster tiles, markers from the manifest, the same per-country opening frame as the site (`homeCountry` / `homeBounds` in core `geo.ts`); "Navigate" opens the system maps app |
+| Map | `@maplibre/maplibre-react-native` | OpenStreetMap raster tiles, markers from the manifest, the same per-country opening frame as the site (`homeCountry` / `homeBounds` in core `geo.ts`), reset and search controls; "Navigate" opens the system maps app |
+| Position | `expo-location` | only on the locate control, foreground permission, one reading shown as a marker |
+| Splash | `expo-splash-screen` | the brand logo on the page colour until fonts and the remembered language are loaded |
 | Story audio | `expo-audio` | background playback (`UIBackgroundModes: audio` via its plugin) and lock-screen / notification controls (`setActiveForLockScreen`); a language without a recording falls back to the Polish original when the file fails to load |
 | Recordings offline | `expo-file-system` | "Save on this device" downloads the mp3 into the document directory, one folder per language; a saved file plays from disk |
 | QR | `expo-camera` | `CameraView` scanning `qr` only; the code goes to the Code tab through `scanResult.ts` |
@@ -163,5 +167,5 @@ the capability on the App ID; `ios.usesAppleSignIn` is already set.
 - The content cache takes any loader: `cached(name, maxAge, loader)` in
   `src/lib/content.ts`.
 
-Not in this iteration, deliberately: analytics, notifications, geofencing
-and the user's position on the map.
+Not in this iteration, deliberately: analytics, notifications and
+geofencing.

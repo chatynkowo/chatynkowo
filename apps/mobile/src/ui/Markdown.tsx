@@ -45,9 +45,9 @@ function Block({ token }: { token: Token }): ReactNode {
     case 'space':
       return null
     case 'heading': {
-      const { depth, tokens } = token as Tokens.Heading
+      const { tokens } = token as Tokens.Heading
       return (
-        <Text variant={depth === 1 ? 'display' : depth === 2 ? 'title' : 'heading'} style={styles.heading} accessibilityRole="header">
+        <Text variant="heading" style={styles.heading} accessibilityRole="header">
           <Inline tokens={tokens} />
         </Text>
       )
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     ...typeScale.body,
   },
   strong: {
-    fontFamily: fonts.bold,
+    fontFamily: fonts.semibold,
   },
   em: {
     fontFamily: fonts.bodyItalic,

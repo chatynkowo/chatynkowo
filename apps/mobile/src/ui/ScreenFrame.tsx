@@ -45,7 +45,7 @@ export function ScreenFrame({
           </Text>
         ) : null}
         {lead ? (
-          <Text tone="soft" variant="lead">
+          <Text tone="soft">
             {lead}
           </Text>
         ) : null}

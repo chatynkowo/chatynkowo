@@ -22,4 +22,5 @@ export const STORAGE_KEYS = {
   syncQueue: 'chatynkowo:sync-queue:v1',
   language: 'chatynkowo:language',
   contentCache: 'chatynkowo:content:v2:',
+  welcomeSeen: 'chatynkowo:welcome-seen',
 } as const

@@ -1,13 +1,31 @@
 import { useEffect, useState } from 'react'
-import { StyleSheet, Switch, View } from 'react-native'
+import { Linking, StyleSheet, Switch, View } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
+import { SITE_ORIGIN, SOCIAL_LINKS } from '@chatynkowo/core'
 import { LANGUAGES, setLanguage, toLanguage } from '../src/i18n'
 import { useProgress, useSession } from '../src/providers'
-import { Button, CloseIcon, IconButton, LanguageIcon, ScreenFrame, SignOutIcon, Text, TextField, colors, iconSize, radius, space } from '../src/ui'
+import {
+  Button,
+  CloseIcon,
+  FacebookIcon,
+  IconButton,
+  InstagramIcon,
+  LanguageIcon,
+  LoreIcon,
+  NotebookIcon,
+  ScreenFrame,
+  SignOutIcon,
+  Text,
+  TextField,
+  colors,
+  iconSize,
+  radius,
+  space,
+} from '../src/ui'
 
-/* Language choice for everyone; nickname, avatar and sign-out for a
-   signed-in account. */
+/* Language choice and the "about" links for everyone; nickname, avatar and
+   sign-out for a signed-in account. */
 export default function ProfileScreen() {
   const { t, i18n } = useTranslation()
   const router = useRouter()
@@ -33,9 +51,11 @@ export default function ProfileScreen() {
     setSaved(true)
   }
 
+  const open = (url: string) => void Linking.openURL(url)
+
   return (
     <ScreenFrame
-      eyebrow={t('mobile:profile.title')}
+      eyebrow={account.session ? t('mobile:profile.title') : undefined}
       title={account.session ? t('ranking.profileTitle') : t('mobile:profile.title')}
       lead={account.session ? t('ranking.profileLede') : undefined}
       edges={['top', 'left', 'right', 'bottom']}
@@ -50,7 +70,7 @@ export default function ProfileScreen() {
           <LanguageIcon size={iconSize.md} color={colors.accentStrong} />
           <Text weight="bold">{t('mobile:common.language')}</Text>
         </View>
-        <View style={styles.languages} accessibilityLabel={t('header.languageAria')}>
+        <View style={styles.row} accessibilityLabel={t('header.languageAria')}>
           {LANGUAGES.map((entry) => (
             <Button
               key={entry.code}
@@ -89,6 +109,38 @@ export default function ProfileScreen() {
       ) : account.enabled ? (
         <Text tone="soft">{t('mobile:profile.signedOut')}</Text>
       ) : null}
+
+      <View style={styles.section}>
+        <View style={styles.sectionTitle}>
+          <LoreIcon size={iconSize.md} weight="fill" color={colors.accentStrong} />
+          <Text weight="bold">{t('lore.eyebrow')}</Text>
+        </View>
+        <Button block icon={<NotebookIcon size={iconSize.md} color={colors.ink} />} onPress={() => router.push('/welcome')}>
+          {t('mobile:profile.about')}
+        </Button>
+        <Text variant="small" tone="faint">
+          {t('footer.docsAria')}
+        </Text>
+        <View style={styles.row}>
+          <Button variant="subtle" onPress={() => open(`${SITE_ORIGIN}/${t('footer.termsHref')}`)}>
+            {t('footer.terms')}
+          </Button>
+          <Button variant="subtle" onPress={() => open(`${SITE_ORIGIN}/${t('footer.privacyHref')}`)}>
+            {t('footer.privacy')}
+          </Button>
+        </View>
+        <Text variant="small" tone="faint">
+          {t('footer.socialAria')}
+        </Text>
+        <View style={styles.row}>
+          <Button variant="subtle" icon={<InstagramIcon size={iconSize.md} color={colors.inkSoft} />} onPress={() => open(SOCIAL_LINKS.instagram)}>
+            Instagram
+          </Button>
+          <Button variant="subtle" icon={<FacebookIcon size={iconSize.md} color={colors.inkSoft} />} onPress={() => open(SOCIAL_LINKS.facebook)}>
+            Facebook
+          </Button>
+        </View>
+      </View>
     </ScreenFrame>
   )
 }
@@ -107,7 +159,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.sm,
   },
-  languages: {
+  row: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: space.sm,

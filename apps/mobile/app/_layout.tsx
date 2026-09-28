@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import '../src/i18n'
 import { restoreLanguage } from '../src/i18n'
 import { AchievementToast } from '../src/features/kronika/AchievementToast'
+import { WelcomeGate } from '../src/features/welcome/WelcomeGate'
 import { ContentProvider, ProgressProvider, SessionProvider } from '../src/providers'
 import { colors, fonts, useAppFonts } from '../src/ui'
 
@@ -31,7 +32,7 @@ const theme = {
   fonts: {
     regular: { fontFamily: fonts.body, fontWeight: '400' as const },
     medium: { fontFamily: fonts.semibold, fontWeight: '500' as const },
-    bold: { fontFamily: fonts.bold, fontWeight: '700' as const },
+    bold: { fontFamily: fonts.semibold, fontWeight: '700' as const },
     heavy: { fontFamily: fonts.display, fontWeight: '800' as const },
   },
 }
@@ -65,7 +66,9 @@ export default function RootLayout() {
               <Stack.Screen name="reward/[id]" options={{ presentation: 'modal', title: t('quest.chronicle') }} />
               <Stack.Screen name="scan" options={{ presentation: 'fullScreenModal', title: t('mobile:code.scanTitle') }} />
               <Stack.Screen name="profile" options={{ presentation: 'modal', title: t('mobile:profile.title') }} />
+              <Stack.Screen name="welcome" options={{ presentation: 'fullScreenModal', title: t('lore.eyebrow') }} />
             </Stack>
+            <WelcomeGate />
             <AchievementToast />
           </ProgressProvider>
         </ContentProvider>

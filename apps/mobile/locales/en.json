@@ -1,3 +1,4 @@
 {
-  "NSCameraUsageDescription": "Chatynkowo reads the QR code on a cottage plaque."
+  "NSCameraUsageDescription": "Chatynkowo reads the QR code on a cottage plaque.",
+  "NSLocationWhenInUseUsageDescription": "Chatynkowo shows your position on the Atlas so you can find the nearest cottage."
 }

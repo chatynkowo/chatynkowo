@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { Linking, StyleSheet, View } from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { codeFromScan } from '@chatynkowo/core'
 import { postScannedCode } from '../src/features/code/scanResult'
-import { Button, CameraIcon, CloseIcon, IconButton, ScreenFrame, Text, colors, iconSize, radius, space } from '../src/ui'
+import { Button, CameraIcon, CloseIcon, IconButton, KeyIcon, ScreenFrame, Text, colors, iconSize, radius, space } from '../src/ui'
 
 const MISS_NOTICE_MS = 2000
 
@@ -40,18 +40,30 @@ export default function ScanScreen() {
   )
 
   if (!permission?.granted) {
+    const blocked = permission?.canAskAgain === false
     return (
-      <ScreenFrame eyebrow={t('mobile:code.scanTitle')} title={t('mobile:code.scan')} action={close} edges={['top', 'left', 'right', 'bottom']}>
+      <ScreenFrame scroll={false} eyebrow={t('mobile:code.scanTitle')} title={t('mobile:code.scan')} action={close} edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.ask}>
-          <CameraIcon size={iconSize.hero} color={colors.accentStrong} />
+          <View style={styles.askIcon}>
+            <CameraIcon size={iconSize.emblem} weight="duotone" color={colors.accentStrong} />
+          </View>
           <Text tone="soft" align="center">
-            {permission?.canAskAgain === false ? t('mobile:code.cameraDenied') : t('mobile:code.cameraRequest')}
+            {blocked ? t('mobile:code.cameraDenied') : t('mobile:code.cameraRequest')}
           </Text>
-          {permission?.canAskAgain !== false ? (
-            <Button variant="primary" onPress={() => void requestPermission()}>
-              {t('mobile:code.cameraAllow')}
+          <View style={styles.askActions}>
+            {blocked ? (
+              <Button variant="primary" block onPress={() => void Linking.openSettings()}>
+                {t('mobile:code.openSettings')}
+              </Button>
+            ) : (
+              <Button variant="primary" block onPress={() => void requestPermission()}>
+                {t('mobile:code.cameraAllow')}
+              </Button>
+            )}
+            <Button block icon={<KeyIcon size={iconSize.md} color={colors.ink} />} onPress={() => router.back()}>
+              {t('nav.enterCode')}
             </Button>
-          ) : null}
+          </View>
         </View>
       </ScreenFrame>
     )
@@ -63,12 +75,15 @@ export default function ScanScreen() {
         <Text variant="title">{t('mobile:code.scanTitle')}</Text>
         {close}
       </View>
-      <CameraView
-        style={styles.camera}
-        facing="back"
-        barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-        onBarcodeScanned={(result) => handleScan(result.data)}
-      />
+      <View style={styles.camera}>
+        <CameraView
+          style={StyleSheet.absoluteFill}
+          facing="back"
+          barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+          onBarcodeScanned={(result) => handleScan(result.data)}
+        />
+        <View pointerEvents="none" style={styles.viewfinder} />
+      </View>
       <View style={styles.hint}>
         <Text tone={miss ? 'danger' : 'soft'} align="center" accessibilityLiveRegion="polite">
           {miss ? t('mobile:code.scanNoCode') : t('mobile:code.scanHint')}
@@ -80,9 +95,25 @@ export default function ScanScreen() {
 
 const styles = StyleSheet.create({
   ask: {
+    flex: 1,
     alignItems: 'center',
-    gap: space.lg,
-    paddingVertical: space.xxl,
+    justifyContent: 'center',
+    gap: space.xl,
+    paddingBottom: space.xxl * 2,
+  },
+  askIcon: {
+    width: 96,
+    height: 96,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 48,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.surface,
+  },
+  askActions: {
+    alignSelf: 'stretch',
+    gap: space.sm,
   },
   bar: {
     flexDirection: 'row',
@@ -95,6 +126,17 @@ const styles = StyleSheet.create({
     marginHorizontal: space.lg,
     borderRadius: radius.card,
     overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+  },
+  /* Where to hold the plaque's code; the scanner itself reads the whole frame. */
+  viewfinder: {
+    width: 240,
+    height: 240,
+    borderWidth: 2,
+    borderColor: colors.accentStrong,
+    borderRadius: radius.card,
   },
   hint: {
     paddingHorizontal: space.lg,

@@ -1,21 +1,27 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
 import { Image, StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { getLocales } from 'expo-localization'
 import { Camera, Layer, Map, Marker, RasterSource, type CameraRef, type LngLatBounds } from '@maplibre/maplibre-react-native'
-import { detectCountry, EUROPE_BOUNDS, homeBounds, homeCountry, type BoundsTuple, type Cottage } from '@chatynkowo/core'
+import { detectCountry, EUROPE_BOUNDS, homeBounds, homeCountry, type BoundsTuple, type Cottage, type LatLng } from '@chatynkowo/core'
 import { contentUrl } from '../../lib/content'
 import { CottageIcon, FoundIcon, colors, iconSize } from '../../ui'
 
 /* The expedition map: OpenStreetMap raster tiles (parity with the site's
    Leaflet map), one marker per cottage, the same per-country opening frame
-   as the site (core/geo), and a tap on a marker that hands the cottage to
-   the screen. */
+   as the site (core/geo), a tap on a marker that hands the cottage to the
+   screen, and a handle for the screen's controls (reset, locate). */
+
+export type AtlasMapHandle = {
+  resetView: () => void
+  showPosition: (position: LatLng) => void
+}
 
 type AtlasMapProps = {
   cottages: Cottage[]
   foundSlugs: Set<string>
   selectedSlug: string | null
+  userPosition: LatLng | null
   onSelect: (cottage: Cottage) => void
 }
 
@@ -31,8 +37,13 @@ function toLngLatBounds([[south, west], [north, east]]: BoundsTuple): LngLatBoun
 
 const EUROPE = toLngLatBounds(EUROPE_BOUNDS)
 const FRAME_PADDING = { top: 48, right: 48, bottom: 48, left: 48 }
+const COTTAGE_ZOOM = 14
+const POSITION_ZOOM = 11
 
-export function AtlasMap({ cottages, foundSlugs, selectedSlug, onSelect }: AtlasMapProps) {
+export const AtlasMap = forwardRef<AtlasMapHandle, AtlasMapProps>(function AtlasMap(
+  { cottages, foundSlugs, selectedSlug, userPosition, onSelect },
+  ref,
+) {
   const { t } = useTranslation()
   const camera = useRef<CameraRef>(null)
 
@@ -43,9 +54,18 @@ export function AtlasMap({ cottages, foundSlugs, selectedSlug, onSelect }: Atlas
     return toLngLatBounds(homeBounds(cottages, country))
   }, [cottages])
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      resetView: () => camera.current?.fitBounds(home, { padding: FRAME_PADDING, duration: 600 }),
+      showPosition: (position) => camera.current?.easeTo({ center: [position.lng, position.lat], zoom: POSITION_ZOOM, duration: 600 }),
+    }),
+    [home],
+  )
+
   useEffect(() => {
     const selected = selectedSlug ? cottages.find((cottage) => cottage.slug === selectedSlug) : null
-    if (selected) camera.current?.easeTo({ center: [selected.lng, selected.lat], zoom: 14, duration: 600 })
+    if (selected) camera.current?.easeTo({ center: [selected.lng, selected.lat], zoom: COTTAGE_ZOOM, duration: 600 })
   }, [selectedSlug, cottages])
 
   return (
@@ -67,9 +87,14 @@ export function AtlasMap({ cottages, foundSlugs, selectedSlug, onSelect }: Atlas
           <MarkerPin found={foundSlugs.has(cottage.slug)} active={cottage.slug === selectedSlug} customImage={cottage.pin_custom_img} />
         </Marker>
       ))}
+      {userPosition ? (
+        <Marker id="you" lngLat={[userPosition.lng, userPosition.lat]} anchor="center" accessibilityLabel={t('map.youAreHere')}>
+          <View style={styles.you} />
+        </Marker>
+      ) : null}
     </Map>
   )
-}
+})
 
 function MarkerPin({ found, active, customImage }: { found: boolean; active: boolean; customImage?: string }) {
   return (
@@ -110,5 +135,13 @@ const styles = StyleSheet.create({
   pinImage: {
     width: 26,
     height: 26,
+  },
+  you: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 3,
+    borderColor: colors.ink,
+    backgroundColor: colors.success,
   },
 })

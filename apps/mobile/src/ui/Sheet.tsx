@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import { KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { IconButton } from './Button'
 import { CloseIcon, iconSize } from './icons'
@@ -33,7 +33,7 @@ export function Sheet({ visible, onClose, closeLabel, title, eyebrow, presentati
         <View style={styles.header}>
           {eyebrow ? <Text variant="eyebrow">{eyebrow}</Text> : null}
           {title ? (
-            <Text variant="title" accessibilityRole="header">
+            <Text variant="heading" accessibilityRole="header">
               {title}
             </Text>
           ) : null}
@@ -45,7 +45,9 @@ export function Sheet({ visible, onClose, closeLabel, title, eyebrow, presentati
 
   return (
     <Modal visible={visible} transparent animationType={bottom ? 'slide' : 'fade'} onRequestClose={onClose} statusBarTranslucent>
-      <View style={[styles.layer, bottom ? styles.layerBottom : styles.layerCenter]}>
+      {/* A translucent-status-bar modal is not resized for the keyboard on
+          Android, so the layer pads itself instead; iOS needs the same. */}
+      <KeyboardAvoidingView behavior="padding" style={[styles.layer, bottom ? styles.layerBottom : styles.layerCenter]}>
         <Pressable accessibilityRole="button" accessibilityLabel={closeLabel} style={styles.backdrop} onPress={onClose} />
         <View
           accessibilityViewIsModal
@@ -66,7 +68,7 @@ export function Sheet({ visible, onClose, closeLabel, title, eyebrow, presentati
             <View style={[styles.content, styles.contentFlex]}>{body}</View>
           )}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   )
 }
