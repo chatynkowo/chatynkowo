@@ -23,4 +23,7 @@ export const STORAGE_KEYS = {
   language: 'chatynkowo:language',
   contentCache: 'chatynkowo:content:v2:',
   welcomeSeen: 'chatynkowo:welcome-seen',
+  /* Reward ids the player has already viewed in the Kronika; earned minus
+     these is the tab badge. */
+  rewardsSeen: 'chatynkowo:rewards-seen:v1',
 } as const

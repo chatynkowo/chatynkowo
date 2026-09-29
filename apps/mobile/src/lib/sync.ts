@@ -122,9 +122,14 @@ export async function pushFinds(session: Session, found: Record<string, StoredFi
   }
 }
 
-/* The account's finds, for merging into the local Kronika. */
+/* The account's finds, for merging into the local Kronika. Throws when
+   the backend cannot be read, so the caller retries instead of taking an
+   empty answer for an empty account. */
 export async function pullFinds(session: Session): Promise<Record<string, StoredFind>> {
-  return supabase ? api.fetchFinds(supabase, session) : {}
+  if (!supabase) return {}
+  const { data, error } = await supabase.from('finds').select('slug, found_at').eq('user_id', session.user.id)
+  if (error) throw error
+  return Object.fromEntries((data ?? []).map((row) => [row.slug, { foundAt: row.found_at }]))
 }
 
 export async function fetchLeaderboard(total: number) {

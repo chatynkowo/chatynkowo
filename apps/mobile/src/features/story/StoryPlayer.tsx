@@ -1,47 +1,50 @@
-import { useMemo, useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native'
+import { useEffect, useMemo, useState } from 'react'
+import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import type { Cottage } from '@chatynkowo/core'
 import { useStoryPlayer, type StoryTrack } from '../../lib/audio'
+import { haptic } from '../../lib/haptics'
 import { content, storyAudio } from '../../lib/content'
 import { downloadRecording, localRecording } from '../../lib/recordings'
-import { useContent } from '../../providers'
-import { DownloadIcon, FoundIcon, IconButton, PauseIcon, PlayIcon, StoryAudioIcon, Text, colors, iconSize, radius, space } from '../../ui'
+import { useContent, useToast } from '../../providers'
+import { CrossfadeText, DownloadIcon, FoundIcon, IconButton, StoryAudioIcon, Text, colors, iconSize, radius, space } from '../../ui'
+import { PlayPauseButton } from './PlayPauseButton'
+import { ScrubBar } from './ScrubBar'
 
-/* The story's audio card: play/pause, a seekable progress bar, and "save on
-   this device" for the forest. A recording already on the device plays from
-   the file; otherwise it streams, falling back to the Polish original when
-   the language has none yet (core's storyAudio decides the URLs). */
-
-function formatTime(seconds: number) {
-  if (!Number.isFinite(seconds) || seconds < 0) return '0:00'
-  const minutes = Math.floor(seconds / 60)
-  return `${minutes}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`
-}
+/* The story's audio card: play and pause, a scrubbable position bar, and
+   "save on this device" for the forest. A recording already on the device
+   plays from the file; otherwise it streams, falling back to the Polish
+   original when the language has none yet (core's storyAudio decides the
+   URLs), and a copy saved mid-tale is swapped in without losing the place. */
 
 export function StoryPlayer({ cottage }: { cottage: Cottage }) {
   const { t } = useTranslation()
   const { language } = useContent()
+  const toast = useToast()
   const [localUri, setLocalUri] = useState(() => localRecording(cottage.slug, language))
   const [download, setDownload] = useState<'idle' | 'busy' | 'failed'>('idle')
-  const [barWidth, setBarWidth] = useState(0)
 
+  /* The stream is the track; the local copy travels separately so the
+     player can take it over in place. */
   const track = useMemo<StoryTrack>(() => {
     const audio = storyAudio(cottage.slug, language)
     return {
       id: `${cottage.slug}:${language}`,
-      url: localUri ?? audio.src,
-      fallbackUrl: localUri ? undefined : audio.fallbackSrc,
+      url: audio.src,
+      fallbackUrl: audio.fallbackSrc,
       title: cottage.title,
       artist: 'Chatynkowo',
       artwork: content.storyPhotos(cottage)[0],
     }
-  }, [cottage, language, localUri])
+  }, [cottage, language])
 
-  const player = useStoryPlayer(track)
+  const player = useStoryPlayer(track, { localUri })
   const playing = player.status === 'playing'
   const busy = player.status === 'loading'
-  const ratio = player.duration > 0 ? Math.min(1, player.position / player.duration) : 0
+
+  useEffect(() => {
+    if (download === 'failed') toast.show({ tone: 'error', text: t('mobile:story.downloadFailed') })
+  }, [download, toast, t])
 
   async function saveOnDevice() {
     setDownload('busy')
@@ -55,12 +58,13 @@ export function StoryPlayer({ cottage }: { cottage: Cottage }) {
     }
   }
 
-  function seekFromPress(x: number) {
-    if (!barWidth || !player.duration) return
-    void player.seekTo(Math.max(0, Math.min(1, x / barWidth)) * player.duration)
+  function toggle() {
+    haptic('light')
+    void player.toggle()
   }
 
   const label = playing ? t('audio.pause', { title: cottage.title }) : t('audio.play', { title: cottage.title })
+  const downloadState = download === 'busy' ? t('mobile:story.downloading') : download === 'failed' ? t('mobile:story.downloadFailed') : t('mobile:story.download')
 
   return (
     <View style={styles.card}>
@@ -76,30 +80,8 @@ export function StoryPlayer({ cottage }: { cottage: Cottage }) {
         </Text>
       ) : (
         <View style={styles.transport}>
-          <IconButton label={label} onPress={() => void player.toggle()} disabled={busy}>
-            {busy ? (
-              <ActivityIndicator color={colors.accentStrong} />
-            ) : playing ? (
-              <PauseIcon size={iconSize.lg} weight="fill" color={colors.accentStrong} />
-            ) : (
-              <PlayIcon size={iconSize.lg} weight="fill" color={colors.accentStrong} />
-            )}
-          </IconButton>
-          <View style={styles.progress}>
-            <Pressable
-              accessibilityRole="adjustable"
-              accessibilityLabel={t('audio.position')}
-              accessibilityValue={{ min: 0, max: Math.round(player.duration), now: Math.round(player.position) }}
-              onLayout={(event: LayoutChangeEvent) => setBarWidth(event.nativeEvent.layout.width)}
-              onPress={(event) => seekFromPress(event.nativeEvent.locationX)}
-              style={styles.bar}
-            >
-              <View style={[styles.fill, { width: `${ratio * 100}%` }]} />
-            </Pressable>
-            <Text variant="small" tone="faint">
-              {formatTime(player.position)} / {formatTime(player.duration)}
-            </Text>
-          </View>
+          <PlayPauseButton playing={playing} busy={busy} label={label} onPress={toggle} />
+          <ScrubBar position={player.position} duration={player.duration} onSeek={(seconds) => void player.seekTo(seconds)} label={t('audio.position')} />
         </View>
       )}
       <View style={styles.offline}>
@@ -115,9 +97,7 @@ export function StoryPlayer({ cottage }: { cottage: Cottage }) {
             <IconButton label={t('mobile:story.download')} onPress={() => void saveOnDevice()} disabled={download === 'busy'}>
               {download === 'busy' ? <ActivityIndicator color={colors.accentStrong} /> : <DownloadIcon size={iconSize.md} color={colors.ink} />}
             </IconButton>
-            <Text variant="small" tone={download === 'failed' ? 'danger' : 'soft'} style={styles.offlineText}>
-              {download === 'busy' ? t('mobile:story.downloading') : download === 'failed' ? t('mobile:story.downloadFailed') : t('mobile:story.download')}
-            </Text>
+            <CrossfadeText value={downloadState} variant="small" tone={download === 'failed' ? 'danger' : 'soft'} style={styles.offlineText} />
           </>
         )}
       </View>
@@ -146,21 +126,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,
-  },
-  progress: {
-    flex: 1,
-    gap: space.xs,
-  },
-  bar: {
-    height: 10,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceSoft,
-    overflow: 'hidden',
-    justifyContent: 'center',
-  },
-  fill: {
-    height: '100%',
-    backgroundColor: colors.accent,
   },
   offline: {
     flexDirection: 'row',

@@ -58,6 +58,10 @@ export const MOBILE_ICON_ROLES = [
   'DownloadIcon',
   'WarningIcon',
   'LanguageIcon',
+  'ShareIcon',
+  'TorchIcon',
+  'TorchOffIcon',
+  'InfoIcon',
 ] as const
 
 export type SharedIconRole = (typeof SHARED_ICON_ROLES)[number]

@@ -29,12 +29,15 @@ import {
   CrownIcon,
   DownloadSimpleIcon,
   FacebookLogoIcon,
+  FlashlightIcon,
   FootprintsIcon,
   GpsFixIcon,
   HandHeartIcon,
   HouseLineIcon,
+  InfoIcon as PhosphorInfo,
   InstagramLogoIcon,
   KeyIcon as PhosphorKey,
+  LightningSlashIcon,
   LockKeyOpenIcon,
   MagnifyingGlassIcon,
   MapPinIcon,
@@ -46,6 +49,7 @@ import {
   PlayIcon as PhosphorPlay,
   PlusIcon,
   QrCodeIcon,
+  ShareNetworkIcon,
   ShieldCheckIcon,
   SignOutIcon as PhosphorSignOut,
   SparkleIcon,
@@ -61,7 +65,9 @@ import {
 } from 'phosphor-react-native'
 
 import type { Icon } from 'phosphor-react-native'
-import { iconSize, type MobileIconRole, type SharedIconRole } from '@chatynkowo/theme'
+import type { NativeStackHeaderItemButton } from 'expo-router'
+import type { AndroidSymbol } from 'expo-symbols'
+import type { MobileIconRole, SharedIconRole } from '@chatynkowo/theme'
 
 export type { Icon, IconProps, IconWeight } from 'phosphor-react-native'
 export { iconSize, type IconSize } from '@chatynkowo/theme'
@@ -120,6 +126,12 @@ export const SyncIcon = CloudArrowUpIcon
 export const DownloadIcon = DownloadSimpleIcon
 export const WarningIcon = PhosphorWarning
 export const LanguageIcon = TranslateIcon
+export const ShareIcon = ShareNetworkIcon
+export const TorchIcon = FlashlightIcon
+/* Phosphor has no slashed flashlight; the slashed lightning is the closest
+   "flash off" glyph, the one camera apps use. */
+export const TorchOffIcon = LightningSlashIcon
+export const InfoIcon = PhosphorInfo
 
 /* The vocabulary as one object, checked against the shared and app-only
    roles: a missing role is a compile error. */
@@ -130,4 +142,51 @@ export const ICON_VOCABULARY = {
   ChronicleIcon, RewardIcon, NotebookIcon, StoryAudioIcon, LoreIcon, CreedIcon, ElfIcon, ForestIcon,
   InstagramIcon, FacebookIcon,
   CameraIcon, ProfileIcon, SignOutIcon, OfflineIcon, SyncIcon, DownloadIcon, WarningIcon, LanguageIcon,
+  ShareIcon, TorchIcon, TorchOffIcon, InfoIcon,
 } satisfies Record<SharedIconRole | MobileIconRole, Icon>
+
+/* ---------- Native bars ---------- */
+
+/* SF Symbol names, as the native stack types them (sf-symbols-typescript is
+   a dependency of expo-router, not of the app, so the type is read through
+   the header item contract rather than imported). */
+export type SFSymbol = Extract<NonNullable<NativeStackHeaderItemButton['icon']>, { type: 'sfSymbol' }>['name']
+
+export type { AndroidSymbol }
+
+export type TabIcon = {
+  /* iOS: the outline in the idle state, the filled face when selected. */
+  sf: { default: SFSymbol; selected: SFSymbol }
+  /* Android: the Material symbol drawn by expo-symbols. */
+  md: AndroidSymbol
+  /* The Phosphor fallback for the JS tabs rollback. */
+  Glyph: Icon
+}
+
+/* The four tabs' native icons, keyed by route name. Every Material name is
+   in expo-symbols' android/symbols.json and every SF name in
+   sf-symbols-typescript 2.2.0. */
+export const TAB_ICONS = {
+  index: { sf: { default: 'map', selected: 'map.fill' }, md: 'map', Glyph: AtlasIcon },
+  kronika: { sf: { default: 'book.closed', selected: 'book.closed.fill' }, md: 'menu_book', Glyph: ChronicleIcon },
+  ranking: { sf: { default: 'trophy', selected: 'trophy.fill' }, md: 'trophy', Glyph: RewardIcon },
+  profile: { sf: { default: 'person.crop.circle', selected: 'person.crop.circle.fill' }, md: 'account_circle', Glyph: ProfileIcon },
+} as const satisfies Record<string, TabIcon>
+
+export type TabName = keyof typeof TAB_ICONS
+
+export type HeaderSymbol = {
+  /* iOS: the SF Symbol the native bar draws. */
+  sf: SFSymbol
+  /* Android: the Phosphor glyph rendered inside an IconButton. */
+  Glyph: Icon
+}
+
+/* The header button roles of the native stack (see headerItems.tsx). */
+export const HEADER_SYMBOLS = {
+  close: { sf: 'xmark', Glyph: CloseIcon },
+  share: { sf: 'square.and.arrow.up', Glyph: ShareIcon },
+  info: { sf: 'info.circle', Glyph: InfoIcon },
+  torchOn: { sf: 'flashlight.on.fill', Glyph: TorchIcon },
+  torchOff: { sf: 'flashlight.off.fill', Glyph: TorchOffIcon },
+} as const satisfies Record<string, HeaderSymbol>

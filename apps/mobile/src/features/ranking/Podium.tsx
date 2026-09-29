@@ -1,11 +1,24 @@
-import { Image, StyleSheet, View } from 'react-native'
+import { memo } from 'react'
+import { StyleSheet, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
 import { initials } from '@chatynkowo/core'
 import type { LeaderboardRow } from '@chatynkowo/api'
-import { Text, colors, radius, space } from '../../ui'
+import { ContentImage, GlowPulse, Text, colors, enterUp, radius, space } from '../../ui'
 
-/* The top three, second and third flanking the winner — the site's podium. */
-export function Podium({ rows, total, isMine }: { rows: LeaderboardRow[]; total: number; isMine: (row: LeaderboardRow) => boolean }) {
+/* The top three, second and third flanking the winner, the site's podium.
+   The cards rise in third, second, first order the first time they appear
+   and the winner's avatar glows; a refetch that keeps the same people
+   leaves them still. */
+
+const AVATAR = 48
+
+/* Entrance delay per place: the winner comes last. */
+const ENTER_DELAY_MS: Record<number, number> = { 3: 0, 2: 80, 1: 160 }
+
+type PodiumProps = { rows: LeaderboardRow[]; total: number; isMine: (row: LeaderboardRow) => boolean }
+
+export const Podium = memo(function Podium({ rows, total, isMine }: PodiumProps) {
   const { t } = useTranslation()
   if (rows.length < 3) return null
   const order: Array<{ row: LeaderboardRow; place: number }> = [
@@ -15,34 +28,41 @@ export function Podium({ rows, total, isMine }: { rows: LeaderboardRow[]; total:
   ]
   return (
     <View style={styles.podium} accessibilityLabel={t('ranking.podiumAria')}>
-      {order.map(({ row, place }) => (
-        <View key={row.public_id} style={[styles.card, place === 1 && styles.cardFirst, isMine(row) && styles.cardMine]}>
-          <Text variant="title" tone="accent">
-            {place}
-          </Text>
-          {row.avatar_url ? (
-            <Image source={{ uri: row.avatar_url }} style={styles.avatar} accessibilityIgnoresInvertColors />
-          ) : (
-            <View style={[styles.avatar, styles.avatarInitials]}>
-              <Text weight="bold" tone="accent">
-                {initials(row.display_name)}
-              </Text>
-            </View>
-          )}
-          <Text weight="bold" numberOfLines={2} align="center">
-            {row.display_name}
-          </Text>
-          <Text variant="small" tone="soft">
-            {row.found}/{total}
-          </Text>
-          <Text variant="small" tone="faint">
-            {t('ranking.place', { place })}
-          </Text>
-        </View>
-      ))}
+      {order.map(({ row, place }) => {
+        const avatar = row.avatar_url ? (
+          <ContentImage uri={row.avatar_url} radius={radius.pill} style={styles.avatar} />
+        ) : (
+          <View style={[styles.avatar, styles.avatarInitials]}>
+            <Text weight="bold" tone="accent">
+              {initials(row.display_name)}
+            </Text>
+          </View>
+        )
+        return (
+          <Animated.View
+            key={row.public_id}
+            entering={enterUp(ENTER_DELAY_MS[place] ?? 0)}
+            style={[styles.card, place === 1 && styles.cardFirst, isMine(row) && styles.cardMine]}
+          >
+            <Text variant="title" tone="accent">
+              {place}
+            </Text>
+            {place === 1 ? <GlowPulse size={AVATAR}>{avatar}</GlowPulse> : avatar}
+            <Text weight="bold" numberOfLines={2} align="center">
+              {row.display_name}
+            </Text>
+            <Text variant="small" tone="soft">
+              {row.found}/{total}
+            </Text>
+            <Text variant="small" tone="faint">
+              {t('ranking.place', { place })}
+            </Text>
+          </Animated.View>
+        )
+      })}
     </View>
   )
-}
+})
 
 const styles = StyleSheet.create({
   podium: {
@@ -70,9 +90,9 @@ const styles = StyleSheet.create({
     borderColor: colors.accentStrong,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: AVATAR,
+    height: AVATAR,
+    borderRadius: radius.pill,
     backgroundColor: colors.pageRaised,
   },
   avatarInitials: {

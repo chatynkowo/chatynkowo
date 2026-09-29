@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native'
+import { ActivityIndicator, StyleSheet, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native'
 import { Link, type Href } from 'expo-router'
+import { PressableScale } from './PressableScale'
 import { Text } from './Text'
 import { colors, mapPalette, radius, sizes, space, type ButtonVariant } from './tokens'
 
@@ -12,7 +13,9 @@ import { colors, mapPalette, radius, sizes, space, type ButtonVariant } from './
    Use Button for actions, LinkButton for navigation that looks like a
    button, IconButton for icon-only controls (the accessible name is
    mandatory). On the parchment surface (the map's cottage panel) the ghost
-   button takes the panel's brown border and ink, as on the site. */
+   button takes the panel's brown border and ink, as on the site. All three
+   press through PressableScale: the primary action answers with a light
+   tap, icon controls with a selection tick, the quieter variants silently. */
 
 export type { ButtonVariant }
 
@@ -43,23 +46,20 @@ const labelTone: Record<ButtonVariant, 'accentInk' | 'ink' | 'soft'> = {
 export function Button({ variant = 'ghost', surface = 'dark', children, icon, iconAfter, busy, block, disabled, style, ...rest }: ButtonProps) {
   const inactive = Boolean(disabled || busy)
   const onParchment = surface === 'parchment' && variant === 'ghost'
+  const primary = variant === 'primary'
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityState={{ disabled: inactive, busy: Boolean(busy) }}
       disabled={inactive}
-      style={({ pressed }) => [
-        styles.base,
-        styles[variant],
-        onParchment && styles.ghostOnParchment,
-        block && styles.block,
-        pressed && styles.pressed,
-        inactive && styles.disabled,
-        style,
-      ]}
+      haptic={primary ? 'light' : null}
+      /* The accent wash is invisible on the gold face; the lighter border
+         gold reads as a pressed shade there. */
+      pressedFill={primary ? colors.accentBorder : colors.accentWash}
+      style={[styles.base, styles[variant], onParchment && styles.ghostOnParchment, block && styles.block, inactive && styles.disabled, style]}
       {...rest}
     >
-      {busy ? <ActivityIndicator color={variant === 'primary' ? colors.accentInk : colors.accentStrong} /> : icon}
+      {busy ? <ActivityIndicator color={primary ? colors.accentInk : colors.accentStrong} /> : icon}
       {typeof children === 'string' ? (
         <Text weight="bold" tone={labelTone[variant]} numberOfLines={1} style={onParchment ? styles.ghostOnParchmentLabel : undefined}>
           {children}
@@ -68,7 +68,7 @@ export function Button({ variant = 'ghost', surface = 'dark', children, icon, ic
         children
       )}
       {iconAfter}
-    </Pressable>
+    </PressableScale>
   )
 }
 
@@ -92,19 +92,21 @@ export type IconButtonProps = Omit<PressableProps, 'style' | 'children'> & {
   style?: StyleProp<ViewStyle>
 }
 
+/* 42 pt control plus the slop makes the 48 pt target. */
 export function IconButton({ label, children, active, disabled, style, ...rest }: IconButtonProps) {
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: Boolean(disabled), selected: Boolean(active) }}
       disabled={disabled}
+      haptic="select"
       hitSlop={6}
-      style={({ pressed }) => [styles.icon, active && styles.iconActive, pressed && styles.pressed, disabled && styles.disabled, style]}
+      style={[styles.icon, active && styles.iconActive, disabled && styles.disabled, style]}
       {...rest}
     >
       <View pointerEvents="none">{children}</View>
-    </Pressable>
+    </PressableScale>
   )
 }
 
@@ -143,10 +145,6 @@ const styles = StyleSheet.create({
   },
   ghostOnParchmentLabel: {
     color: mapPalette.panelButtonInk,
-  },
-  pressed: {
-    transform: [{ scale: 0.985 }],
-    opacity: 0.92,
   },
   disabled: {
     opacity: 0.7,

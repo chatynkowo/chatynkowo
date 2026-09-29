@@ -34,6 +34,18 @@ const weightFamily: Record<TextWeight, string> = {
   bold: fonts.semibold,
 }
 
+/* How far the system text size may scale each role: body copy grows
+   freely, chrome (titles, eyebrows, display) stays within its layout. A
+   caller may override with the prop. */
+const maxMultiplier: Record<TextVariant, number> = {
+  display: 1.2,
+  title: 1.2,
+  heading: 1.35,
+  eyebrow: 1.3,
+  body: 1.6,
+  small: 1.6,
+}
+
 /* Display roles are the site's h1/h2 in Cinzel Decorative; heading is its
    h3 (Cormorant 600); the eyebrow is Cormorant 600 in spaced small
    capitals, accent coloured, as on every section header of the site. */
@@ -46,10 +58,11 @@ const variantStyles = StyleSheet.create({
   eyebrow: { ...typeScale.eyebrow, fontFamily: fonts.semibold, textTransform: 'uppercase', color: colors.accentStrong },
 })
 
-export function Text({ variant = 'body', tone, weight, align, style, ...rest }: TextProps) {
+export function Text({ variant = 'body', tone, weight, align, style, maxFontSizeMultiplier, ...rest }: TextProps) {
   const fixedFace = variant === 'title' || variant === 'display' || variant === 'eyebrow' || variant === 'heading'
   return (
     <NativeText
+      maxFontSizeMultiplier={maxFontSizeMultiplier ?? maxMultiplier[variant]}
       style={[
         { color: colors.ink, fontFamily: fonts.body },
         variantStyles[variant],

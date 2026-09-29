@@ -20,6 +20,9 @@
       "infoPlist": {
         "UIBackgroundModes": [
           "audio"
+        ],
+        "LSApplicationQueriesSchemes": [
+          "comgooglemaps"
         ]
       }
     },
@@ -31,12 +34,41 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": true,
+      "softwareKeyboardLayoutMode": "resize",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "scheme": "https",
+              "host": "www.chatynkowo.pl",
+              "pathPattern": "/"
+            },
+            {
+              "scheme": "https",
+              "host": "www.chatynkowo.pl",
+              "pathPattern": "/index.html"
+            },
+            {
+              "scheme": "https",
+              "host": "chatynkowo.pl",
+              "pathPattern": "/"
+            }
+          ]
+        }
+      ]
     },
     "plugins": [
       "expo-router",
       "expo-localization",
       "expo-dev-client",
+      "./plugins/with-scene-delegate",
       "expo-apple-authentication",
       "@maplibre/maplibre-react-native",
       [
@@ -72,7 +104,9 @@
           "locationAlwaysPermission": false,
           "isAndroidBackgroundLocationEnabled": false
         }
-      ]
+      ],
+      "expo-image",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

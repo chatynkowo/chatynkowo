@@ -110,26 +110,53 @@ sudo sysctl fs.inotify.max_user_watches=524288   # or: sudo apt install watchman
 
 ```
 app/                     expo-router routes
-  _layout.tsx            fonts, remembered language, providers, the root Stack, the first-launch gate
-  (tabs)/                Atlas (index) / Code / Kronika / Ranking
-  welcome.tsx            the start screen: the site's lore and guide, shown once and from the profile
-  story/[slug].tsx       the story, presented as a modal
-  reward/[id].tsx        one reward card, modal
-  scan.tsx               the QR scanner, full-screen modal
-  profile.tsx            language, nickname, avatar, sign-out, about and legal links, modal
+  _layout.tsx            fonts and the bootstrap behind the splash, the providers, the root native Stack:
+                         welcome and (tabs) behind Stack.Protected guards, the sheets and modals on top
+  welcome.tsx            the onboarding pager (lore, creed, guide, notes, the two ways to begin), first launch only
+  (tabs)/_layout.tsx     native tabs (expo-router NativeTabs, SF Symbols on iOS, Material symbols on Android):
+                         Atlas / Kronika / Ranking / Profile, with a JS tab bar behind a rollback switch
+  (tabs)/index.tsx       the Atlas: the full-bleed map with floating chrome, the quest card, the "I have a code" pill
+                         and the parchment cottage sheet (a gesture sheet with three snaps)
+  (tabs)/kronika/        its own native stack: the collection grid with the progress card
+  (tabs)/ranking/        its own native stack: the leaderboard list, the rules and share header items
+  (tabs)/profile/        its own native stack: grouped settings (account, language, lore, legal, social),
+                         about.tsx (the lore sections) and guide.tsx (the onboarding pager replayed)
+  code.tsx               the code entry as a form sheet (auto-submits at the fourth digit)
+  scan.tsx               the QR scanner, full screen under a transparent bar with torch and close items
+  search.tsx             the cottage search as a page sheet
+  story/[slug].tsx       the story as a page sheet: the unlock ceremony the first time, a plain revisit later
+  celebrate.tsx          the reward reveal, a transparent modal the Atlas presents after a story
+  reward/[id].tsx        one reward card, form sheet
+  rules.tsx              the ranking rules, form sheet
+  +native-intent.tsx     where a URL handed to the app goes (plaque links with a code, story and reward links)
+  +not-found.tsx         redirects to the Atlas
 src/
   config.ts              EXPO_PUBLIC_* with production defaults, storage keys
   i18n/                  the i18next instance: "translation" + "mobile" namespaces, device locale, remembered choice
-  ui/                    the interface layer: tokens, fonts, icons, Text, Button/LinkButton/IconButton, Sheet,
-                         ScreenFrame, TextField, MarkdownView
-  lib/                   adapters: cached content client, progress + sync-queue storage, Supabase and native
-                         sign-in, audio (expo-audio), recordings (file system), maps hand-off, position, reachability
-  providers/             SessionProvider, ContentProvider, ProgressProvider
-  features/              screen-level components per area: atlas/, code/, story/, kronika/, ranking/, welcome/
+  ui/                    the interface layer: tokens, fonts, icons (plus the native tab and header symbols), motion
+                         tokens, Text, Button/LinkButton/IconButton on PressableScale, Screen, ContentImage (expo-image),
+                         Skeleton, ProgressRing, ProgressBar, CrossfadeText, PageDots, GlowPulse, EmptyState, Toast,
+                         SettingsList, SheetHandle, TabStack, headerItems, TextField, MarkdownView
+  lib/                   adapters: bootstrap (what the splash reads), cached content client, progress + sync-queue
+                         storage, Supabase and native sign-in, audio (expo-audio), recordings (file system), maps
+                         hand-off, position, reachability store, haptics, accessibility announcements
+  providers/             BootProvider, NetworkProvider, SessionProvider, ContentProvider, ProgressProvider, ToastProvider
+  features/              screen-level components per area: atlas/, code/, story/, kronika/, ranking/, profile/, welcome/
+plugins/                 config plugins: with-scene-delegate.js (UIScene life cycle for the iOS 27 SDK)
 locales/                 native permission strings per language (iOS Info.plist)
 assets/                  app icon, adaptive icon layers, the splash emblem and the logo, generated from the brand logo in
                          packages/content/private/img
 ```
+
+Navigation model: the tab bar holds destinations only (the Atlas, the
+collection, the leaderboard, the profile); entering a code is an action and
+lives in a sheet reachable from the Atlas pill, the cottage sheet, the
+onboarding, the empty states and plaque links, so every `/code` href still
+works. A discovery runs in place (the sheet or the scanner shows the
+outcome), the story replaces that screen, and the Atlas presents the reward
+reveal once the story has closed. Motion goes through the tokens in
+`src/ui/motion` (reanimated 4, system reduce-motion respected) and haptics
+through `src/lib/haptics.ts`.
 
 ## How the data flows
 
@@ -167,19 +194,28 @@ assets/                  app icon, adaptive icon layers, the splash emblem and t
 |---|---|---|
 | Map | `@maplibre/maplibre-react-native` | the site's fairy-tale map: OpenStreetMap tiles washed into parchment that turn real as the seeker zooms in, teardrop pins gathered into clusters (`supercluster`), the search area around the chosen cottage, the level indicator, reset and search controls, the parchment cottage panel; the same per-country opening frame as the site (`homeCountry` / `homeBounds` in core `geo.ts`); "Navigate" opens the system maps app |
 | Position | `expo-location` | only on the locate control, foreground permission, one reading shown as a marker |
-| Splash | `expo-splash-screen` | the brand logo on the page colour until fonts and the remembered language are loaded |
+| Splash | `expo-splash-screen` | the brand logo on the page colour until the fonts and the bootstrap (language, progress, cached content, flags; capped at 1500 ms) are in, then a 300 ms fade into a fully formed first frame |
 | Story audio | `expo-audio` | background playback (`UIBackgroundModes: audio` via its plugin) and lock-screen / notification controls (`setActiveForLockScreen`); a language without a recording falls back to the Polish original when the file fails to load |
 | Recordings offline | `expo-file-system` | "Save on this device" downloads the mp3 into the document directory, one folder per language; a saved file plays from disk |
-| QR | `expo-camera` | `CameraView` scanning `qr` only; the code goes to the Code tab through `scanResult.ts` |
+| QR | `expo-camera` | `CameraView` scanning `qr` only, torch from the header; the code is resolved on the scanner itself through the same `useCodeEntry` as manual entry |
+| Tabs and stacks | `react-native-screens` through expo-router | `NativeTabs` (UITabBarController, Material 3 navigation bar), native stack headers (transparent with the system glass on iOS), `formSheet` routes for the code, reward and rules, `modal` page sheets for the story and the search |
+| Cottage sheet | `@gorhom/bottom-sheet` | the in-screen parchment sheet over the map with three snaps; the map stays pannable and the camera keeps room for the sheet |
+| Motion | `react-native-reanimated` 4 + `react-native-gesture-handler` | springs, entrances, the progress ring, the scrub bar, the toast gesture; every animation passes `ReduceMotion.System` |
+| Haptics | `expo-haptics` | one module (`src/lib/haptics.ts`): selection on controls, light on primary actions, medium on a pin and the seal, success and error on the code result |
+| Images | `expo-image` | `ContentImage`: memory and disk cache, cross-dissolve, prefetch of the reward art and the found cottages' photos |
+| Legal pages | `expo-web-browser` | the terms and privacy pages open in an in-app browser sheet |
 | Fonts | `expo-font` + `@expo-google-fonts/*` | Cormorant Garamond and Cinzel Decorative, imported per weight; the repository's woff2 files cannot be used natively |
 | Locale | `expo-localization` | the device language picks the dictionary and, through `detectCountry`, the map's home country (never geolocation) |
 | Country names | `@formatjs/intl-displaynames` | Hermes has no `Intl.DisplayNames`; the polyfill with Polish and English data names a cottage's country in the map panel, as the site does |
+| Scene life cycle | `plugins/with-scene-delegate.js` | config plugin for the iOS 27 SDK, which asserts at launch unless the app adopts UIScene: the generated `AppDelegate` conforms to `ExpoReactNativeFactoryProvider` and stops starting React Native itself, a `SceneDelegate` subclasses Expo's `ExpoAppSceneDelegate` (it creates the window and starts React Native from the scene), and `Info.plist` gets the `UIApplicationSceneManifest`; idempotent, skipped from SDK 58 on (the template adopts scenes itself), refuses an expo older than 57.0.25 |
 
 Google sign-in on iOS additionally needs the library's config plugin with
 the `iosUrlScheme` from the Google Cloud console; add it to `app.json`
 `plugins` when the provider is configured (the plugin refuses to run
 without the scheme, which is why it is not listed yet). Apple sign-in needs
 the capability on the App ID; `ios.usesAppleSignIn` is already set.
+
+TODO universal links: the plaque QR carries `https://www.chatynkowo.pl/?kod=NNNN`. The Android half is in place (`android.intentFilters` for `https://www.chatynkowo.pl/`, `/index.html` and `https://chatynkowo.pl/` with `autoVerify`; it stays a plain browser choice until the site serves `/.well-known/assetlinks.json` with `delegate_permission/common.handle_all_urls` for `pl.chatynkowo.app` and the release signing SHA-256). The iOS half is not: add `ios.associatedDomains: ["applinks:www.chatynkowo.pl", "applinks:chatynkowo.pl"]` to `app.json` only once the site serves `/.well-known/apple-app-site-association` (applinks for `<TEAMID>.pl.chatynkowo.app` with components for `/` and `/index.html` carrying a `kod` or `code` query, so `ranking.html` share links keep opening the website), because the Associated Domains capability changes device code signing. `app/+native-intent.tsx` already maps both URL forms to the code sheet.
 
 ## Conventions
 
@@ -202,9 +238,10 @@ the capability on the App ID; `ios.usesAppleSignIn` is already set.
 
 ## Extending
 
-- A new tab is one `Tabs.Screen` in `app/(tabs)/_layout.tsx` plus its file;
-  a new top-level surface (a companion's cottage, say) is one `Stack.Screen`
-  in `app/_layout.tsx`.
+- A new tab is one `NativeTabs.Trigger` in `app/(tabs)/_layout.tsx` (icon
+  names in `TAB_ICONS`, `src/ui/icons.ts`) plus a file or a folder with a
+  `TabStack` layout; a new top-level surface (a companion's cottage, say) is
+  one `Stack.Screen` in `app/_layout.tsx`, as a sheet or a modal.
 - Per-user state that must reach the account follows the finds pattern:
   rules in core, a store in `src/lib`, a queue entry in `SyncQueue`, a
   push in `ProgressProvider`.
