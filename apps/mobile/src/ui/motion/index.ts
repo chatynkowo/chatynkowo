@@ -3,6 +3,7 @@ import {
   FadeIn,
   FadeInDown,
   FadeInUp,
+  FadeOut,
   FadeOutDown,
   FadeOutUp,
   LinearTransition,
@@ -39,4 +40,5 @@ export const enterDown = (delay = 0) => FadeInDown.duration(DURATIONS.base).easi
 export const leaveUp = () => FadeOutUp.duration(DURATIONS.fast).reduceMotion(ReduceMotion.System)
 export const leaveDown = () => FadeOutDown.duration(DURATIONS.fast).reduceMotion(ReduceMotion.System)
 export const fade = (duration: number = DURATIONS.base) => FadeIn.duration(duration).reduceMotion(ReduceMotion.System)
+export const leave = () => FadeOut.duration(DURATIONS.fast).reduceMotion(ReduceMotion.System)
 export const layoutLinear = LinearTransition.duration(DURATIONS.base).reduceMotion(ReduceMotion.System)

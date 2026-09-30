@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Pressable, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native'
+import { Keyboard, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native'
 import Animated, { cancelAnimation, interpolateColor, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated'
 import { useFocusEffect } from 'expo-router'
 import { useTranslation } from 'react-i18next'
@@ -8,11 +8,14 @@ import { DURATIONS, ReduceMotion, SPRINGS, Text, colors, fonts, radius, space, u
 import type { CodePhase } from './useCodeEntry'
 import { SHAKE_MS, useShake } from './useShake'
 
-/* Four digit boxes over one invisible input, so the numeric keyboard, paste
-   and one-time-code autofill all work as on a plain field while the boxes
-   look like the site's pin input. The boxes are decoration for assistive
-   tech; the input is the one control. Each digit bumps its box, a check
-   pulses the row, an error shakes it red, an accepted code fills it gold. */
+/* Four digit boxes under one invisible input, so the numeric keyboard,
+   paste and one-time-code autofill all work as on a plain field while the
+   boxes look like the site's pin input. The input lies over the whole row
+   and is the one control: a tap on the boxes is a native tap on it, so it
+   takes the focus back however the keyboard was put away, and the boxes
+   are decoration hidden from assistive tech. Each digit bumps its box, a
+   check pulses the row, an error shakes it red, an accepted code fills it
+   gold. */
 
 type PinInputProps = {
   value: string
@@ -42,6 +45,17 @@ export function PinInput({ value, onChange, onSubmit, phase, autoFocus = false }
   const { width: windowWidth } = useWindowDimensions()
   const input = useRef<TextInput>(null)
   const [focused, setFocused] = useState(false)
+  /* Android keeps the input focused when the keyboard is hidden with Back,
+     so the active box follows the keyboard itself. */
+  const [keyboardShown, setKeyboardShown] = useState(false)
+  useEffect(() => {
+    const shown = Keyboard.addListener('keyboardDidShow', () => setKeyboardShown(true))
+    const hidden = Keyboard.addListener('keyboardDidHide', () => setKeyboardShown(false))
+    return () => {
+      shown.remove()
+      hidden.remove()
+    }
+  }, [])
   const { style: shakeStyle, shake } = useShake()
 
   const boxWidth = Math.min(MAX_BOX_WIDTH, Math.floor((windowWidth - 2 * space.lg - (LENGTH - 1) * space.md) / LENGTH))
@@ -72,23 +86,25 @@ export function PinInput({ value, onChange, onSubmit, phase, autoFocus = false }
     return () => clearTimeout(timer)
   }, [phase, shake, focus])
 
+  /* Done with fewer digits only puts the keyboard away. */
+  const submitIfComplete = () => {
+    if (value.length === LENGTH) onSubmit()
+  }
+
   return (
     <View style={styles.wrap}>
-      <Pressable accessible={false} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden onPress={focus}>
-        <Animated.View style={[styles.boxes, shakeStyle]}>
-          {Array.from({ length: LENGTH }, (_, index) => (
-            <PinBox key={index} digit={value[index] ?? ''} active={focused && index === activeIndex} phase={phase} width={boxWidth} />
-          ))}
-        </Animated.View>
-      </Pressable>
+      <Animated.View style={[styles.boxes, shakeStyle]} pointerEvents="none" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+        {Array.from({ length: LENGTH }, (_, index) => (
+          <PinBox key={index} digit={value[index] ?? ''} active={focused && keyboardShown && index === activeIndex} phase={phase} width={boxWidth} />
+        ))}
+      </Animated.View>
       <TextInput
         ref={input}
         value={value}
         onChangeText={onChange}
-        onSubmitEditing={onSubmit}
+        onSubmitEditing={submitIfComplete}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        editable
         keyboardType="number-pad"
         inputMode="numeric"
         maxLength={LENGTH}
@@ -96,8 +112,9 @@ export function PinInput({ value, onChange, onSubmit, phase, autoFocus = false }
         textContentType="oneTimeCode"
         returnKeyType="done"
         caretHidden
+        selectionColor="transparent"
         accessibilityLabel={t('mobile:code.pasteAria')}
-        style={styles.hidden}
+        style={styles.input}
       />
     </View>
   )
@@ -176,10 +193,15 @@ const styles = StyleSheet.create({
     fontSize: 30,
     lineHeight: 36,
   },
-  hidden: {
+  /* Over the whole row, drawing nothing: a transparent colour rather than
+     a zero opacity, which would stop the touches on iOS. */
+  input: {
     position: 'absolute',
-    opacity: 0,
-    width: 1,
-    height: 1,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    color: 'transparent',
+    backgroundColor: 'transparent',
   },
 })

@@ -1,13 +1,16 @@
-import { useEffect, type ReactNode } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { useEffect, useState, type ReactNode } from 'react'
+import { StyleSheet, View, type LayoutChangeEvent } from 'react-native'
 import Animated, { cancelAnimation, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated'
-import { CrossfadeText, DURATIONS, PressableScale, SearchIcon, Text, iconSize, mapPalette, radius, space, type Icon } from '../../ui'
+import { useTranslation } from 'react-i18next'
+import { BearingIcon, CrossfadeText, DURATIONS, PressableScale, SearchIcon, Text, fade, iconSize, layoutLinear, leave, mapPalette, radius, space, type Icon } from '../../ui'
+import type { OutOfSight } from './AtlasMap'
 
 /* The dark cards the site lays over its map, floating on the full-bleed
-   Atlas: the level indicator, the control bars, the tip and the offline
-   and stale pills. Icons and copy take the map's gold and cream; every
-   control is a PressableScale so the press feel matches the rest of the
-   app. The screen wires the labels and actions. */
+   Atlas: the level indicator, the control bars, the tip, the offline and
+   stale pills and the beacon to the nearest cottage. Icons and copy take
+   the map's gold and cream; every control is a PressableScale so the press
+   feel matches the rest of the app. The screen wires the labels and
+   actions. */
 
 export function LevelCard({ label, level }: { label: string; level: string }) {
   return (
@@ -108,6 +111,111 @@ export function StatusPill({ icon: Glyph, label, onPress }: { icon: Icon; label:
   )
 }
 
+type Size = { width: number; height: number }
+
+/* The pill's size before it has been measured, close enough that the
+   first placement barely moves. */
+const BEACON_GUESS: Size = { width: 88, height: 32 }
+/* Brings the pill's touch target to the size of a control; on the wrapper
+   too, since a touch must enter it before the pressable can claim it. */
+const BEACON_SLOP = { top: 7, bottom: 7, left: 7, right: 7 }
+
+/* Where the line from the middle of the view towards `heading` (degrees
+   clockwise from north, the top of the screen) leaves the box the pill may
+   sit in: the map area inset by the chrome above and below and a margin at
+   the sides, shrunk by half the pill so the whole pill stays inside. */
+function edgePoint(heading: number, area: Size, pill: Size, exclude: { top: number; bottom: number }) {
+  const radians = (heading * Math.PI) / 180
+  const dx = Math.sin(radians)
+  const dy = -Math.cos(radians)
+  const left = space.lg + pill.width / 2
+  const right = area.width - space.lg - pill.width / 2
+  const top = exclude.top + space.md + pill.height / 2
+  const bottom = area.height - exclude.bottom - space.md - pill.height / 2
+  const cx = area.width / 2
+  const cy = area.height / 2
+  let reach = Infinity
+  if (dx > 0) reach = Math.min(reach, (right - cx) / dx)
+  else if (dx < 0) reach = Math.min(reach, (left - cx) / dx)
+  if (dy > 0) reach = Math.min(reach, (bottom - cy) / dy)
+  else if (dy < 0) reach = Math.min(reach, (top - cy) / dy)
+  const x = Math.min(Math.max(cx + dx * reach, left), right)
+  const y = Math.min(Math.max(cy + dy * reach, top), bottom)
+  return { left: x - pill.width / 2, top: y - pill.height / 2 }
+}
+
+/* A distance for the beacon: metres below a kilometre, one decimal below
+   ten, whole kilometres beyond. */
+function formatDistance(km: number, locale: string, t: (key: string, values: Record<string, string>) => string): string {
+  const metres = Math.round((km * 1000) / 50) * 50
+  if (metres < 1000) return t('mobile:atlas.distanceM', { value: metres.toLocaleString(locale) })
+  return t('mobile:atlas.distanceKm', { value: km.toLocaleString(locale, { maximumFractionDigits: km < 10 ? 1 : 0 }) })
+}
+
+type NearestBeaconProps = {
+  target: OutOfSight
+  /* The chrome at the top and the bottom edge of the map the pill keeps
+     clear of, in points. */
+  exclude: { top: number; bottom: number }
+  onPress: () => void
+}
+
+/* When no cottage is in view: a pill at the edge of the map pointing to
+   the nearest one, with the distance. It sits where the line from the
+   middle of the view to the cottage leaves the map and glides along the
+   edge as the view moves; another cottage becoming the nearest fades a new
+   pill in. A press flies there. Fills the map area, letting touches
+   through everywhere but the pill. */
+export function NearestBeacon({ target, exclude, onPress }: NearestBeaconProps) {
+  const { t, i18n } = useTranslation()
+  const [area, setArea] = useState<Size | null>(null)
+  const [pill, setPill] = useState<Size>(BEACON_GUESS)
+
+  const onAreaLayout = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout
+    setArea((current) => (current && current.width === width && current.height === height ? current : { width, height }))
+  }
+  const onPillLayout = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout
+    setPill((current) => (current.width === width && current.height === height ? current : { width, height }))
+  }
+
+  const distance = formatDistance(target.distanceKm, i18n.resolvedLanguage ?? i18n.language, t)
+
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="box-none" onLayout={onAreaLayout}>
+      {area ? (
+        <Animated.View
+          key={target.cottage.slug}
+          entering={fade()}
+          exiting={leave()}
+          layout={layoutLinear}
+          style={[styles.beacon, edgePoint(target.heading, area, pill, exclude)]}
+          onLayout={onPillLayout}
+          hitSlop={BEACON_SLOP}
+        >
+          <PressableScale
+            accessibilityRole="button"
+            accessibilityLabel={t('mobile:atlas.nearestAria', { title: target.cottage.title, distance })}
+            accessibilityHint={t('mobile:atlas.nearestHint')}
+            hitSlop={BEACON_SLOP}
+            haptic="light"
+            onPress={onPress}
+            style={[styles.card, styles.pill, styles.beaconPill]}
+          >
+            <View style={{ transform: [{ rotate: `${target.heading}deg` }] }}>
+              <BearingIcon size={iconSize.sm} weight="bold" color={mapPalette.chromeIcon} />
+            </View>
+            <Text variant="small" weight="bold" style={styles.pillText}>
+              {distance}
+            </Text>
+          </PressableScale>
+        </Animated.View>
+      ) : null}
+    </View>
+  )
+}
+
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
@@ -172,5 +280,12 @@ const styles = StyleSheet.create({
   },
   pillText: {
     color: mapPalette.chromeInk,
+  },
+  beacon: {
+    position: 'absolute',
+  },
+  beaconPill: {
+    alignSelf: 'auto',
+    gap: space.sm,
   },
 })

@@ -3,7 +3,7 @@ import { ActivityIndicator, StyleSheet, View, type PressableProps, type StylePro
 import { Link, type Href } from 'expo-router'
 import { PressableScale } from './PressableScale'
 import { Text } from './Text'
-import { colors, mapPalette, radius, sizes, space, type ButtonVariant } from './tokens'
+import { colors, mapPalette, radius, sizes, space, typeScale, type ButtonVariant } from './tokens'
 
 /* The app's buttons — the three contracts of @chatynkowo/theme, the same
    the site implements in ui/Button.tsx and ui.css:
@@ -117,7 +117,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 9,
-    paddingVertical: 11,
+    /* The body line (28) plus the paddings and the hairline borders make
+       exactly the button height; a larger text size grows it. */
+    paddingVertical: (sizes.button - typeScale.body.lineHeight) / 2 - 1,
     paddingHorizontal: 19,
     borderWidth: 1,
     borderColor: 'transparent',

@@ -23,6 +23,9 @@ export const STORAGE_KEYS = {
   language: 'chatynkowo:language',
   contentCache: 'chatynkowo:content:v2:',
   welcomeSeen: 'chatynkowo:welcome-seen',
+  /* The seeker let the Atlas find them once; a lapsed one-time grant is
+     asked for again at start-up from then on. */
+  locatedOnce: 'chatynkowo:located-once',
   /* Reward ids the player has already viewed in the Kronika; earned minus
      these is the tab badge. */
   rewardsSeen: 'chatynkowo:rewards-seen:v1',

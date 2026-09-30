@@ -90,10 +90,9 @@ const tallSheet: NativeStackNavigationOptions = {
 }
 
 /* A page sheet with its own header row (the heading and a close button):
-   the search and the cottage directory. Not a form sheet with detents: on
-   iOS 26 a detent sheet scrolls its list out of view when the keyboard
-   rises for the search field, and the page sheet handles the keyboard
-   itself. */
+   the cottage directory. Not a form sheet with detents: on iOS 26 a detent
+   sheet scrolls its list out of view when the keyboard rises for the
+   search box, and the page sheet handles the keyboard itself. */
 const pageSheet: NativeStackNavigationOptions = {
   presentation: 'modal',
   headerShown: false,
@@ -229,7 +228,6 @@ function RootStack() {
           ...headerRightItems([{ role: 'close', label: t('mobile:common.close'), onPress: closeModal }]),
         }}
       />
-      <Stack.Screen name="search" options={pageSheet} />
       <Stack.Screen name="cottages" options={pageSheet} />
       <Stack.Screen
         name="story/[slug]"

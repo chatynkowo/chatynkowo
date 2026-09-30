@@ -3,7 +3,7 @@ import { useFocusEffect, useIsFocused, useLocalSearchParams, useRouter } from 'e
 import type { Cottage } from '@chatynkowo/core'
 
 /* The two ways a cottage gets framed without a pin tap: the `focus` route
-   param (the search sheet, a story link for an unfound cottage, a deep
+   param (the cottage directory, a story link for an unfound cottage, a deep
    link) and a fresh find (`lastFound` from the progress provider). A find
    made while another screen is on top waits for the Atlas's next focus. */
 

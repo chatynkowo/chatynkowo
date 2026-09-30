@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { BackHandler, StyleSheet, View, useWindowDimensions } from 'react-native'
+import { BackHandler, StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native'
 import Animated, { useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
-import { nextLevel, type Cottage } from '@chatynkowo/core'
-import { AtlasMap, LEVEL_KEYS, type AtlasMapHandle, type FrameMode, type MapLevel } from '../../src/features/atlas/AtlasMap'
+import { nearestPlace, nextLevel, type Cottage, type LatLng } from '@chatynkowo/core'
+import { AtlasMap, LEVEL_KEYS, type AtlasMapHandle, type FrameMode, type MapLevel, type OutOfSight } from '../../src/features/atlas/AtlasMap'
 import { CottageSheet, sheetHeightForIndex, type CottageSheetHandle, type SnapIndex } from '../../src/features/atlas/CottageSheet'
-import { ControlBar, LevelCard, MapTip, StatusPill } from '../../src/features/atlas/MapChrome'
+import { ControlBar, LevelCard, MapTip, NearestBeacon, StatusPill } from '../../src/features/atlas/MapChrome'
 import { MapVignette } from '../../src/features/atlas/MapVignette'
 import { QuestCard } from '../../src/features/atlas/QuestCard'
 import { useAtlasFocus, type FocusReason } from '../../src/features/atlas/useAtlasFocus'
 import { useLocate } from '../../src/features/atlas/useLocate'
+import { announce } from '../../src/lib/announce'
 import { haptic } from '../../src/lib/haptics'
 import { useContent, useOnline, useProgress } from '../../src/providers'
 import {
@@ -53,7 +54,7 @@ import {
 const CAMERA_SNAP_MAX: SnapIndex = 1
 
 export default function AtlasScreen() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const { height: windowHeight } = useWindowDimensions()
@@ -188,7 +189,60 @@ export default function AtlasScreen() {
     setLevel(next)
   }, [])
 
-  const { position, locating, locateMe } = useLocate(map)
+  /* The launch's first fix brings the camera to the seeker and the nearest
+     cottage, unless a cottage is framed (a link, a find, a pin) or the map
+     has been moved already, which the map itself keeps track of. A fix that
+     lands before the map exists (the content still loading) waits for it. */
+  const pendingArrival = useRef<LatLng | null>(null)
+  const arrive = useCallback(
+    (fix: LatLng) => {
+      if (selectedRef.current) return
+      map.current?.arriveAt(fix, nearestPlace(fix, cottages)?.place ?? null)
+    },
+    [cottages],
+  )
+  const onFirstFix = useCallback(
+    (fix: LatLng) => {
+      if (map.current) arrive(fix)
+      else pendingArrival.current = fix
+    },
+    [arrive],
+  )
+  useEffect(() => {
+    const waiting = pendingArrival.current
+    if (!waiting || !map.current) return
+    pendingArrival.current = null
+    arrive(waiting)
+  }, [cottages, arrive])
+  const { position, locating, locateMe } = useLocate(map, { onFirstFix })
+
+  /* No cottage in view: the beacon points to the nearest one, kept clear of
+     the chrome above and below, whose heights are measured. */
+  const [outOfSight, setOutOfSight] = useState<OutOfSight | null>(null)
+  const [chrome, setChrome] = useState({ top: 0, bottom: 0 })
+  const onTopChromeLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout
+    setChrome((current) => (current.top === height ? current : { ...current, top: height }))
+  }, [])
+  const onBottomChromeLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout
+    setChrome((current) => (current.bottom === height ? current : { ...current, bottom: height }))
+  }, [])
+  const goToNearest = useCallback(() => {
+    if (outOfSight) openAt(outOfSight.cottage, 1, 'fly')
+  }, [outOfSight, openAt])
+  /* The screen reader hears of a new nearest cottage once, not on every
+     settle of the view. */
+  const voicedNearest = useRef<string | null>(null)
+  useEffect(() => {
+    if (!outOfSight || selected) {
+      voicedNearest.current = null
+      return
+    }
+    if (voicedNearest.current === outOfSight.cottage.slug) return
+    voicedNearest.current = outOfSight.cottage.slug
+    announce(t('mobile:atlas.nearestAria', { title: outOfSight.cottage.title, distance: t('mobile:atlas.distanceKm', { value: Math.round(outOfSight.distanceKm).toLocaleString(i18n.resolvedLanguage) }) }))
+  }, [outOfSight, selected, t, i18n.resolvedLanguage])
 
   const onFocusCottage = useCallback(
     (cottage: Cottage, reason: FocusReason) => {
@@ -211,7 +265,7 @@ export default function AtlasScreen() {
     map.current?.resetView()
   }, [])
 
-  const openSearch = useCallback(() => router.push('/search'), [router])
+  const openSearch = useCallback(() => router.push({ pathname: '/cottages', params: { search: '1' } }), [router])
 
   const onRingSettled = useCallback(() => haptic('light'), [])
 
@@ -285,11 +339,20 @@ export default function AtlasScreen() {
           onSelect={choose}
           onMapPress={onMapPress}
           onLevelChange={onLevelChange}
+          onOutOfSight={setOutOfSight}
           reality={reality}
         />
         <MapVignette reality={reality} topInset={insets.top} bottomInset={bottomInset} />
 
-        <View style={[styles.top, { top: insets.top + space.md }]} pointerEvents="box-none">
+        {outOfSight && !selected ? (
+          <NearestBeacon
+            target={outOfSight}
+            exclude={{ top: insets.top + space.md + chrome.top, bottom: bottomInset + space.lg + chrome.bottom }}
+            onPress={goToNearest}
+          />
+        ) : null}
+
+        <View style={[styles.top, { top: insets.top + space.md }]} pointerEvents="box-none" onLayout={onTopChromeLayout}>
           <View style={styles.topRow} pointerEvents="box-none">
             <QuestCard found={foundCount} total={total} upcoming={upcoming} onSettled={onRingSettled} />
             <View style={styles.topRight} pointerEvents="box-none">
@@ -315,6 +378,7 @@ export default function AtlasScreen() {
             exiting={leaveDown()}
             style={[styles.bottom, { bottom: bottomInset + space.lg }]}
             pointerEvents="box-none"
+            onLayout={onBottomChromeLayout}
           >
             {tipSeen ? null : (
               <Animated.View exiting={leaveDown()} style={styles.tipRow}>

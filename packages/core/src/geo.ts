@@ -124,6 +124,56 @@ export function homeBounds(cottages: readonly (LatLng & { country?: string })[],
   return bounds ? padBounds(bounds, 0.24) : EUROPE_BOUNDS
 }
 
+const EARTH_RADIUS_KM = 6371
+const KM_PER_DEGREE_LAT = 111.32
+
+function toRadians(degrees: number): number {
+  return (degrees * Math.PI) / 180
+}
+
+/* The great-circle distance between two points, in kilometres. */
+export function distanceKm(a: LatLng, b: LatLng): number {
+  const dLat = toRadians(b.lat - a.lat)
+  const dLng = toRadians(b.lng - a.lng)
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRadians(a.lat)) * Math.cos(toRadians(b.lat)) * Math.sin(dLng / 2) ** 2
+  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(h))
+}
+
+/* The place nearest to a point with its distance, or null when there is
+   none. */
+export function nearestPlace<T extends LatLng>(point: LatLng, places: readonly T[]): { place: T; distanceKm: number } | null {
+  let best: { place: T; distanceKm: number } | null = null
+  for (const place of places) {
+    const distance = distanceKm(point, place)
+    if (!best || distance < best.distanceKm) best = { place, distanceKm: distance }
+  }
+  return best
+}
+
+/* The initial bearing from one point towards another, in degrees
+   clockwise from north, 0 to 360. */
+export function bearingDegrees(from: LatLng, to: LatLng): number {
+  const fromLat = toRadians(from.lat)
+  const toLat = toRadians(to.lat)
+  const dLng = toRadians(to.lng - from.lng)
+  const y = Math.sin(dLng) * Math.cos(toLat)
+  const x = Math.cos(fromLat) * Math.sin(toLat) - Math.sin(fromLat) * Math.cos(toLat) * Math.cos(dLng)
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360
+}
+
+/* The box around a point and its company, reaching at least `radiusKm`
+   from the point on every side, so a neighbour next door still gets some
+   map around it. Frames a seeker with the nearest cottage. */
+export function boundsAround(point: LatLng, company: readonly LatLng[], radiusKm: number): BoundsTuple {
+  const latRadius = radiusKm / KM_PER_DEGREE_LAT
+  const lngRadius = latRadius / Math.max(Math.cos(toRadians(point.lat)), 0.01)
+  const [[south, west], [north, east]] = boundsOf([point, ...company]) as BoundsTuple
+  return [
+    [Math.min(south, point.lat - latRadius), Math.min(west, point.lng - lngRadius)],
+    [Math.max(north, point.lat + latRadius), Math.max(east, point.lng + lngRadius)],
+  ]
+}
+
 /* Whether a point falls inside a framing box — used to tell a seeker that
    their position is outside the expedition map. */
 export function isWithinBounds({ lat, lng }: LatLng, [[south, west], [north, east]]: BoundsTuple): boolean {

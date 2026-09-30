@@ -62,6 +62,8 @@ export const MOBILE_ICON_ROLES = [
   'TorchIcon',
   'TorchOffIcon',
   'InfoIcon',
+  /* The arrow of the nearest-cottage beacon, turned to the heading. */
+  'BearingIcon',
 ] as const
 
 export type SharedIconRole = (typeof SHARED_ICON_ROLES)[number]

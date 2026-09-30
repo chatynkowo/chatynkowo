@@ -9,20 +9,22 @@ import logo from '../../../assets/logo.png'
 import { announce } from '../../lib/announce'
 import { haptic } from '../../lib/haptics'
 import { markWelcomeSeen, useBoot } from '../../providers'
-import { Button, ForwardIcon, KeyIcon, PageDots, colors, iconSize, sizes, space, useTabBarHeight } from '../../ui'
-import { CreedCard, ExpeditionNotes, GuideSection, LoreCards, LoreIntro, TrailPhoto } from './LoreSections'
+import { Button, ForwardIcon, KeyIcon, PageDots, colors, iconSize, space, useTabBarHeight } from '../../ui'
+import { GuideTrail } from './GuideTrail'
+import { CreedCard, ExpeditionNotes, GuideHeading, LoreIntro, LoreQuestions, TrailPhoto } from './LoreSections'
 
 /* The onboarding: the site's lore and guide as four swipeable pages ending
    in the two ways to begin (open the Atlas, enter a code). Every page is its
    own scroll from the top of the screen, so nothing sits above the content
    but the safe area: the logo opens the first page's own content, and the
-   dots, Skip and Next share the footer. In `first` mode it is the only
-   screen of a fresh install and every way out sets the welcome flag, which
-   flips the root's guard to the tabs; a route asked for on the way out (the
-   code sheet, a plaque link's code) is left with the boot provider for the
-   root to push once the tabs are mounted. In `replay` mode (Profile, How to
-   play) it sits under the native header and above the floating tab bar,
-   changes no flags and simply navigates. */
+   dots, Skip and Next share the footer, which keeps one height on every
+   page so the pages can lay themselves out to fill it. In `first` mode it
+   is the only screen of a fresh install and every way out sets the welcome
+   flag, which flips the root's guard to the tabs; a route asked for on the
+   way out (the code sheet, a plaque link's code) is left with the boot
+   provider for the root to push once the tabs are mounted. In `replay` mode
+   (Profile, How to play) it sits under the native header and above the
+   floating tab bar, changes no flags and simply navigates. */
 
 export type OnboardingPagerProps = {
   mode: 'first' | 'replay'
@@ -31,9 +33,9 @@ export type OnboardingPagerProps = {
   code?: string
 }
 
-/* The lore, the four cards, the guide as a trail, the creed and the ways
-   to begin. */
-const PAGE_KEYS = ['lore', 'cards', 'guide', 'begin'] as const
+/* The lore; the four questions and the creed; the guide as a trail spread
+   over its page; the photo, the notes and the ways to begin. */
+const PAGE_KEYS = ['lore', 'questions', 'guide', 'begin'] as const
 const PAGE_COUNT = PAGE_KEYS.length
 export function OnboardingPager({ mode, code }: OnboardingPagerProps) {
   const { t } = useTranslation()
@@ -152,24 +154,31 @@ export function OnboardingPager({ mode, code }: OnboardingPagerProps) {
         <LoreIntro />
       </>
     ),
-    cards: <LoreCards />,
+    questions: (
+      <>
+        <LoreQuestions fill />
+        <CreedCard />
+      </>
+    ),
     guide: (
       <>
-        <GuideSection />
-        <TrailPhoto />
+        <GuideHeading />
+        <GuideTrail fill />
       </>
     ),
     begin: (
       <>
-        <CreedCard />
-        <ExpeditionNotes />
-        <View style={styles.actions}>
-          <Button variant="primary" block iconAfter={<ForwardIcon size={iconSize.md} color={colors.accentInk} />} onPress={openAtlas}>
-            {t('lore.openAtlas')}
-          </Button>
-          <Button block icon={<KeyIcon size={iconSize.md} color={colors.ink} />} onPress={enterCode}>
-            {t('nav.enterCode')}
-          </Button>
+        <TrailPhoto />
+        <View style={styles.begin}>
+          <ExpeditionNotes />
+          <View style={styles.actions}>
+            <Button variant="primary" block iconAfter={<ForwardIcon size={iconSize.md} color={colors.accentInk} />} onPress={openAtlas}>
+              {t('lore.openAtlas')}
+            </Button>
+            <Button block icon={<KeyIcon size={iconSize.md} color={colors.ink} />} onPress={enterCode}>
+              {t('nav.enterCode')}
+            </Button>
+          </View>
         </View>
       </>
     ),
@@ -201,25 +210,32 @@ export function OnboardingPager({ mode, code }: OnboardingPagerProps) {
 
       <View style={[styles.footer, { paddingBottom: footerBottom }]}>
         <PageDots count={PAGE_COUNT} scrollX={scrollX} pageWidth={width} />
-        {lastPage ? null : (
-          <View style={styles.footerActions}>
-            {first ? (
-              <Button variant="subtle" onPress={() => finish(codeHref)}>
-                {t('mobile:welcome.skip')}
-              </Button>
-            ) : null}
-            <Button variant="primary" onPress={() => goTo(Math.min(PAGE_COUNT - 1, pageRef.current + 1))}>
-              {t('mobile:common.next')}
+        {/* On the last page the page's own buttons take over, and these stay
+            mounted but invisible and inert: the footer keeps their real height
+            at every text size, so the pager never changes height mid-swipe. */}
+        <View
+          style={[styles.footerActions, lastPage && styles.footerActionsHidden]}
+          pointerEvents={lastPage ? 'none' : 'auto'}
+          accessibilityElementsHidden={lastPage}
+          importantForAccessibility={lastPage ? 'no-hide-descendants' : 'auto'}
+        >
+          {first ? (
+            <Button variant="subtle" onPress={() => finish(codeHref)}>
+              {t('mobile:welcome.skip')}
             </Button>
-          </View>
-        )}
+          ) : null}
+          <Button variant="primary" onPress={() => goTo(Math.min(PAGE_COUNT - 1, pageRef.current + 1))}>
+            {t('mobile:common.next')}
+          </Button>
+        </View>
       </View>
     </View>
   )
 }
 
 /* One page: a vertical scroll from the top of the screen, so large text
-   still fits. */
+   still fits; at the default size the content fills the page, so a page
+   can spread its trail or sink its buttons to the bottom. */
 function Page({ width, paddingTop, children }: { width: number; paddingTop: number; children: ReactNode }) {
   return (
     <ScrollView style={{ width }} contentContainerStyle={[styles.page, { paddingTop }]} showsVerticalScrollIndicator={false}>
@@ -237,6 +253,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   page: {
+    flexGrow: 1,
     paddingHorizontal: space.lg,
     paddingBottom: space.xl,
     gap: space.xl,
@@ -245,6 +262,11 @@ const styles = StyleSheet.create({
     width: 150,
     height: 120,
   },
+  /* The notes and the buttons sink to the bottom of the last page. */
+  begin: {
+    marginTop: 'auto',
+    gap: space.xl,
+  },
   actions: {
     gap: space.sm,
   },
@@ -252,12 +274,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: sizes.button + space.lg,
     paddingHorizontal: space.lg,
     paddingTop: space.sm,
   },
   footerActions: {
     flexDirection: 'row',
     gap: space.sm,
+  },
+  footerActionsHidden: {
+    opacity: 0,
   },
 })

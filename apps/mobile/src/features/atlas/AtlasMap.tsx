@@ -1,5 +1,5 @@
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { StyleSheet, type NativeSyntheticEvent } from 'react-native'
+import { Platform, StyleSheet, type NativeSyntheticEvent } from 'react-native'
 import type { SharedValue } from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
 import { getLocales } from 'expo-localization'
@@ -15,7 +15,7 @@ import {
   type StyleSpecification,
   type ViewStateChangeEvent,
 } from '@maplibre/maplibre-react-native'
-import { COUNTRY_BOUNDS, countryAt, detectCountry, EUROPE_BOUNDS, homeBounds, homeCountry, type BoundsTuple, type Cottage, type LatLng } from '@chatynkowo/core'
+import { bearingDegrees, boundsAround, COUNTRY_BOUNDS, countryAt, detectCountry, EUROPE_BOUNDS, homeBounds, homeCountry, isWithinBounds, nearestPlace, type BoundsTuple, type Cottage, type LatLng } from '@chatynkowo/core'
 import { haptic } from '../../lib/haptics'
 import type { Position } from '../../lib/location'
 import { mapPalette, space } from '../../ui'
@@ -40,9 +40,18 @@ export const LEVEL_KEYS: Record<MapLevel, string> = {
 
 export type FrameMode = 'ease' | 'fly'
 
+/* The nearest cottage when none is in view: how far from the middle of
+   the view and in which direction (degrees clockwise from north, which the
+   map keeps at the top: it does not rotate). */
+export type OutOfSight = { cottage: Cottage; distanceKm: number; heading: number }
+
 export type AtlasMapHandle = {
   resetView: () => void
   showPosition: (position: LatLng) => void
+  /* Frame the seeker with the nearest cottage (or alone), never closer
+     than the neighbourhood around them; not once the seeker has moved the
+     map themselves or framed a cottage. */
+  arriveAt: (seeker: LatLng, nearest: LatLng | null) => void
   /* Frame the search area of a cottage, leaving room for the sheet below;
      `fly` arcs over the distance when the target is out of view. */
   frameCottage: (cottage: LatLng, bottomPadding: number, mode?: FrameMode) => void
@@ -67,12 +76,21 @@ type AtlasMapProps = {
   /* A press on the map itself (not on a marker). */
   onMapPress: () => void
   onLevelChange: (level: MapLevel) => void
+  /* The view settled with no cottage in it: the nearest one and where it
+     lies; null once a cottage is in view again. */
+  onOutOfSight: (target: OutOfSight | null) => void
   /* 0 at the parchment zooms, 1 once the tiles show the real land. */
   reality: SharedValue<number>
 }
 
 const OSM_TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 const FRAME_PADDING = { top: 48, right: 48, bottom: 48, left: 48 }
+/* How far around the seeker the arrival frame reaches at least, in km. */
+const ARRIVAL_RADIUS_KM = 1
+/* Android draws marker views in the order they reach the map, so the
+   targets are raised above the seeker's dot; iOS orders markers by
+   latitude unless told otherwise, and the dot alone is told. */
+const PIN_STYLE = Platform.select({ android: { zIndex: 1 } })
 const COTTAGE_PADDING = { top: 40, left: 24, right: 24 }
 const NO_PADDING = { top: 0, bottom: 0, left: 0, right: 0 }
 const SEARCH_AREA_RADIUS_M = 360
@@ -135,8 +153,6 @@ const RECENTRE_MS = 600
 const VIEW_DEBOUNCE_MS = 100
 /* A map press right after a marker press is the same finger; ignore it. */
 const MARKER_PRESS_GUARD_MS = 150
-/* The attribution button sits above the screen's bottom control bar. */
-const CONTROL_BAR_HEIGHT = 45
 
 function toLngLatBounds([[south, west], [north, east]]: BoundsTuple): LngLatBounds {
   return [west, south, east, north]
@@ -220,6 +236,7 @@ type CottageMarkerProps = {
 const CottageMarker = memo(function CottageMarker({ cottage, found, active, justFound, label, onPress }: CottageMarkerProps) {
   return (
     <Marker
+      style={PIN_STYLE}
       id={cottage.slug}
       lngLat={[cottage.lng, cottage.lat]}
       anchor="bottom"
@@ -243,7 +260,7 @@ type ClusterMarkerProps = {
 
 const ClusterMarker = memo(function ClusterMarker({ id, lng, lat, count, label, onPress }: ClusterMarkerProps) {
   return (
-    <Marker id={`cluster-${id}`} lngLat={[lng, lat]} anchor="center" onPress={() => onPress(id, lng, lat)} accessibilityRole="button" accessibilityLabel={label}>
+    <Marker id={`cluster-${id}`} style={PIN_STYLE} lngLat={[lng, lat]} anchor="center" onPress={() => onPress(id, lng, lat)} accessibilityRole="button" accessibilityLabel={label}>
       <ClusterBadge count={count} />
     </Marker>
   )
@@ -251,11 +268,13 @@ const ClusterMarker = memo(function ClusterMarker({ id, lng, lat, count, label, 
 
 export const AtlasMap = memo(
   forwardRef<AtlasMapHandle, AtlasMapProps>(function AtlasMap(
-    { cottages, foundSlugs, selectedSlug, justFoundSlug, userPosition, bottomInset, onSelect, onMapPress, onLevelChange, reality },
+    { cottages, foundSlugs, selectedSlug, justFoundSlug, userPosition, bottomInset, onSelect, onMapPress, onLevelChange, onOutOfSight, reality },
     ref,
   ) {
     const { t } = useTranslation()
     const camera = useRef<CameraRef>(null)
+    /* The seeker has moved the map themselves: the arrival stays away. */
+    const touched = useRef(false)
 
     /* The device languages name the visitor's country (never geolocation),
        exactly as the browser languages do on the site. */
@@ -295,6 +314,18 @@ export const AtlasMap = memo(
       return index.getClusters([west - marginX, south - marginY, east + marginX, north + marginY], Math.floor(view.zoom))
     }, [index, view])
 
+    /* No cottage in the settled view: the nearest one, from the middle. */
+    const outOfSight = useMemo<OutOfSight | null>(() => {
+      const [west, south, east, north] = view.bounds
+      if (cottages.some((cottage) => isWithinBounds(cottage, [[south, west], [north, east]]))) return null
+      const nearest = nearestPlace(view.center, cottages)
+      if (!nearest) return null
+      return { cottage: nearest.place, distanceKm: nearest.distanceKm, heading: bearingDegrees(view.center, nearest.place) }
+    }, [cottages, view])
+    useEffect(() => {
+      onOutOfSight(outOfSight)
+    }, [outOfSight, onOutOfSight])
+
     const searchArea = useMemo(() => (selected ? circleFeature(selected, SEARCH_AREA_RADIUS_M) : EMPTY), [selected])
     const userAccuracy = useMemo(
       () => (userPosition?.accuracy ? circleFeature(userPosition, Math.max(userPosition.accuracy, 25)) : EMPTY),
@@ -304,9 +335,17 @@ export const AtlasMap = memo(
     useImperativeHandle(
       ref,
       () => ({
-        resetView: () => camera.current?.fitBounds(home, { padding: FRAME_PADDING, duration: 900 }),
+        resetView: () => {
+          touched.current = true
+          camera.current?.fitBounds(home, { padding: FRAME_PADDING, duration: 900 })
+        },
         showPosition: (position) => camera.current?.easeTo({ center: [position.lng, position.lat], zoom: toMapZoom(POSITION_ZOOM), duration: 900 }),
+        arriveAt: (seeker, nearest) => {
+          if (touched.current) return
+          camera.current?.fitBounds(toLngLatBounds(boundsAround(seeker, nearest ? [nearest] : [], ARRIVAL_RADIUS_KM)), { padding: FRAME_PADDING, duration: 900 })
+        },
         frameCottage: (cottage, bottomPadding, mode = 'ease') => {
+          touched.current = true
           const stop = { center: [cottage.lng, cottage.lat] as [number, number], zoom: toMapZoom(COTTAGE_ZOOM), padding: { ...COTTAGE_PADDING, bottom: bottomPadding } }
           if (mode === 'fly') camera.current?.flyTo({ ...stop, duration: FLY_MS })
           else camera.current?.easeTo({ ...stop, duration: EASE_MS })
@@ -337,6 +376,7 @@ export const AtlasMap = memo(
 
     const onRegionIsChanging = useCallback(
       (event: NativeSyntheticEvent<ViewStateChangeEvent>) => {
+        if (event.nativeEvent.userInteraction) touched.current = true
         const next = toView(event.nativeEvent)
         liveView.current = next
         reality.value = realityForZoom(next.zoom)
@@ -346,6 +386,7 @@ export const AtlasMap = memo(
 
     const onRegionDidChange = useCallback(
       (event: NativeSyntheticEvent<ViewStateChangeEvent>) => {
+        if (event.nativeEvent.userInteraction) touched.current = true
         const next = toView(event.nativeEvent)
         liveView.current = next
         reality.value = realityForZoom(next.zoom)
@@ -376,6 +417,7 @@ export const AtlasMap = memo(
     const onClusterPress = useCallback(
       (id: number, lng: number, lat: number) => {
         lastMarkerPress.current = Date.now()
+        touched.current = true
         haptic('select')
         camera.current?.easeTo({ center: [lng, lat], zoom: toMapZoom(Math.min(index.getClusterExpansionZoom(id), CLUSTERS_UNTIL_ZOOM + 1)), duration: 800 })
       },
@@ -393,9 +435,9 @@ export const AtlasMap = memo(
         mapStyle={MAP_STYLE}
         logo={false}
         attribution
-        attributionPosition={{ bottom: bottomInset + space.lg + CONTROL_BAR_HEIGHT + space.sm, left: 12 }}
-        compassHiddenFacingNorth
+        attributionPosition={{ bottom: bottomInset + space.lg, right: 12 }}
         touchPitch={false}
+        touchRotate={false}
         onPress={onPress}
         onRegionIsChanging={onRegionIsChanging}
         onRegionDidChange={onRegionDidChange}
@@ -415,6 +457,14 @@ export const AtlasMap = memo(
           <Layer id="user-accuracy-fill" type="fill" paint={{ 'fill-color': mapPalette.userAccuracy, 'fill-opacity': 0.12 }} />
           <Layer id="user-accuracy-line" type="line" paint={{ 'line-color': mapPalette.userAccuracy, 'line-width': 1, 'line-opacity': 0.6 }} />
         </GeoJSONSource>
+
+        {/* The seeker's dot lies under the pins and the clusters, the targets
+            of the game (see PIN_STYLE). */}
+        {userPosition ? (
+          <Marker id="you" lngLat={[userPosition.lng, userPosition.lat]} anchor="center" style={styles.seeker} accessibilityLabel={t('map.youAreHere')}>
+            <UserDot />
+          </Marker>
+        ) : null}
 
         {clusters.map((feature) => {
           const [lng, lat] = feature.geometry.coordinates
@@ -438,11 +488,6 @@ export const AtlasMap = memo(
           )
         })}
 
-        {userPosition ? (
-          <Marker id="you" lngLat={[userPosition.lng, userPosition.lat]} anchor="center" accessibilityLabel={t('map.youAreHere')}>
-            <UserDot />
-          </Marker>
-        ) : null}
       </MapView>
     )
   }),
@@ -451,5 +496,8 @@ export const AtlasMap = memo(
 const styles = StyleSheet.create({
   map: {
     flex: 1,
+  },
+  seeker: {
+    zIndex: 0,
   },
 })

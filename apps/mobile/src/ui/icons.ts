@@ -17,6 +17,7 @@ import {
   ArrowCounterClockwiseIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  ArrowUpIcon,
   BookOpenTextIcon,
   CameraIcon as PhosphorCamera,
   CaretDownIcon,
@@ -95,6 +96,8 @@ export const CottageIcon = HouseLineIcon
 export const FoundIcon = CheckCircleIcon
 export const PinIcon = MapPinIcon
 export const NavigateIcon = NavigationArrowIcon
+/* Turned to the heading of the nearest cottage on the Atlas. */
+export const BearingIcon = ArrowUpIcon
 export const AtlasIcon = MapTrifoldIcon
 export const TrailIcon = FootprintsIcon
 export const KeyIcon = PhosphorKey
@@ -137,7 +140,7 @@ export const InfoIcon = PhosphorInfo
 export const ICON_VOCABULARY = {
   CloseIcon, BackIcon, ForwardIcon, PreviousIcon, NextIcon, ExpandIcon, CheckIcon, PlayIcon, PauseIcon,
   SoundOnIcon, SoundOffIcon, ZoomInIcon, ZoomOutIcon, ResetViewIcon, LocateIcon, SpinnerIcon, SearchIcon,
-  CottageIcon, FoundIcon, PinIcon, NavigateIcon, AtlasIcon, TrailIcon, KeyIcon, SealIcon, QrIcon, ShieldIcon,
+  CottageIcon, FoundIcon, PinIcon, NavigateIcon, BearingIcon, AtlasIcon, TrailIcon, KeyIcon, SealIcon, QrIcon, ShieldIcon,
   ChronicleIcon, RewardIcon, NotebookIcon, StoryAudioIcon, LoreIcon, CreedIcon, ElfIcon, ForestIcon,
   InstagramIcon, FacebookIcon,
   CameraIcon, ProfileIcon, SignOutIcon, OfflineIcon, SyncIcon, DownloadIcon, WarningIcon, LanguageIcon,
