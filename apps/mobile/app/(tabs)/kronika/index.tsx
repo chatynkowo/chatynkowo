@@ -6,13 +6,15 @@ import { finalLevelId, kronikaLevels, nextLevel, requiredFinds, type RewardLevel
 import { CollectionHeader } from '../../../src/features/kronika/CollectionHeader'
 import { RewardCard } from '../../../src/features/kronika/RewardCard'
 import { useContent, useProgress } from '../../../src/providers'
-import { ChronicleIcon, EmptyState, LinkButton, SkeletonCard, colors, space } from '../../../src/ui'
+import { ChronicleIcon, EmptyState, LinkButton, SkeletonCard, colors, space, useTabBarClearance } from '../../../src/ui'
 
 /* The Kronika tab: the collection of reward levels, earned and still locked,
    as a two-column grid under a large native title, with the progress card
-   and the published intro above it. Seals earned since the last visit are
-   marked "new" for this visit and then counted as seen, which clears the
-   tab badge. The full set unlocks the ranking invite at the bottom. */
+   (which opens the cottage directory) and the published intro above it.
+   Seals earned since the last visit are marked "new" for this visit and
+   then counted as seen, which clears the tab badge. The full set unlocks
+   the ranking invite at the bottom. The tab bar floats over the grid, so
+   the list pads its end by the bar's height. */
 
 const SKELETON_CELLS = 4
 
@@ -33,6 +35,7 @@ export default function KronikaScreen() {
   const router = useRouter()
   const { rewards, total, status, refresh } = useContent()
   const { state, foundCount, hydrated, unseenRewards, markRewardsSeen } = useProgress()
+  const tabBarClearance = useTabBarClearance()
   const [refreshing, setRefreshing] = useState(false)
 
   const levels = useMemo(() => kronikaLevels(rewards.levels, state.badges), [rewards.levels, state.badges])
@@ -82,6 +85,7 @@ export default function KronikaScreen() {
   }, [refresh])
 
   const openReward = useCallback((id: string) => router.push({ pathname: '/reward/[id]', params: { id } }), [router])
+  const openDirectory = useCallback(() => router.push('/cottages'), [router])
 
   const renderCell = useCallback(
     ({ item, index }: { item: Cell; index: number }) => {
@@ -116,6 +120,7 @@ export default function KronikaScreen() {
       next={next}
       intro={rewards.treasury.intro}
       note={foundCount ? t('treasury.fallbackProgress', { found: foundCount, total }) : null}
+      onOpenList={openDirectory}
     />
   )
 
@@ -138,8 +143,9 @@ export default function KronikaScreen() {
         renderItem={renderCell}
         numColumns={2}
         columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: space.xxl + tabBarClearance }]}
         contentInsetAdjustmentBehavior="automatic"
+        scrollIndicatorInsets={{ bottom: tabBarClearance }}
         ListHeaderComponent={header}
         ListFooterComponent={footer}
         accessibilityRole="list"
@@ -161,7 +167,6 @@ const styles = StyleSheet.create({
   content: {
     paddingTop: space.lg,
     paddingHorizontal: space.lg,
-    paddingBottom: space.xxl,
     gap: space.md,
   },
   row: {

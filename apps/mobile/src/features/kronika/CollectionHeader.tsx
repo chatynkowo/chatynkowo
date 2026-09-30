@@ -2,11 +2,12 @@ import { StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import type { RewardLevel } from '@chatynkowo/core'
 import { haptic } from '../../lib/haptics'
-import { ChronicleIcon, MarkdownView, ProgressRing, Text, colors, iconSize, radius, space } from '../../ui'
+import { ChronicleIcon, MarkdownView, NextIcon, PressableScale, ProgressRing, Text, colors, iconSize, radius, space } from '../../ui'
 
 /* The head of the Kronika grid: the subtitle with the chronicle emblem, the
-   progress card (finds out of the total as a ring, the next level to earn)
-   and the intro the editor published for the collection. */
+   progress card (finds out of the total as a ring, the next level to earn;
+   pressing it opens the cottage directory) and the intro the editor
+   published for the collection. */
 
 export type CollectionHeaderProps = {
   found: number
@@ -18,9 +19,11 @@ export type CollectionHeaderProps = {
   intro: string
   /* Plain fallback shown when there is no intro. */
   note: string | null
+  /* Opens the list of every cottage, found and still waiting. */
+  onOpenList: () => void
 }
 
-export function CollectionHeader({ found, total, next, intro, note }: CollectionHeaderProps) {
+export function CollectionHeader({ found, total, next, intro, note, onOpenList }: CollectionHeaderProps) {
   const { t } = useTranslation()
   /* Nothing to say about levels until the cottages are known. */
   const quest = total <= 0 ? null : next ? t('quest.nextLevel', { name: next.level.name, count: next.remaining }) : t('quest.allFound')
@@ -34,7 +37,12 @@ export function CollectionHeader({ found, total, next, intro, note }: Collection
         </Text>
         <ChronicleIcon size={iconSize.emblem} weight="duotone" color={colors.accentStrong} />
       </View>
-      <View style={styles.card} accessible accessibilityLabel={[t('mobile:kronika.progressAria', { found, total }), quest].filter(Boolean).join('. ')}>
+      <PressableScale
+        haptic="select"
+        onPress={onOpenList}
+        accessibilityLabel={[t('mobile:kronika.progressAria', { found, total }), quest, t('mobile:kronika.openListAria')].filter(Boolean).join('. ')}
+        style={styles.card}
+      >
         <ProgressRing size={64} value={found} max={total} label={String(found)} onSettled={() => haptic('light')} />
         <View style={styles.cardText}>
           <Text weight="bold">{progress}</Text>
@@ -44,7 +52,8 @@ export function CollectionHeader({ found, total, next, intro, note }: Collection
             </Text>
           ) : null}
         </View>
-      </View>
+        <NextIcon size={iconSize.md} color={colors.inkFaint} />
+      </PressableScale>
       {intro ? <MarkdownView>{intro}</MarkdownView> : note ? <Text tone="soft">{note}</Text> : null}
     </View>
   )

@@ -9,7 +9,8 @@ import { colors, fonts, mapPalette, radius, space, typeScale } from './tokens'
    uses, with the same `breaks: true` (apps/web/src/lib/markdown.ts): the
    admin editor shows a single newline as a line break, so both surfaces
    must too. Only the constructs the editor produces are styled; anything
-   else falls back to its plain text. */
+   else falls back to its plain text. A quotation sits on a soft block in
+   the italic face, with no bar beside it. */
 
 /* A Lexer instance accumulates tokens across calls, so each text gets its
    own; the options mirror the site's marked configuration. */
@@ -55,8 +56,16 @@ function useInk() {
   return tone === 'parchment' ? parchment : null
 }
 
+/* Inside a blockquote the copy takes the italic face. */
+const QuoteContext = createContext(false)
+
+function useQuoteFace() {
+  return useContext(QuoteContext) ? 'italic' : undefined
+}
+
 function Block({ token }: { token: Token }): ReactNode {
   const ink = useInk()
+  const face = useQuoteFace()
   switch (token.type) {
     case 'space':
       return null
@@ -70,21 +79,27 @@ function Block({ token }: { token: Token }): ReactNode {
     }
     case 'paragraph':
       return (
-        <Text style={[styles.paragraph, ink?.text]}>
+        <Text weight={face} style={[styles.paragraph, ink?.text]}>
           <Inline tokens={(token as Tokens.Paragraph).tokens} />
         </Text>
       )
     case 'text': {
       const { tokens, text } = token as Tokens.Text
-      return <Text style={[styles.paragraph, ink?.text]}>{tokens ? <Inline tokens={tokens} /> : decode(text)}</Text>
+      return (
+        <Text weight={face} style={[styles.paragraph, ink?.text]}>
+          {tokens ? <Inline tokens={tokens} /> : decode(text)}
+        </Text>
+      )
     }
     case 'blockquote':
       return (
-        <View style={styles.blockquote}>
-          {(token as Tokens.Blockquote).tokens.map((child, index) => (
-            <Block key={index} token={child} />
-          ))}
-        </View>
+        <QuoteContext.Provider value>
+          <View style={styles.blockquote}>
+            {(token as Tokens.Blockquote).tokens.map((child, index) => (
+              <Block key={index} token={child} />
+            ))}
+          </View>
+        </QuoteContext.Provider>
       )
     case 'list': {
       const { ordered, start, items } = token as Tokens.List
@@ -122,10 +137,18 @@ function Block({ token }: { token: Token }): ReactNode {
       )
     case 'html': {
       const text = htmlToText((token as Tokens.HTML).text).trim()
-      return text ? <Text style={[styles.paragraph, ink?.text]}>{text}</Text> : null
+      return text ? (
+        <Text weight={face} style={[styles.paragraph, ink?.text]}>
+          {text}
+        </Text>
+      ) : null
     }
     default:
-      return <Text style={[styles.paragraph, ink?.text]}>{decode(token.raw)}</Text>
+      return (
+        <Text weight={face} style={[styles.paragraph, ink?.text]}>
+          {decode(token.raw)}
+        </Text>
+      )
   }
 }
 
@@ -207,12 +230,9 @@ const styles = StyleSheet.create({
   },
   blockquote: {
     gap: space.sm,
-    backgroundColor: colors.surfaceSoft,
-    borderLeftColor: colors.accent,
-    borderLeftWidth: 3,
+    padding: space.md,
     borderRadius: radius.control,
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm,
+    backgroundColor: colors.surfaceSoft,
   },
   list: {
     gap: space.xs,

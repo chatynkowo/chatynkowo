@@ -7,6 +7,8 @@ export const mobileEn: typeof mobilePl = {
     atlas: 'Atlas',
     kronika: 'Chronicle',
     ranking: 'Leaderboard',
+    discover: 'Discover',
+    discoverAria: 'Discover a Cottage: enter the plaque code, or hold to scan the QR code',
     profile: 'Profile',
   },
   common: {
@@ -35,7 +37,6 @@ export const mobileEn: typeof mobilePl = {
     firstDownloadTitle: 'Fetching the Cottages',
     firstDownloadBody: 'The first launch needs a connection. After that the map works offline too.',
     questCardAria: 'Expedition progress: {{found}} of {{total}} Cottages. Open the Chronicle.',
-    haveCodeAria: 'I have a code. Hold to scan a QR code.',
   },
   code: {
     openSettings: 'Open the app settings',
@@ -79,6 +80,13 @@ export const mobileEn: typeof mobilePl = {
   },
   kronika: {
     subtitle: 'Seals and badges from your expedition',
+    cottagesTitle: 'Cottages',
+    openListAria: 'Open the list of Cottages: found and still waiting',
+    showAll: 'All',
+    showUndiscovered: 'Only undiscovered',
+    foundOn: 'Found {{date}}',
+    undiscovered: 'Not found yet',
+    noneUndiscovered: 'Every Cottage has been found.',
     earnedOn: 'Earned {{date}}',
     newBadge: 'New',
     unseenAria: 'New seals: {{count}}',
@@ -86,6 +94,7 @@ export const mobileEn: typeof mobilePl = {
     levelProgress: '{{found}} of {{required}} finds',
   },
   ranking: {
+    showMore: 'Show more',
     signInTitle: 'Join the leaderboard',
     signInLead: 'Sign in to save your discoveries to an account and see your place.',
     signInGoogle: 'Sign in with Google',

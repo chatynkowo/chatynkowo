@@ -9,9 +9,10 @@ import { Button, CottageIcon, QrIcon, SealIcon, SheetHandle, Text, colors, iconS
 
 /* The discovery gate as a bottom sheet over whatever the seeker was doing:
    four digits from the plaque, checked the moment the fourth one lands, or
-   the QR scanner. Opened from the Atlas (with the framed cottage's slug), the
-   cottage sheet, the onboarding, the empty states and plaque links (with the
-   code already in the route). The story replaces the sheet on success. */
+   the QR scanner. Opened from the tab bar's centre button, the cottage sheet
+   (with the cottage's slug), the scanner, the onboarding, the empty states and
+   plaque links (with the code already in the route). The story replaces the
+   sheet on success. */
 
 const CODE_LENGTH = 4
 

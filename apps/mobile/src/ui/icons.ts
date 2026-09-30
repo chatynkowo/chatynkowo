@@ -66,7 +66,6 @@ import {
 
 import type { Icon } from 'phosphor-react-native'
 import type { NativeStackHeaderItemButton } from 'expo-router'
-import type { AndroidSymbol } from 'expo-symbols'
 import type { MobileIconRole, SharedIconRole } from '@chatynkowo/theme'
 
 export type { Icon, IconProps, IconWeight } from 'phosphor-react-native'
@@ -145,35 +144,26 @@ export const ICON_VOCABULARY = {
   ShareIcon, TorchIcon, TorchOffIcon, InfoIcon,
 } satisfies Record<SharedIconRole | MobileIconRole, Icon>
 
-/* ---------- Native bars ---------- */
+/* ---------- The tab bar and the native headers ---------- */
 
 /* SF Symbol names, as the native stack types them (sf-symbols-typescript is
    a dependency of expo-router, not of the app, so the type is read through
    the header item contract rather than imported). */
 export type SFSymbol = Extract<NonNullable<NativeStackHeaderItemButton['icon']>, { type: 'sfSymbol' }>['name']
 
-export type { AndroidSymbol }
-
 export type TabIcon = {
-  /* iOS: the outline in the idle state, the filled face when selected. */
-  sf: { default: SFSymbol; selected: SFSymbol }
-  /* Android: the Material symbol drawn by expo-symbols. */
-  md: AndroidSymbol
-  /* The Phosphor fallback for the JS tabs rollback. */
+  /* The Phosphor glyph the tab bar draws: outline idle, filled when selected. */
   Glyph: Icon
 }
 
-/* The four tabs' native icons, keyed by route name. Every Material name is
-   in expo-symbols' android/symbols.json and every SF name in
-   sf-symbols-typescript 2.2.0. */
+/* The four tabs' glyphs, keyed by route name (see app/(tabs)/_layout.tsx). */
 export const TAB_ICONS = {
-  index: { sf: { default: 'map', selected: 'map.fill' }, md: 'map', Glyph: AtlasIcon },
-  kronika: { sf: { default: 'book.closed', selected: 'book.closed.fill' }, md: 'menu_book', Glyph: ChronicleIcon },
-  ranking: { sf: { default: 'trophy', selected: 'trophy.fill' }, md: 'trophy', Glyph: RewardIcon },
-  profile: { sf: { default: 'person.crop.circle', selected: 'person.crop.circle.fill' }, md: 'account_circle', Glyph: ProfileIcon },
+  index: { Glyph: AtlasIcon },
+  kronika: { Glyph: ChronicleIcon },
+  ranking: { Glyph: RewardIcon },
+  profile: { Glyph: ProfileIcon },
 } as const satisfies Record<string, TabIcon>
 
-export type TabName = keyof typeof TAB_ICONS
 
 export type HeaderSymbol = {
   /* iOS: the SF Symbol the native bar draws. */

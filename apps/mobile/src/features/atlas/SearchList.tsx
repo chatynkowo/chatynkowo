@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next'
 import type { Cottage } from '@chatynkowo/core'
 import { CottageIcon, FoundIcon, PressableScale, Text, TextField, colors, iconSize, radius, space } from '../../ui'
 
-/* Every cottage by name, with a search box: the site's map search inside
-   the search sheet. Picking one hands it back to the caller, which sends
-   the Atlas to it. */
+/* Every cottage by name, with a search box: the site's map search under
+   the search sheet's header row. Picking one hands it back to the caller,
+   which sends the Atlas to it. */
 
 type SearchListProps = {
   cottages: Cottage[]
@@ -48,14 +48,10 @@ export function SearchList({ cottages, foundSlugs, onSelect }: SearchListProps) 
     [foundSlugs, onSelect, t],
   )
 
-  /* One scroll view holds the heading, the field and the rows, so the
-     keyboard avoidance of the form sheet scrolls the field and the matches
-     together. */
+  /* One scroll view holds the field and the rows, so the keyboard
+     avoidance of the sheet scrolls the field and the matches together. */
   const header = (
     <View style={styles.head}>
-      <Text variant="heading" accessibilityRole="header">
-        {t('mobile:atlas.list')}
-      </Text>
       <TextField
         label={t('map.searchLabel')}
         value={query}
@@ -90,7 +86,6 @@ export function SearchList({ cottages, foundSlugs, onSelect }: SearchListProps) 
 
 const styles = StyleSheet.create({
   head: {
-    gap: space.md,
     paddingBottom: space.md,
   },
   list: {

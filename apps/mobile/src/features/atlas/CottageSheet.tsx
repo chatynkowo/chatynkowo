@@ -6,20 +6,21 @@ import { useTranslation } from 'react-i18next'
 import type { Cottage } from '@chatynkowo/core'
 import { haptic } from '../../lib/haptics'
 import { openInMaps, type MapsApp } from '../../lib/navigate'
-import { Button, CloseIcon, FoundIcon, IconButton, MarkdownView, NavigateIcon, NotebookIcon, PinIcon, Text, colors, iconSize, mapPalette, radius, space } from '../../ui'
+import { Button, CloseIcon, colors, FoundIcon, IconButton, iconSize, mapPalette, MarkdownView, NavigateIcon, NotebookIcon, PinIcon, radius, space, TAB_BAR_OVERHANG, Text } from '../../ui'
 
 /* The parchment sheet that rises over the map when a cottage is chosen,
    the site's cottage panel on a phone: the country, the name, who lives
    there, the two ways onward, the clue (or the "already found" note) and
    the public "on site" instructions. It is a gesture sheet with three
-   snaps (peek, half, full) that leaves the map pannable; the Atlas frames
-   the cottage above it and follows its snaps with the camera padding. */
+   snaps (peek, half, and the whole screen below the status bar) that
+   leaves the map pannable; the Atlas frames the cottage above it and
+   follows its snaps with the camera padding. */
 
 export type CottageSheetHandle = BottomSheet
 
-/* The snaps as fractions of the sheet's container (the screen above the
-   bottom inset). */
-export const SNAP_FRACTIONS = [0.32, 0.58, 0.88] as const
+/* The snaps as fractions of the sheet's container, the screen between the
+   status bar and the tab bar. */
+const SNAP_FRACTIONS = [0.32, 0.58, 1] as const
 const SNAP_POINTS = SNAP_FRACTIONS.map((fraction) => `${Math.round(fraction * 100)}%`)
 
 export type SnapIndex = 0 | 1 | 2
@@ -46,17 +47,16 @@ type CottageSheetProps = {
   found: boolean
   /* Where the sheet opens: peek after a find, half otherwise. */
   initialIndex: SnapIndex
-  /* Space under the sheet the tab bar or the gesture area already takes. */
+  /* The status bar above the sheet's container and the tab bar under it. */
+  topInset: number
   bottomInset: number
-  /* The height the snaps are fractions of: the screen above the inset. */
-  containerHeight: number
   /* The sheet settled on another snap (not fired for the opening one). */
-  onSnap: (index: number, height: number) => void
+  onSnap: (index: number) => void
   onClose: () => void
 }
 
 export const CottageSheet = forwardRef<CottageSheetHandle, CottageSheetProps>(function CottageSheet(
-  { cottage, found, initialIndex, bottomInset, containerHeight, onSnap, onClose },
+  { cottage, found, initialIndex, topInset, bottomInset, onSnap, onClose },
   ref,
 ) {
   const { t, i18n } = useTranslation()
@@ -71,9 +71,9 @@ export const CottageSheet = forwardRef<CottageSheetHandle, CottageSheetProps>(fu
       lastIndex.current = index
       if (index < 0) return
       haptic('select')
-      onSnap(index, sheetHeightForIndex(index, containerHeight))
+      onSnap(index)
     },
-    [onSnap, containerHeight],
+    [onSnap],
   )
 
   /* Move the screen reader to the title once the sheet has come up. */
@@ -129,6 +129,7 @@ export const CottageSheet = forwardRef<CottageSheetHandle, CottageSheetProps>(fu
       snapPoints={snapPoints}
       enablePanDownToClose
       enableDynamicSizing={false}
+      topInset={topInset}
       bottomInset={bottomInset}
       animationConfigs={springs}
       backgroundStyle={styles.background}
@@ -217,7 +218,8 @@ const styles = StyleSheet.create({
     gap: space.sm,
     paddingHorizontal: space.xl,
     paddingTop: space.sm,
-    paddingBottom: space.xl,
+    /* The tab bar's raised button pokes above the sheet's bottom edge. */
+    paddingBottom: space.xl + TAB_BAR_OVERHANG,
   },
   header: {
     gap: space.sm,

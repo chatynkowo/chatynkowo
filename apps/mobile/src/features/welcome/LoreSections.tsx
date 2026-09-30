@@ -19,11 +19,12 @@ import {
   space,
   type Icon,
 } from '../../ui'
+import { GuideTrail } from './GuideTrail'
 
 /* The site's lore and guide sections as six building blocks: the onboarding
-   pager spreads them over four pages, the profile's About and How to play
-   screens reuse them in one scroll. Copy and looks are the same as on the
-   site; only the composition differs per screen. */
+   pager spreads them over four pages, the profile's About screen stacks
+   them in one scroll. Copy is the same as on the site; only the composition
+   differs per screen. */
 
 /* Eyebrow with the moon, the display title and the two intro paragraphs. */
 export function LoreIntro() {
@@ -56,7 +57,8 @@ export function CreedCard() {
 }
 
 /* The four cards: what the cottages are, who lives there, how to find one,
-   what to do on arrival. Two by two. */
+   what to do on arrival. A compact two by two grid, so the four fit one
+   onboarding page. */
 export function LoreCards() {
   const { t } = useTranslation()
   const cards: Array<{ Glyph: Icon; title: string; body: string }> = [
@@ -80,10 +82,10 @@ export function LoreCards() {
   )
 }
 
-/* The guide: eyebrow with the notebook, title, lead and four numbered steps. */
-export function GuideSteps() {
+/* The guide: eyebrow with the notebook, title, lead and the four steps as
+   footprints along a trail. */
+export function GuideSection() {
   const { t } = useTranslation()
-  const steps = [1, 2, 3, 4].map((step) => ({ title: t(`guide.step${step}Title`), body: t(`guide.step${step}Body`) }))
   return (
     <View style={styles.section}>
       <View style={styles.eyebrowRow}>
@@ -94,33 +96,19 @@ export function GuideSteps() {
         {t('guide.title')}
       </Text>
       <Text tone="soft">{t('guide.lead')}</Text>
-      <View style={styles.steps} accessibilityRole="list">
-        {steps.map((step, index) => (
-          <View key={step.title} style={styles.step}>
-            <Text variant="title" tone="accent" style={styles.stepNumber}>
-              {String(index + 1).padStart(2, '0')}
-            </Text>
-            <View style={styles.stepText}>
-              <Text weight="bold">{step.title}</Text>
-              <Text variant="small" tone="soft">
-                {step.body}
-              </Text>
-            </View>
-          </View>
-        ))}
-      </View>
+      <GuideTrail />
     </View>
   )
 }
 
-/* The trail photo in 3:2 and the quote under it. */
+/* The trail photo in 16:10 and the quote under it. */
 export function TrailPhoto() {
   const { t } = useTranslation()
   return (
     <View style={styles.section}>
       <ContentImage
         uri={contentUrl('assets/img/chatynkowo-trail.webp')}
-        aspectRatio={3 / 2}
+        aspectRatio={16 / 10}
         radius={radius.card}
         accessibilityLabel={t('guide.photoAlt')}
         style={styles.photo}
@@ -179,32 +167,17 @@ const styles = StyleSheet.create({
   cards: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: space.md,
+    gap: space.sm,
   },
   card: {
     flexBasis: '47%',
     flexGrow: 1,
     gap: space.sm,
-    padding: space.lg,
+    padding: space.md,
     borderWidth: 1,
     borderColor: colors.line,
     borderRadius: radius.card,
     backgroundColor: colors.surface,
-  },
-  steps: {
-    gap: space.md,
-  },
-  step: {
-    flexDirection: 'row',
-    gap: space.md,
-    alignItems: 'flex-start',
-  },
-  stepNumber: {
-    minWidth: 40,
-  },
-  stepText: {
-    flex: 1,
-    gap: space.xs,
   },
   photo: {
     width: '100%',

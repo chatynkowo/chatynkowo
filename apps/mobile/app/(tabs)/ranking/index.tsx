@@ -11,16 +11,22 @@ import { Podium } from '../../../src/features/ranking/Podium'
 import { useLeaderboard } from '../../../src/features/ranking/useLeaderboard'
 import { haptic } from '../../../src/lib/haptics'
 import { useContent, useOnline, useProgress, useSession } from '../../../src/providers'
-import { EmptyState, RewardIcon, ShieldIcon, SkeletonRow, Text, colors, headerRightItems, layoutLinear, space, type HeaderItemSpec } from '../../../src/ui'
+import { Button, EmptyState, RewardIcon, ShieldIcon, SkeletonRow, Text, colors, headerRightItems, layoutLinear, space, useTabBarClearance, type HeaderItemSpec } from '../../../src/ui'
 
 /* The Ranking tab: the site's leaderboard as a native list under a large
    title. The account block sits at the top (sign-in, or the seeker's place
    and the state of the exchange with the account), then the podium and
-   every seeker in order. The rules open from the header's info item and a
-   shareable result from the share item once the seeker has a profile. */
+   the seekers in order, a page at a time: the next page follows the scroll
+   and, for anyone who does not scroll to the end, a button in the footer.
+   The rules open from the header's info item and a shareable result from
+   the share item once the seeker has a profile. The tab bar floats over
+   the list, so it pads its end by the bar's height. */
 
 const SKELETON_ROWS = 6
 const INITIAL_ROWS = 12
+
+/* How close to the end (in list heights) the next page is opened. */
+const END_REACHED_THRESHOLD = 0.5
 
 export default function RankingScreen() {
   const { t } = useTranslation()
@@ -29,7 +35,8 @@ export default function RankingScreen() {
   const online = useOnline()
   const { foundCount } = useProgress()
   const account = useSession()
-  const { rows, updatedAt, refreshing, error, refresh } = useLeaderboard(total)
+  const tabBarClearance = useTabBarClearance()
+  const { rows, visibleRows, hasMore, loadMore, updatedAt, refreshing, error, refresh } = useLeaderboard(total)
 
   const myId = account.profile?.public_id ?? null
   const isMine = useCallback((row: Row) => row.public_id === myId, [myId])
@@ -118,19 +125,31 @@ export default function RankingScreen() {
     />
   )
 
+  const footer = hasMore ? (
+    <View style={styles.footer}>
+      <Button block onPress={loadMore}>
+        {t('mobile:ranking.showMore')}
+      </Button>
+    </View>
+  ) : null
+
   return (
     <>
       <Stack.Screen options={{ title: t('ranking.title'), ...headerRightItems(headerItems) }} />
       <Animated.FlatList
-        data={rows}
+        data={visibleRows}
         keyExtractor={(row) => row.public_id}
         renderItem={renderRow}
         getItemLayout={(_, index) => ({ length: LEADERBOARD_ROW_HEIGHT, offset: LEADERBOARD_ROW_HEIGHT * index, index })}
         initialNumToRender={INITIAL_ROWS}
         itemLayoutAnimation={layoutLinear}
+        onEndReached={loadMore}
+        onEndReachedThreshold={END_REACHED_THRESHOLD}
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={styles.content}
+        scrollIndicatorInsets={{ bottom: tabBarClearance }}
+        contentContainerStyle={[styles.content, { paddingBottom: space.xxl + tabBarClearance }]}
         ListHeaderComponent={header}
+        ListFooterComponent={footer}
         ListEmptyComponent={empty}
         refreshControl={
           <RefreshControl
@@ -149,7 +168,9 @@ export default function RankingScreen() {
 const styles = StyleSheet.create({
   content: {
     padding: space.lg,
-    paddingBottom: space.xxl,
+  },
+  footer: {
+    paddingTop: space.lg,
   },
   header: {
     gap: space.xl,

@@ -82,7 +82,8 @@ function StoryView({ cottage, ceremony }: { cottage: Cottage; ceremony: boolean 
   const scrollY = useSharedValue(0)
   const [titleShown, setTitleShown] = useState(false)
 
-  const barHeight = insets.top + BAR_HEIGHT
+  /* A page sheet sits below the status bar, so the bar is its own height. */
+  const barHeight = BAR_HEIGHT
   /* The hero starts at the top of the content: under the transparent bar on
      iOS, right below the opaque bar on Android. */
   const heroTop = 0

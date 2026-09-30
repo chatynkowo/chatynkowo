@@ -7,6 +7,8 @@ export const mobilePl = {
     atlas: 'Atlas',
     kronika: 'Kronika',
     ranking: 'Ranking',
+    discover: 'Odkryj',
+    discoverAria: 'Odkryj Chatynkę: wpisz kod z tabliczki, albo przytrzymaj, aby zeskanować kod QR',
     profile: 'Profil',
   },
   common: {
@@ -35,7 +37,6 @@ export const mobilePl = {
     firstDownloadTitle: 'Pobieram Chatynki',
     firstDownloadBody: 'Pierwsze uruchomienie wymaga połączenia. Potem mapa działa także bez zasięgu.',
     questCardAria: 'Postęp wyprawy: {{found}} z {{total}} Chatynek. Otwórz Kronikę.',
-    haveCodeAria: 'Mam kod. Przytrzymaj, aby zeskanować kod QR.',
   },
   code: {
     openSettings: 'Otwórz ustawienia aplikacji',
@@ -79,6 +80,13 @@ export const mobilePl = {
   },
   kronika: {
     subtitle: 'Pieczęcie i odznaki z Twojej wyprawy',
+    cottagesTitle: 'Chatynki',
+    openListAria: 'Otwórz listę Chatynek: odkryte i te, które czekają',
+    showAll: 'Wszystkie',
+    showUndiscovered: 'Tylko nieodkryte',
+    foundOn: 'Odkryta {{date}}',
+    undiscovered: 'Jeszcze nieodkryta',
+    noneUndiscovered: 'Wszystkie Chatynki są już odkryte.',
     earnedOn: 'Zdobyta {{date}}',
     newBadge: 'Nowa',
     unseenAria: 'Nowe pieczęcie: {{count}}',
@@ -86,6 +94,7 @@ export const mobilePl = {
     levelProgress: '{{found}} z {{required}} odkryć',
   },
   ranking: {
+    showMore: 'Pokaż więcej',
     signInTitle: 'Dołącz do rankingu',
     signInLead: 'Zaloguj się, aby zapisać odkrycia w koncie i zobaczyć swoje miejsce.',
     signInGoogle: 'Zaloguj przez Google',

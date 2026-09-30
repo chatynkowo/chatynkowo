@@ -1,8 +1,8 @@
 /* The shared interface layer of the app: design tokens, fonts, the icon
-   vocabulary (with the native tab and header symbols), motion tokens, text,
-   buttons, the pressable, screens, images, skeletons, progress, toasts and
-   the settings list. Screens and feature components build on these and
-   never restyle them locally. */
+   vocabulary (with the tab glyphs and the native header symbols), motion
+   tokens, text, buttons, the pressable, screens, images, skeletons,
+   progress, toasts, the settings list and the tab bar. Screens and feature
+   components build on these and never restyle them locally. */
 export * from './tokens'
 export * from './icons'
 export * from './motion'
@@ -26,3 +26,4 @@ export { SettingsSection, SettingsRow, type SettingsRowProps } from './SettingsL
 export { headerRightItems, type HeaderItemRole, type HeaderItemSpec } from './headerItems'
 export { SheetHandle } from './SheetHandle'
 export { TabStack, tabChildOptions, tabStackScreenOptions } from './TabStack'
+export { TAB_BAR_OVERHANG, TabBar, TabBarHeightProvider, useTabBarClearance, useTabBarHeight, useTabBarHeightSetter, type DiscoverAction, type TabBarProps } from './TabBar'

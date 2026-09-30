@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { nextLevel, type Cottage } from '@chatynkowo/core'
 import { AtlasMap, LEVEL_KEYS, type AtlasMapHandle, type FrameMode, type MapLevel } from '../../src/features/atlas/AtlasMap'
 import { CottageSheet, sheetHeightForIndex, type CottageSheetHandle, type SnapIndex } from '../../src/features/atlas/CottageSheet'
-import { ControlBar, HaveCodeFab, LevelCard, MapTip, StatusPill } from '../../src/features/atlas/MapChrome'
+import { ControlBar, LevelCard, MapTip, StatusPill } from '../../src/features/atlas/MapChrome'
 import { MapVignette } from '../../src/features/atlas/MapVignette'
 import { QuestCard } from '../../src/features/atlas/QuestCard'
 import { useAtlasFocus, type FocusReason } from '../../src/features/atlas/useAtlasFocus'
@@ -16,33 +16,41 @@ import { haptic } from '../../src/lib/haptics'
 import { useContent, useOnline, useProgress } from '../../src/providers'
 import {
   AtlasIcon,
+  colors,
   DURATIONS,
   EmptyState,
-  LocateIcon,
-  OfflineIcon,
-  ResetViewIcon,
-  SearchIcon,
-  ShieldIcon,
-  SkeletonMap,
-  SyncIcon,
-  Text,
-  colors,
   enterDown,
   fade,
   iconSize,
   leaveDown,
   leaveUp,
+  LocateIcon,
   mapPalette,
+  OfflineIcon,
   radius,
+  ResetViewIcon,
+  SearchIcon,
+  ShieldIcon,
+  SkeletonMap,
   space,
+  SyncIcon,
+  TAB_BAR_OVERHANG,
+  Text,
+  useTabBarHeight,
 } from '../../src/ui'
 
-/* The Atlas: the play field. The map fills the screen; over it float the
-   quest card, the level indicator, the search, reset and locate controls,
-   the tip and the gold "I have a code" pill, and from below rises the
-   parchment sheet of the chosen cottage. The screen owns the selection,
-   the camera framing around the sheet and the celebration that follows a
-   find; the map and the sheet report back through callbacks. */
+/* The Atlas: the play field. The map fills the screen and runs under the
+   tab bar; over it float the quest card, the level indicator, the search,
+   reset and locate controls and the tip, and from below rises the
+   parchment sheet of the chosen cottage (entering a code is the tab bar's
+   centre button). The screen owns the selection, the camera framing around
+   the sheet and the celebration that follows a find; the map and the sheet
+   report back through callbacks. */
+
+/* The highest snap the camera follows: the half. The full one covers the
+   map, so the half's framing stays and is right again when the sheet comes
+   back down. */
+const CAMERA_SNAP_MAX: SnapIndex = 1
 
 export default function AtlasScreen() {
   const { t } = useTranslation()
@@ -63,13 +71,14 @@ export default function AtlasScreen() {
   const [tipSeen, setTipSeen] = useState(false)
   const reality = useSharedValue(0)
 
-  /* The tab bar overlays the map on iOS and the Atlas opts out of the
-     Android safe-area wrapper, so the bottom inset is the safe area's. The
-     sheet's snaps are fractions of the screen above that inset; the screen
-     is measured because on Android the bar takes real height. */
-  const bottomInset = insets.bottom
+  /* The tab bar floats over the map, so everything at the bottom edge (the
+     chrome, the sheet, the attribution) sits above its height, which the
+     bar reports once mounted. The sheet's snaps are fractions of the screen
+     between the status bar and the bar; the screen is measured because the
+     window height is not the screen's own on Android. */
+  const bottomInset = useTabBarHeight()
   const [screenHeight, setScreenHeight] = useState(windowHeight)
-  const sheetContainerHeight = Math.max(0, screenHeight - bottomInset)
+  const sheetContainerHeight = Math.max(0, screenHeight - insets.top - bottomInset)
 
   const upcoming = useMemo(() => {
     const next = nextLevel(state, rewards.levels, total)
@@ -80,11 +89,14 @@ export default function AtlasScreen() {
     selectedRef.current = selected
   }, [selected])
 
-  /* The camera keeps room for the sheet: its height plus the inset under
-     it plus a breath. Remembered so a snap to the same height is not sent
-     twice. */
+  /* The camera keeps room for the sheet: the snap's height plus the bar
+     under it plus a breath. Remembered so a snap to the same height is not
+     sent twice. */
   const framedPadding = useRef(0)
-  const paddingFor = useCallback((sheetHeight: number) => sheetHeight + bottomInset + space.lg, [bottomInset])
+  const paddingForSnap = useCallback(
+    (index: number) => sheetHeightForIndex(Math.min(index, CAMERA_SNAP_MAX), sheetContainerHeight) + bottomInset + space.lg,
+    [sheetContainerHeight, bottomInset],
+  )
 
   /* Opens (or moves) the sheet on a cottage and frames the cottage above it. */
   const openAt = useCallback(
@@ -98,11 +110,11 @@ export default function AtlasScreen() {
         setSelected(cottage)
       }
       selectedRef.current = cottage
-      const padding = paddingFor(sheetHeightForIndex(index, sheetContainerHeight))
+      const padding = paddingForSnap(index)
       framedPadding.current = padding
       map.current?.frameCottage(cottage, padding, mode)
     },
-    [paddingFor, sheetContainerHeight],
+    [paddingForSnap],
   )
 
   const choose = useCallback(
@@ -111,12 +123,12 @@ export default function AtlasScreen() {
       if (selectedRef.current) {
         setSelected(cottage)
         selectedRef.current = cottage
-        map.current?.frameCottage(cottage, framedPadding.current || paddingFor(sheetHeightForIndex(1, sheetContainerHeight)))
+        map.current?.frameCottage(cottage, framedPadding.current || paddingForSnap(1))
         return
       }
       openAt(cottage, 1)
     },
-    [openAt, paddingFor, sheetContainerHeight],
+    [openAt, paddingForSnap],
   )
 
   /* A reset closes the sheet and frames the whole land in one go, so the
@@ -136,13 +148,13 @@ export default function AtlasScreen() {
   }, [])
 
   const onSheetSnap = useCallback(
-    (_index: number, height: number) => {
-      const padding = paddingFor(height)
+    (index: number) => {
+      const padding = paddingForSnap(index)
       if (Math.abs(padding - framedPadding.current) < 4) return
       framedPadding.current = padding
       map.current?.setBottomPadding(padding)
     },
-    [paddingFor],
+    [paddingForSnap],
   )
 
   const closeSheet = useCallback(() => {
@@ -200,15 +212,6 @@ export default function AtlasScreen() {
   }, [])
 
   const openSearch = useCallback(() => router.push('/search'), [router])
-  const openCode = useCallback(() => {
-    haptic('light')
-    const slug = selectedRef.current?.slug
-    router.push(slug ? { pathname: '/code', params: { slug } } : { pathname: '/code' })
-  }, [router])
-  const openScan = useCallback(() => {
-    haptic('medium')
-    router.push('/scan')
-  }, [router])
 
   const onRingSettled = useCallback(() => haptic('light'), [])
 
@@ -241,7 +244,7 @@ export default function AtlasScreen() {
     body = (
       <View style={styles.fill}>
         <SkeletonMap />
-        <View style={[styles.firstDownload, { bottom: bottomInset + space.lg }]} accessibilityRole="progressbar" accessibilityLabel={t('mobile:atlas.firstDownloadTitle')}>
+        <View style={[styles.firstDownload, { bottom: bottomInset + TAB_BAR_OVERHANG + space.lg }]} accessibilityRole="progressbar" accessibilityLabel={t('mobile:atlas.firstDownloadTitle')}>
           <Text variant="heading" style={styles.chromeInk}>
             {t('mobile:atlas.firstDownloadTitle')}
           </Text>
@@ -318,16 +321,8 @@ export default function AtlasScreen() {
                 <MapTip>{t('map.tip')}</MapTip>
               </Animated.View>
             )}
-            <View style={styles.bottomRow} pointerEvents="box-none">
+            <View style={styles.controls} pointerEvents="box-none">
               <ControlBar controls={bottomControls} />
-              <View style={styles.spacer} pointerEvents="none" />
-              <HaveCodeFab
-                label={t('map.haveCode')}
-                accessibilityLabel={t('mobile:atlas.haveCodeAria')}
-                scanLabel={t('mobile:code.scan')}
-                onPress={openCode}
-                onLongPress={openScan}
-              />
             </View>
           </Animated.View>
         )}
@@ -338,8 +333,8 @@ export default function AtlasScreen() {
             cottage={selected}
             found={foundSlugs.has(selected.slug)}
             initialIndex={initialSnap}
+            topInset={insets.top}
             bottomInset={bottomInset}
-            containerHeight={sheetContainerHeight}
             onSnap={onSheetSnap}
             onClose={onSheetClose}
           />
@@ -396,13 +391,8 @@ const styles = StyleSheet.create({
   tipRow: {
     alignItems: 'center',
   },
-  bottomRow: {
+  controls: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: space.sm,
-  },
-  spacer: {
-    flex: 1,
   },
   firstDownload: {
     position: 'absolute',

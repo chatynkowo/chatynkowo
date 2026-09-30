@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useFocusEffect } from 'expo-router'
 import type { LeaderboardRow } from '@chatynkowo/api'
 import { fetchLeaderboard } from '../../lib/sync'
@@ -9,10 +9,23 @@ import { useForeground, useProgress, useReconnect } from '../../providers'
    changed: on focus when older than a minute, on a return to the foreground,
    on reconnect, and once the seeker's pending finds have reached the account.
    Rows on screen are never cleared by a refetch; a stale response (an older
-   request, or one abandoned when the tab lost focus) is ignored. */
+   request, or one abandoned when the tab lost focus) is ignored.
+
+   The backend hands every row at once, so the list is paged here: every
+   row fetched stays in `rows` (the podium and the seeker's place read all
+   of them) while the list shows `visibleRows`, one page more on each
+   `loadMore`. A refetch keeps the pages opened so far unless the board
+   shrank below them. */
 
 export type LeaderboardState = {
+  /* Every row fetched, in order. */
   rows: LeaderboardRow[]
+  /* The pages opened so far. */
+  visibleRows: LeaderboardRow[]
+  /* Rows remain beyond the visible pages. */
+  hasMore: boolean
+  /* Opens the next page; nothing happens once every row is visible. */
+  loadMore: () => void
   /* When the rows on screen were fetched; null until the first success. */
   updatedAt: number | null
   /* A visible (user-initiated) refresh is in flight. */
@@ -26,9 +39,15 @@ export type LeaderboardState = {
 /* Rows older than this are fetched again when the tab regains focus. */
 const STALE_MS = 60_000
 
+const PAGE_SIZE = 25
+
+/* How many pages a board of `count` rows fills; at least the first. */
+const pagesFor = (count: number) => Math.max(1, Math.ceil(count / PAGE_SIZE))
+
 export function useLeaderboard(total: number): LeaderboardState {
   const { pendingCount, exchanging } = useProgress()
   const [rows, setRows] = useState<LeaderboardRow[]>([])
+  const [page, setPage] = useState(1)
   const [updatedAt, setUpdatedAt] = useState<number | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState(false)
@@ -43,6 +62,7 @@ export function useLeaderboard(total: number): LeaderboardState {
   const updatedAtRef = useRef<number | null>(null)
   const errorRef = useRef(false)
   const totalRef = useRef(total)
+  const rowsRef = useRef(rows)
 
   const load = useCallback(async (silent: boolean) => {
     const count = totalRef.current
@@ -60,7 +80,10 @@ export function useLeaderboard(total: number): LeaderboardState {
       const now = Date.now()
       updatedAtRef.current = now
       errorRef.current = false
+      rowsRef.current = next
       setRows(next)
+      /* The pages opened so far stay unless the board no longer fills them. */
+      setPage((current) => Math.min(current, pagesFor(next.length)))
       setUpdatedAt(now)
       setError(false)
     } catch {
@@ -145,5 +168,12 @@ export function useLeaderboard(total: number): LeaderboardState {
     [load],
   )
 
-  return { rows, updatedAt, refreshing, error, refresh }
+  const visibleRows = useMemo(() => rows.slice(0, page * PAGE_SIZE), [rows, page])
+  const hasMore = rows.length > visibleRows.length
+
+  const loadMore = useCallback(() => {
+    setPage((current) => (current < pagesFor(rowsRef.current.length) ? current + 1 : current))
+  }, [])
+
+  return { rows, visibleRows, hasMore, loadMore, updatedAt, refreshing, error, refresh }
 }

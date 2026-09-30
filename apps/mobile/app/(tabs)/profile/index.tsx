@@ -7,7 +7,7 @@ import { SITE_ORIGIN, SOCIAL_LINKS } from '@chatynkowo/core'
 import { AccountSection } from '../../../src/features/profile/AccountSection'
 import { LANGUAGES, setLanguage, toLanguage } from '../../../src/i18n'
 import { useSession } from '../../../src/providers'
-import { FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, SignOutIcon, colors, iconSize, space } from '../../../src/ui'
+import { FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, SignOutIcon, colors, iconSize, space, useTabBarClearance } from '../../../src/ui'
 
 /* The Profile tab: grouped settings in the system idiom. The account block
    (nickname, avatar, sign-in), the language, the lore (how to play, about),
@@ -20,6 +20,7 @@ export default function ProfileScreen() {
   const { t, i18n } = useTranslation()
   const router = useRouter()
   const account = useSession()
+  const tabBarClearance = useTabBarClearance()
   const language = toLanguage(i18n.resolvedLanguage ?? i18n.language)
 
   const openLegal = (href: string) =>
@@ -122,8 +123,10 @@ export default function ProfileScreen() {
       keyExtractor={(item) => item.key}
       renderItem={({ item }) => item.node}
       style={styles.list}
-      contentContainerStyle={styles.content}
+      /* The list runs under the floating tab bar; its last block stays clear of it. */
+      contentContainerStyle={[styles.content, { paddingBottom: tabBarClearance + space.xxl }]}
       contentInsetAdjustmentBehavior="automatic"
+      scrollIndicatorInsets={{ bottom: tabBarClearance }}
       automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
       keyboardDismissMode="interactive"
       keyboardShouldPersistTaps="handled"
@@ -140,7 +143,6 @@ const styles = StyleSheet.create({
   content: {
     paddingTop: space.lg,
     paddingHorizontal: space.lg,
-    paddingBottom: space.xxl,
     gap: space.xl,
   },
 })

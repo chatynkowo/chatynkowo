@@ -1,13 +1,13 @@
 import { useEffect, type ReactNode } from 'react'
-import { StyleSheet, View, type AccessibilityActionEvent } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import Animated, { cancelAnimation, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated'
-import { CrossfadeText, DURATIONS, KeyIcon, PressableScale, SearchIcon, Text, colors, iconSize, mapPalette, radius, space, type Icon } from '../../ui'
+import { CrossfadeText, DURATIONS, PressableScale, SearchIcon, Text, iconSize, mapPalette, radius, space, type Icon } from '../../ui'
 
 /* The dark cards the site lays over its map, floating on the full-bleed
-   Atlas: the level indicator, the control bars, the tip, the offline and
-   stale pills and the gold "I have a code" pill. Icons and copy take the
-   map's gold and cream; every control is a PressableScale so the press feel
-   matches the rest of the app. The screen wires the labels and actions. */
+   Atlas: the level indicator, the control bars, the tip and the offline
+   and stale pills. Icons and copy take the map's gold and cream; every
+   control is a PressableScale so the press feel matches the rest of the
+   app. The screen wires the labels and actions. */
 
 export function LevelCard({ label, level }: { label: string; level: string }) {
   return (
@@ -108,42 +108,6 @@ export function StatusPill({ icon: Glyph, label, onPress }: { icon: Icon; label:
   )
 }
 
-type HaveCodeFabProps = {
-  label: string
-  accessibilityLabel: string
-  /* The accessibility action standing in for the long press. */
-  scanLabel: string
-  onPress: () => void
-  onLongPress: () => void
-}
-
-const LONG_PRESS_MS = 400
-
-/* The one unlock action in thumb reach: a press opens the code sheet, a
-   long press (or the "scan" accessibility action) opens the scanner. The
-   haptics belong to the actions, so the pressable fires none itself. */
-export function HaveCodeFab({ label, accessibilityLabel, scanLabel, onPress, onLongPress }: HaveCodeFabProps) {
-  const onAccessibilityAction = (event: AccessibilityActionEvent) => {
-    if (event.nativeEvent.actionName === 'scan') onLongPress()
-  }
-  return (
-    <PressableScale
-      accessibilityLabel={accessibilityLabel}
-      accessibilityActions={[{ name: 'scan', label: scanLabel }]}
-      onAccessibilityAction={onAccessibilityAction}
-      onPress={onPress}
-      onLongPress={onLongPress}
-      delayLongPress={LONG_PRESS_MS}
-      style={styles.fab}
-    >
-      <KeyIcon size={iconSize.md} weight="fill" color={colors.accentInk} />
-      <Text weight="bold" tone="accentInk" numberOfLines={1}>
-        {label}
-      </Text>
-    </PressableScale>
-  )
-}
-
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
@@ -208,18 +172,5 @@ const styles = StyleSheet.create({
   },
   pillText: {
     color: mapPalette.chromeInk,
-  },
-  fab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: space.sm,
-    height: 56,
-    minWidth: 168,
-    paddingHorizontal: space.xl,
-    borderWidth: 1,
-    borderColor: colors.accentBorder,
-    borderRadius: radius.pill,
-    backgroundColor: colors.accent,
   },
 })

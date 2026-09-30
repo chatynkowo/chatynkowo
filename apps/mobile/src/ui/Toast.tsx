@@ -7,6 +7,7 @@ import { useActiveToast, useToast, useToastTimer, type ActiveToast, type ToastTo
 import { FoundIcon, ShieldIcon, SyncIcon, WarningIcon, type Icon } from './icons'
 import { DURATIONS, ReduceMotion, SPRINGS, leaveDown, leaveUp } from './motion'
 import { PressableScale } from './PressableScale'
+import { useTabBarHeight } from './TabBar'
 import { Text } from './Text'
 import { colors, iconSize, radius, space } from './tokens'
 
@@ -40,7 +41,8 @@ const toneInk: Record<ToastTone, string> = {
   error: colors.danger,
 }
 
-/* Clearance above the Atlas's bottom row for 'bottom' placement. */
+/* Clearance above the Atlas's bottom row (which sits on the tab bar) for
+   'bottom' placement. */
 const BOTTOM_CLEARANCE = 120
 /* A flick past this distance or speed, towards the edge, dismisses. */
 const DISMISS_DISTANCE = 24
@@ -58,6 +60,7 @@ function ToastPill({ toast }: { toast: ActiveToast }) {
   const { hide } = useToast()
   const { pause, resume } = useToastTimer()
   const insets = useSafeAreaInsets()
+  const tabBarHeight = useTabBarHeight()
   const atBottom = toast.placement === 'bottom'
   const shift = useSharedValue(0)
   const fade = useSharedValue(1)
@@ -95,7 +98,7 @@ function ToastPill({ toast }: { toast: ActiveToast }) {
   const motion = useAnimatedStyle(() => ({ transform: [{ translateY: shift.value }], opacity: fade.value }))
 
   const Glyph = toneIcon[toast.tone]
-  const position = atBottom ? { bottom: insets.bottom + BOTTOM_CLEARANCE } : { top: insets.top + space.md }
+  const position = atBottom ? { bottom: (tabBarHeight || insets.bottom) + BOTTOM_CLEARANCE } : { top: insets.top + space.md }
   const entering = (atBottom ? FadeInUp : FadeInDown).springify().damping(20).reduceMotion(ReduceMotion.System)
 
   return (

@@ -21,7 +21,7 @@ import {
   useProgress,
   useToast,
 } from '../src/providers'
-import { ToastHost, colors, fonts, headerRightItems, radius, useAppFonts } from '../src/ui'
+import { TabBarHeightProvider, ToastHost, colors, fonts, headerRightItems, radius, useAppFonts } from '../src/ui'
 
 /* The root of the app. Fonts and the bootstrap (language, progress, cached
    content, flags) load behind the native splash, which then fades into a
@@ -69,12 +69,33 @@ const screenOptions: NativeStackNavigationOptions = {
   headerBackButtonDisplayMode: 'minimal',
 }
 
-/* A bottom sheet sized to its content: code entry, reward, rules. */
+/* A bottom sheet sized to its content: code entry, rules. */
 const fitSheet: NativeStackNavigationOptions = {
   presentation: 'formSheet',
   sheetAllowedDetents: 'fitToContents',
   sheetGrabberVisible: true,
   sheetCornerRadius: radius.card,
+  headerShown: false,
+  contentStyle: { backgroundColor: colors.pageRaised },
+}
+
+/* A bottom sheet that opens at three fifths of the screen and can be pulled
+   to the full height: the reward, whose description scrolls as part of the
+   sheet. */
+const tallSheet: NativeStackNavigationOptions = {
+  ...fitSheet,
+  sheetAllowedDetents: [0.6, 1],
+  sheetInitialDetentIndex: 0,
+  sheetExpandsWhenScrolledToEdge: true,
+}
+
+/* A page sheet with its own header row (the heading and a close button):
+   the search and the cottage directory. Not a form sheet with detents: on
+   iOS 26 a detent sheet scrolls its list out of view when the keyboard
+   rises for the search field, and the page sheet handles the keyboard
+   itself. */
+const pageSheet: NativeStackNavigationOptions = {
+  presentation: 'modal',
   headerShown: false,
   contentStyle: { backgroundColor: colors.pageRaised },
 }
@@ -89,11 +110,15 @@ const modalHeader = Platform.select<NativeStackNavigationOptions>({
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={theme}>
-        <BootGate>
-          <AppShell />
-        </BootGate>
-      </ThemeProvider>
+      {/* The tab bar reports its height here so screens and the toast host,
+          which sits above the tabs, can keep clear of it. */}
+      <TabBarHeightProvider>
+        <ThemeProvider value={theme}>
+          <BootGate>
+            <AppShell />
+          </BootGate>
+        </ThemeProvider>
+      </TabBarHeightProvider>
     </GestureHandlerRootView>
   )
 }
@@ -204,17 +229,8 @@ function RootStack() {
           ...headerRightItems([{ role: 'close', label: t('mobile:common.close'), onPress: closeModal }]),
         }}
       />
-      {/* A page sheet, not a form sheet with detents: on iOS 26 the detent
-          sheet scrolls its list out of view when the keyboard rises for the
-          search field, and the page sheet handles the keyboard itself. */}
-      <Stack.Screen
-        name="search"
-        options={{
-          presentation: 'modal',
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.pageRaised },
-        }}
-      />
+      <Stack.Screen name="search" options={pageSheet} />
+      <Stack.Screen name="cottages" options={pageSheet} />
       <Stack.Screen
         name="story/[slug]"
         options={{
@@ -240,7 +256,7 @@ function RootStack() {
           gestureEnabled: false,
         }}
       />
-      <Stack.Screen name="reward/[id]" options={fitSheet} />
+      <Stack.Screen name="reward/[id]" options={tallSheet} />
       <Stack.Screen name="rules" options={fitSheet} />
     </Stack>
   )

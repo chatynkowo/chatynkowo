@@ -8,7 +8,7 @@ import { colors } from '../../../src/ui'
    About and How to play pushed on top under a standard title and the native
    back button. Titles are read here so they follow the language switch. */
 
-/* The guide is a fixed pager (logo row, pages, dots), not a scroll view, so
+/* The guide is a fixed pager (pages, dots), not a scroll view, so
    its content cannot slide under a transparent bar: the bar is opaque. */
 const guideOptions: NativeStackNavigationOptions = {
   ...tabChildOptions,
