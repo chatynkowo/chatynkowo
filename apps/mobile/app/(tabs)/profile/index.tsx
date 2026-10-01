@@ -32,14 +32,14 @@ export default function ProfileScreen() {
     })
 
   const confirmSignOut = () =>
-    Alert.alert(t('mobile:profile.signOutConfirm'), t('mobile:profile.signOutBody'), [
-      { text: t('mobile:common.cancel'), style: 'cancel' },
+    Alert.alert(t('profile.signOutConfirm'), t('profile.signOutBody'), [
+      { text: t('profile.signOutCancel'), style: 'cancel' },
       {
-        text: t('ranking.signOut'),
+        text: t('profile.signOut'),
         style: 'destructive',
         onPress: () =>
           void account.signOut().then((outcome) => {
-            if (outcome === 'failed') toast.show({ tone: 'error', text: t('mobile:profile.signOutFailed') })
+            if (outcome === 'failed') toast.show({ tone: 'error', text: t('profile.signOutFailed') })
           }),
       },
     ])
@@ -119,7 +119,7 @@ export default function ProfileScreen() {
       key: 'signOut',
       node: (
         <SettingsSection>
-          <SettingsRow tone="danger" icon={<SignOutIcon size={iconSize.md} color={colors.danger} />} label={t('ranking.signOut')} onPress={confirmSignOut} />
+          <SettingsRow tone="danger" icon={<SignOutIcon size={iconSize.md} color={colors.danger} />} label={t('profile.signOut')} onPress={confirmSignOut} />
         </SettingsSection>
       ),
     })

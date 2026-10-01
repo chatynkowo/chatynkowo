@@ -1,6 +1,7 @@
 /* Polish copy shared by the site and the app: the expedition loop (the
    atlas, the code gate, the story, the Kronika, the map, the audio player,
-   the ranking), the lore and guide sections and the legal links. Polish is
+   the ranking, the account and the profile), the lore and guide sections
+   and the legal links. Polish is
    the source language. Cottage stories, reward
    cards and other /admin/-authored content live in data files and are not
    part of these dictionaries. */
@@ -20,6 +21,7 @@ export const sharedPl = {
     closeMenu: 'Zamknij menu',
     languageAria: 'Wybór języka',
     mobileNavTitle: 'Nawigacja wyprawy',
+    signIn: 'Zaloguj się',
   },
   atlas: {
     boardAria: 'Plansza wyprawy',
@@ -141,6 +143,27 @@ export const sharedPl = {
     navigate: 'Nawiguj',
     haveCode: 'Mam kod',
   },
+  profile: {
+    account: 'Konto',
+    signInLead: 'Zaloguj się, aby zapisać odkrycia w koncie i zobaczyć swoje miejsce.',
+    signInUnavailable: 'Logowanie nie jest dostępne. Twoje odkrycia są bezpieczne na tym urządzeniu.',
+    signInGoogle: 'Zaloguj przez Google',
+    signInApple: 'Zaloguj przez Apple',
+    signedInPrefix: 'Zalogowano jako',
+    defaultName: 'Zdobywca',
+    loading: 'Wczytuję konto...',
+    exchanging: 'Łączę odkrycia z kontem...',
+    nickname: 'Pseudonim',
+    showAvatar: 'Pokaż zdjęcie z konta',
+    saved: 'Zapisano.',
+    saveFailed: 'Nie udało się zapisać. Spróbuj ponownie.',
+    finds: 'Odkrycia w koncie: {{count}}',
+    signOut: 'Wyloguj',
+    signOutConfirm: 'Wylogować się?',
+    signOutBody: 'Odkrycia zostaną na tym urządzeniu.',
+    signOutCancel: 'Anuluj',
+    signOutFailed: 'Nie udało się wylogować. Spróbuj ponownie.',
+  },
   audio: {
     pause: 'Wstrzymaj: {{title}}',
     play: 'Odtwórz: {{title}}',
@@ -150,19 +173,15 @@ export const sharedPl = {
     volume: 'Głośność',
   },
   ranking: {
-    skip: 'Przejdź do rankingu',
     eyebrow: 'Kronika jurajskich wypraw',
     title: 'Ranking Zdobywców',
     lede: 'Zobacz tropicieli, którzy odnaleźli najwięcej opowieści Chatynkowa — i swoje miejsce w Kronice.',
     notConfigured: 'Ranking nie jest jeszcze skonfigurowany.',
-    signIn: 'Zaloguj się, aby dołączyć',
-    signInGoogle: 'Zaloguj przez Google',
-    signInApple: 'Zaloguj przez Apple',
-    signedInPrefix: 'Zalogowano jako',
-    defaultName: 'Zdobywca',
+    signIn: 'Zaloguj się, aby dołączyć do rankingu',
+    yourPlace: 'Twoje miejsce: {{place}}',
+    notRanked: 'Zapisz pierwsze odkrycie w koncie, aby pojawić się w rankingu.',
     share: 'Udostępnij mój wynik',
     edit: 'Edytuj wpis',
-    signOut: 'Wyloguj',
     shareText: 'Zobacz mój wynik w Rankingu Zdobywców Chatynkowa!',
     copied: 'Skopiowano link do schowka.',
     loadError: 'Nie udało się wczytać rankingu. Odśwież stronę i spróbuj ponownie.',
@@ -189,14 +208,6 @@ export const sharedPl = {
     continueBody: 'Wybierz kolejną Chatynkę na mapie albo wpisz kod znaleziony podczas wędrówki.',
     openMap: 'Otwórz mapę',
     haveCode: 'Mam kod',
-    profileClose: 'Zamknij',
-    profileEyebrow: 'Profil zdobywcy',
-    profileTitle: 'Twój wpis w rankingu',
-    profileLede: 'Te dane zobaczą pozostali tropiciele.',
-    nickname: 'Pseudonim',
-    showAvatar: 'Pokaż zdjęcie z konta Google',
-    save: 'Zapisz zmiany',
-    saveFailed: 'Nie udało się zapisać. Spróbuj ponownie.',
   },
   footer: {
     docsAria: 'Dokumenty',

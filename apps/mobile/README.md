@@ -154,8 +154,10 @@ src/
   features/              screen-level components per area: atlas/, code/, cottages/ (the directory both tabs open), story/, kronika/, ranking/, profile/, welcome/
 app.config.ts            the configuration that depends on the environment: Sign in with Apple (the capability and its
                          plugin, unless EXPO_PUBLIC_APPLE_SIGN_IN is 0), the Google sign-in plugin with the iOS URL scheme
-                         derived from EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID, the Apple team that signs device builds
-plugins/                 config plugins: with-scene-delegate.js (UIScene life cycle for the iOS 27 SDK)
+                         derived from EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID, the app's Apple team (signing, and the Sign in
+                         with Apple key the backend script reads from here)
+plugins/                 config plugins: with-scene-delegate.js (UIScene life cycle for the iOS 27 SDK),
+                         with-locale-filters.js (only the app's languages in the Android resources)
 locales/                 native permission strings per language (iOS Info.plist)
 assets/                  app icon, adaptive icon layers, the splash emblem and the logo, generated from the brand logo in
                          packages/content/private/img
@@ -196,8 +198,8 @@ through `src/lib/haptics.ts`.
 - **Account** (`SessionProvider`, `src/lib/sync.ts`): the Supabase session
   lives in AsyncStorage with URL detection off; token refresh runs only in
   the foreground. Sign-in is native: Google (`@react-native-google-signin`)
-  and Apple (`expo-apple-authentication`), both handed to
-  `signInWithIdToken`. The build offers what it can: the Google button once
+  and Apple (`expo-apple-authentication`, with a nonce the backend checks
+  against the token), both handed to `signInWithIdToken`. The build offers what it can: the Google button once
   `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` is set (on iOS once
   `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` is too), the Apple button on iOS unless
   `EXPO_PUBLIC_APPLE_SIGN_IN=0` left the capability out of the build; with

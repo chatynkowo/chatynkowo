@@ -1,27 +1,28 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BackIcon, ForwardIcon, IconButton, iconSize } from '../ui'
+import { ForwardIcon, IconButton, iconSize } from '../ui'
+import { HeaderAccount } from './HeaderAccount'
 import { LanguageMenu } from './LanguageMenu'
+import type { SitePageId } from './SitePage'
 import './SiteChrome.css'
 
 export type NavigationItem = {
   label: string
   href?: string
   onClick?: () => void
-  primary?: boolean
 }
 
 type SiteHeaderProps = {
+  /* The page this header is on: the account control marks it as current. */
+  page: SitePageId
   items: NavigationItem[]
 }
 
-export function SiteHeader({ items }: SiteHeaderProps) {
+export function SiteHeader({ page, items }: SiteHeaderProps) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
-  /* Desktop shows a back arrow on the primary item only; the mobile menu
-     hides it and shows a forward arrow on every item instead (SiteChrome.css). */
-  const back = <BackIcon className="nav-back" size={iconSize.sm} weight="bold" aria-hidden />
+  /* The folded menu shows a forward arrow on every item (SiteChrome.css). */
   const forward = <ForwardIcon className="nav-arrow" size={iconSize.sm} aria-hidden />
 
   return (
@@ -32,16 +33,12 @@ export function SiteHeader({ items }: SiteHeaderProps) {
       </a>
       <nav className={`main-nav${open ? ' is-open' : ''}`} aria-label={t('header.navAria')} data-title={t('header.mobileNavTitle')}>
         {items.map((item) => item.href ? (
-          <a
-            key={item.label}
-            className={item.primary ? 'nav-primary' : undefined}
-            href={item.href}
-            onClick={() => setOpen(false)}
-          >{item.primary && back}{item.label}{forward}</a>
+          <a key={item.label} href={item.href} onClick={() => setOpen(false)}>{item.label}{forward}</a>
         ) : (
           <button key={item.label} type="button" onClick={() => { setOpen(false); item.onClick?.() }}>{item.label}{forward}</button>
         ))}
       </nav>
+      <HeaderAccount page={page} />
       <LanguageMenu />
       <IconButton
         className="nav-toggle"

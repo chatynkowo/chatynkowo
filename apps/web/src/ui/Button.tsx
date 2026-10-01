@@ -6,7 +6,9 @@ import { cx } from './classes'
    - ghost:   secondary actions on the raised surface (default),
    - subtle:  tertiary actions, e.g. sign out.
    Use Button for actions, LinkButton for navigation that looks like a button,
-   IconButton for icon-only controls (the accessible name is mandatory). */
+   IconButton for icon-only controls (the accessible name is mandatory).
+   A disabled button is one that cannot act; one whose action is in flight
+   says so with aria-busy and shows the wait cursor. */
 
 export type ButtonVariant = 'primary' | 'ghost' | 'subtle'
 

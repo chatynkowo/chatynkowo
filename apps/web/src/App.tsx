@@ -7,10 +7,10 @@ import { content, loadCottages, loadRewards, resolveCode, storyAudio } from './l
 import { backfillBadges, discoverCottage, loadStoredState, mergeAccountFinds } from './lib/persistence'
 import { fallbackRewards, finalLevelId, requiredFinds } from '@chatynkowo/core'
 import { initializeAnalytics, track } from './lib/analytics'
-import { syncNewFind, syncSignedInAccount } from './lib/sync'
+import { syncNewFind } from './lib/sync'
 import type { Cottage, RewardLevel, RewardsConfig, StoredState } from '@chatynkowo/core'
-import { SiteFooter } from './components/SiteFooter'
-import { SiteHeader } from './components/SiteHeader'
+import { SitePage, type SectionId } from './components/SitePage'
+import { useAccountExchange } from './providers/AccountProvider'
 import { AudioPlayer } from './components/AudioPlayer'
 import { CottageGallery } from './components/CottageGallery'
 
@@ -90,11 +90,6 @@ function App() {
 
   const completed = cottages.length > 0 && Boolean(stored.badges[finalLevelId(rewards.levels)])
 
-  useEffect(() => {
-    document.title = t('meta.homeTitle')
-    document.querySelector('meta[name="description"]')?.setAttribute('content', t('meta.homeDescription'))
-  }, [t])
-
   /* Stories and rewards are language-specific content, so they reload on every
      language change; the previous data stays on screen until the new one lands,
      which keeps the switch flicker-free. */
@@ -121,23 +116,16 @@ function App() {
 
   /* A signed-in seeker gets the account's finds into this browser (and the
      browser's into the account) on every visit, merged into the progress
-     as it stands when the answer arrives; a failed exchange waits for the
-     next visit. */
+     as it stands when the answer arrives. */
   const storedRef = useRef(stored)
   useEffect(() => {
     storedRef.current = stored
   })
-  useEffect(() => {
-    let current = true
-    syncSignedInAccount((remote) => {
-      const merged = current ? mergeAccountFinds(remote, storedRef.current) : null
-      if (merged) setStored(merged)
-      return merged
-    }).catch((reason: unknown) => console.error(reason))
-    return () => {
-      current = false
-    }
-  }, [])
+  useAccountExchange((remote) => {
+    const merged = mergeAccountFinds(remote, storedRef.current)
+    if (merged) setStored(merged)
+    return merged
+  })
 
   /* An open story dialog must follow a content reload — re-point it at the
      freshly loaded cottage with the same slug. */
@@ -155,9 +143,12 @@ function App() {
     if (result) setStored(result.next)
   }, [cottages.length, rewards.levels, stored])
 
+  /* A link into a section (index.html#mapa). Looked up by id, never as a
+     selector: a fragment the page does not know (a sign-in token a
+     fallback redirect left here) must not throw. */
   useEffect(() => {
     if (loadState === 'loading' || !window.location.hash) return
-    const target = document.querySelector(window.location.hash)
+    const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)))
     window.setTimeout(() => target?.scrollIntoView({ block: 'start' }), 80)
   }, [loadState])
 
@@ -302,18 +293,11 @@ function App() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  return (
-    <div className="site-shell">
-      <a className="skip-link" href="#main">{t('common.skipToContent')}</a>
-      <SiteHeader items={[
-        { label: t('nav.map'), onClick: () => navigateTo('mapa') },
-        { label: t('nav.enterCode'), onClick: openCode },
-        { label: t('nav.about'), onClick: () => navigateTo('o-chatynkowie') },
-        { label: t('nav.notebook'), onClick: () => navigateTo('magia') },
-        { label: t('nav.ranking'), href: 'ranking.html' },
-      ]} />
+  /* The code section opens as the dialog; the others are scrolled to. */
+  const openSection = (id: SectionId) => (id === 'kod' ? openCode() : navigateTo(id))
 
-      <main id="main">
+  return (
+    <SitePage page="home" onSection={openSection}>
         <section className="expedition-board" id="top" aria-label={t('atlas.boardAria')}>
           <div className="map-section" id="mapa">
             <div className="section-heading atlas-heading">
@@ -382,7 +366,7 @@ function App() {
                   />
                 ))}
               </div>
-              <Button variant="primary" type="submit" disabled={codeState === 'checking'}>
+              <Button variant="primary" type="submit" disabled={codeState === 'checking'} aria-busy={codeState === 'checking'}>
                 {codeState === 'checking' ? t('quest.checking') : t('quest.submit')} <ForwardIcon size={iconSize.md} />
               </Button>
               {codeMessage && <p id="code-result" className={`code-result ${codeState}`} role="status">{codeMessage}</p>}
@@ -462,9 +446,6 @@ function App() {
             <blockquote>{t('guide.quote')}</blockquote>
           </div>
         </section>
-      </main>
-
-      <SiteFooter />
 
       {foundCount > 0 && (
         <button
@@ -548,7 +529,7 @@ function App() {
           </div>
         </Modal>
       )}
-    </div>
+    </SitePage>
   )
 }
 

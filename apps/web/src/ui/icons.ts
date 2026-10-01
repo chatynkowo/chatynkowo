@@ -47,11 +47,13 @@ import {
   Plus,
   QrCode,
   ShieldCheck,
+  SignOut,
   Sparkle,
   SpeakerHigh,
   SpeakerSlash,
   TreeEvergreen,
   Trophy,
+  UserCircle,
   X,
 } from '@phosphor-icons/react'
 
@@ -102,6 +104,10 @@ export const CreedIcon = HandHeart
 export const ElfIcon = Sparkle
 export const ForestIcon = TreeEvergreen
 
+/* ---------- Domain: the account ---------- */
+export const ProfileIcon = UserCircle
+export const SignOutIcon = SignOut
+
 /* ---------- Brands ---------- */
 export const InstagramIcon = InstagramLogo
 export const FacebookIcon = FacebookLogo
@@ -113,5 +119,6 @@ export const ICON_VOCABULARY = {
   SoundOnIcon, SoundOffIcon, ZoomInIcon, ZoomOutIcon, ResetViewIcon, LocateIcon, SpinnerIcon, SearchIcon,
   CottageIcon, FoundIcon, PinIcon, NavigateIcon, AtlasIcon, TrailIcon, KeyIcon, SealIcon, QrIcon, ShieldIcon,
   ChronicleIcon, RewardIcon, NotebookIcon, StoryAudioIcon, LoreIcon, CreedIcon, ElfIcon, ForestIcon,
+  ProfileIcon, SignOutIcon,
   InstagramIcon, FacebookIcon,
 } satisfies Record<SharedIconRole, Icon>

@@ -1,6 +1,6 @@
 import type { Session } from '@supabase/supabase-js'
-import { DISPLAY_NAME_MAX_LENGTH, type StoredFind } from '@chatynkowo/core'
-import type { ChatynkowoClient } from './client'
+import { DISPLAY_NAME_MAX_LENGTH, defaultFetch, type FetchLike, type StoredFind } from '@chatynkowo/core'
+import type { ChatynkowoClient, ChatynkowoClientConfig } from './client'
 import type { Database } from './database.types'
 
 /* Accounts, profiles, finds and the leaderboard. Every function takes the
@@ -35,9 +35,25 @@ export async function getSession(client: ChatynkowoClient) {
    account began in the iOS app, where the App Store asks for it. */
 export type OAuthProvider = 'google' | 'apple'
 
+export const OAUTH_PROVIDERS: readonly OAuthProvider[] = ['google', 'apple']
+
+/* The providers the backend has switched on (Supabase: Authentication,
+   Providers), read from its public settings, so a client offers only what
+   the backend can take: a button for a provider that is off leads to the
+   backend's error page. Throws when the settings cannot be read. The
+   global fetch serves unless one is passed (see core's platform adapters). */
+export async function enabledProviders({ url, anonKey, fetch }: Pick<ChatynkowoClientConfig, 'url' | 'anonKey'> & { fetch?: FetchLike }): Promise<OAuthProvider[]> {
+  const response = await (fetch ?? defaultFetch())(`${url}/auth/v1/settings`, { headers: { apikey: anonKey } })
+  if (!response.ok) throw new Error(`Auth settings: ${response.status}`)
+  const { external } = (await response.json()) as { external?: Partial<Record<OAuthProvider, boolean>> }
+  return OAUTH_PROVIDERS.filter((provider) => external?.[provider] === true)
+}
+
 /* Browser OAuth flow: navigates to the provider and back to `redirectTo`,
    where the client reads the session from the URL. A native app hands the
-   provider's id token to `signInWithIdToken` instead (apps/mobile). */
+   provider's id token to `signInWithIdToken` instead (apps/mobile), with
+   the raw nonce whose hash the token carries (Apple), so a captured token
+   cannot be replayed. */
 export async function signInWithOAuth(client: ChatynkowoClient, provider: OAuthProvider, redirectTo: string) {
   const { error } = await client.auth.signInWithOAuth({ provider, options: { redirectTo } })
   if (error) throw error
@@ -46,8 +62,8 @@ export async function signInWithOAuth(client: ChatynkowoClient, provider: OAuthP
 /* Native sign-in: the provider's id token, minted on the device, becomes a
    session; the provider's client id must be among the backend's authorized
    client ids. */
-export async function signInWithIdToken(client: ChatynkowoClient, provider: OAuthProvider, token: string): Promise<Session> {
-  const { data, error } = await client.auth.signInWithIdToken({ provider, token })
+export async function signInWithIdToken(client: ChatynkowoClient, provider: OAuthProvider, token: string, nonce?: string): Promise<Session> {
+  const { data, error } = await client.auth.signInWithIdToken({ provider, token, nonce })
   if (error) throw error
   if (!data.session) throw new Error('Sign-in returned no session.')
   return data.session

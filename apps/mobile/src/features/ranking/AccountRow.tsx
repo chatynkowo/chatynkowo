@@ -24,7 +24,7 @@ export function AccountRow({ place, onSignedIn }: AccountRowProps) {
   const { pendingCount, exchanging } = useProgress()
 
   if (!account.enabled) {
-    return <Text tone="soft">{t('mobile:ranking.signInUnavailable')}</Text>
+    return <Text tone="soft">{t('profile.signInUnavailable')}</Text>
   }
 
   const pending =
@@ -41,7 +41,7 @@ export function AccountRow({ place, onSignedIn }: AccountRowProps) {
         <SettingsSection>
           <SettingsRow
             icon={<ProfileIcon size={iconSize.lg} color={colors.accentStrong} />}
-            label={t('mobile:ranking.signInRow')}
+            label={t('ranking.signIn')}
             trailing="chevron"
             onPress={() => router.navigate('/profile')}
           />
@@ -52,19 +52,19 @@ export function AccountRow({ place, onSignedIn }: AccountRowProps) {
     )
   }
 
-  const name = account.profile?.display_name || t('ranking.defaultName')
+  const name = account.profile?.display_name || t('profile.defaultName')
   return (
     <View style={styles.card} accessibilityLiveRegion="polite">
       <Text>
-        {t('ranking.signedInPrefix')}{' '}
+        {t('profile.signedInPrefix')}{' '}
         <Text weight="bold">{name}</Text>
       </Text>
-      <CrossfadeText tone="soft" variant="small" value={place ? t('mobile:ranking.yourPlace', { place }) : t('mobile:ranking.notRanked')} />
+      <CrossfadeText tone="soft" variant="small" value={place ? t('ranking.yourPlace', { place }) : t('ranking.notRanked')} />
       {exchanging ? (
         <View style={styles.line}>
           <ActivityIndicator size="small" color={colors.accentStrong} />
           <Text variant="small" tone="soft" style={styles.lineText}>
-            {t('mobile:ranking.exchanging')}
+            {t('profile.exchanging')}
           </Text>
         </View>
       ) : null}

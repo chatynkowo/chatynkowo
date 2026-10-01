@@ -1,0 +1,164 @@
+/* The account block (features/account): the card, the way in, the entry
+   form and its receipts, the way out. Tokens from ui/ui.css; the buttons,
+   the notices and the avatar are the primitives from there. */
+
+.account-card {
+  display: grid;
+  gap: 18px;
+  padding: clamp(22px, 3vw, 34px);
+  border: 1px solid var(--line-strong);
+  border-radius: 18px 5px 18px 5px;
+  background: linear-gradient(155deg, var(--surface-soft), var(--page-raised));
+  box-shadow: var(--shadow);
+}
+
+.account-card__title {
+  margin: 0;
+  font-size: clamp(1.55rem, 4vw, 2.1rem);
+}
+
+.account-card__who {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.account-card__who strong { color: var(--ink); }
+.account-card__who .avatar { width: 56px; height: 56px; }
+
+.account-card__entry h3 {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+}
+
+.account-note,
+.account-lead {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.signin-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.signin-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.account-form {
+  display: grid;
+  gap: 18px;
+}
+
+.account-field {
+  display: grid;
+  gap: 7px;
+  font-weight: 600;
+}
+
+.account-field input {
+  width: 100%;
+  min-height: 50px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-small);
+  outline: 0;
+  background: var(--page);
+  color: var(--ink);
+}
+
+.account-field input:focus-visible {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 3px rgb(210 166 77 / 0.18);
+}
+
+.account-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-soft);
+}
+
+.account-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.account-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-faint);
+  font-size: 0.86rem;
+}
+
+.account-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.account-status svg { animation: account-spin 1s linear infinite; }
+
+@keyframes account-spin {
+  to { transform: rotate(360deg); }
+}
+
+.profile-signout {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+}
+
+.profile-confirm {
+  width: min(510px, 100%);
+  padding: 34px;
+  background: linear-gradient(155deg, var(--surface-soft), var(--page-raised));
+  box-shadow: var(--shadow);
+  color: var(--ink);
+}
+
+.profile-confirm h2 {
+  margin-bottom: 10px;
+  font-size: clamp(1.55rem, 4vw, 2.1rem);
+}
+
+.profile-confirm p {
+  margin-bottom: 25px;
+  color: var(--ink-soft);
+}
+
+.profile-confirm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 560px) {
+  .signin-buttons,
+  .account-form__actions,
+  .profile-confirm__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-confirm { padding: 24px; }
+}

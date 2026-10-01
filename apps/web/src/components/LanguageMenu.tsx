@@ -74,7 +74,10 @@ export function LanguageMenu() {
           }
         }}
       >
-        <span lang={active.code}>{active.nativeName}</span>
+        {/* The name on a desktop, the code where the header is folded; the
+            control's own name is the aria-label above. */}
+        <span className="language-menu-trigger__name" lang={active.code}>{active.nativeName}</span>
+        <span className="language-menu-trigger__code" aria-hidden="true">{active.code.toUpperCase()}</span>
         <ExpandIcon size={iconSize.xs} weight="bold" aria-hidden />
       </button>
       {open && (

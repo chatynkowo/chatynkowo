@@ -9,7 +9,8 @@ import type { ConfigContext, ExpoConfig } from 'expo/config'
    - Google sign-in: the library's plugin with the iOS URL scheme, which is
      the iOS client id (EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID) read backwards;
      the plugin refuses to run without one.
-   - The Apple team that signs device builds (APPLE_TEAM_ID). */
+   - The app's Apple team (APPLE_TEAM_ID): it signs device builds, and the
+     backend's Sign in with Apple script reads it from here. */
 export default ({ config }: ConfigContext): ExpoConfig => {
   const appleSignIn = process.env.EXPO_PUBLIC_APPLE_SIGN_IN !== '0'
   const googleIosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID

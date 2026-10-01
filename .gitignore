@@ -15,6 +15,7 @@ dist
 # Secrets and local overrides
 .env
 .env.*.local
+*.p8
 
 # Build caches
 *.tsbuildinfo

@@ -43,6 +43,9 @@ export const SHARED_ICON_ROLES = [
   'CreedIcon',
   'ElfIcon',
   'ForestIcon',
+  /* The account */
+  'ProfileIcon',
+  'SignOutIcon',
   /* Brands */
   'InstagramIcon',
   'FacebookIcon',
@@ -51,8 +54,6 @@ export const SHARED_ICON_ROLES = [
 /* Roles only the app has a surface for. */
 export const MOBILE_ICON_ROLES = [
   'CameraIcon',
-  'ProfileIcon',
-  'SignOutIcon',
   'OfflineIcon',
   'SyncIcon',
   'DownloadIcon',

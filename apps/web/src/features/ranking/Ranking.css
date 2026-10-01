@@ -1,0 +1,44 @@
+/* The account row at the top of the leaderboard (features/ranking).
+   Tokens from ui/ui.css; the buttons and the notice are the primitives. */
+
+.rank-account {
+  display: flex;
+  min-height: 46px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.rank-account__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.rank-hello {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.rank-hello strong {
+  color: var(--ink);
+}
+
+.rank-hello__place {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 820px) {
+  .rank-account,
+  .rank-account__actions {
+    align-items: stretch;
+  }
+
+  .rank-account__actions {
+    width: 100%;
+  }
+}

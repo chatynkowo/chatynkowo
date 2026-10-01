@@ -249,8 +249,7 @@ body.is-translating .lang-select select {
 }
 .field input:focus,
 .field select:focus,
-.field textarea:focus,
-.md-editor:focus {
+.field textarea:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(138, 106, 31, 0.18);
@@ -277,18 +276,6 @@ body.is-translating .lang-select select {
 .audio-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
 
 .meta { color: var(--muted); font-size: 0.85rem; margin: 0.25rem 0 0.6rem; }
-
-.md-editor {
-  width: 100%;
-  min-height: 360px;
-  padding: 0.75rem;
-  font: 13px/1.55 ui-monospace, Consolas, monospace;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: white;
-  resize: vertical;
-}
-
 /* Photos --------------------------------------------------------------- */
 .photos-grid {
   display: grid;
@@ -391,16 +378,6 @@ body.is-translating .lang-select select {
   color: var(--ink);
 }
 .publish-dialog::backdrop { background: rgba(44, 36, 23, 0.45); }
-.publish-log {
-  background: #1f1a13;
-  color: #f4ecd8;
-  padding: 0.75rem;
-  border-radius: 6px;
-  white-space: pre-wrap;
-  max-height: 240px;
-  overflow: auto;
-  font: 12px/1.4 ui-monospace, Consolas, monospace;
-}
 .dialog-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
 
 /* Auth overlay ---------------------------------------------------------- */

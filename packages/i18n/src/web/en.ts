@@ -10,9 +10,21 @@ export const webEn: typeof webPl = {
     rankingTitle: "Explorers' Leaderboard | Chatynkowo",
     rankingDescription:
       "The Chatynkowo Explorers' Leaderboard: see who has discovered the most fairy-tale Cottages and who completed the set fastest.",
+    profileTitle: 'Explorer Profile | Chatynkowo',
+    profileDescription:
+      "Your Chatynkowo account: sign in to save your discoveries, get the Chronicle back on every device and take your place in the Explorers' Leaderboard.",
   },
   common: {
     skipToContent: 'Skip to content',
+  },
+  profilePage: {
+    eyebrow: 'Explorer profile',
+    title: 'Your account',
+    lede: "An account gathers the discoveries from every device and browser of yours, hands the Chronicle back on each of them and leads to your place in the Explorers' Leaderboard.",
+    loadFailed: 'Your profile could not be loaded. Refresh the page and try again.',
+    entryTitle: 'Your leaderboard entry',
+    publicNote: 'Other trackers will see these details.',
+    save: 'Save changes',
   },
   gallery: {
     listAria: 'Gallery of Cottage photos',

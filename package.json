@@ -11,7 +11,8 @@
     "check": "pnpm -r run check && node scripts/check-conventions.mjs",
     "icons:build": "pnpm --filter @chatynkowo/web icons:build",
     "codes:build": "pnpm --filter @chatynkowo/content codes:build",
-    "codes:check": "pnpm --filter @chatynkowo/content codes:check"
+    "codes:check": "pnpm --filter @chatynkowo/content codes:check",
+    "auth:apple": "node supabase/apple-sign-in.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.15",

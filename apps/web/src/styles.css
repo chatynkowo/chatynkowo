@@ -1,178 +1,9 @@
-@font-face {
-  font-family: 'Cinzel Decorative';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/assets/fonts/Cinzel_Decorative-700-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-  font-family: 'Cinzel Decorative';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/assets/fonts/Cinzel_Decorative-700-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+20AC, U+2122;
-}
-
-@font-face {
-  font-family: 'Cinzel Decorative';
-  font-style: normal;
-  font-weight: 900;
-  font-display: swap;
-  src: url('/assets/fonts/Cinzel_Decorative-900-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-  font-family: 'Cinzel Decorative';
-  font-style: normal;
-  font-weight: 900;
-  font-display: swap;
-  src: url('/assets/fonts/Cinzel_Decorative-900-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+20AC, U+2122;
-}
-
-@font-face {
-  font-family: 'Cormorant Garamond';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/assets/fonts/Cormorant_Garamond-400-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-  font-family: 'Cormorant Garamond';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/assets/fonts/Cormorant_Garamond-400-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+20AC, U+2122;
-}
-
-@font-face {
-  font-family: 'Cormorant Garamond';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/assets/fonts/Cormorant_Garamond-600-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-  font-family: 'Cormorant Garamond';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/assets/fonts/Cormorant_Garamond-600-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+20AC, U+2122;
-}
-
-@font-face {
-  font-family: 'Cormorant Garamond';
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/assets/fonts/Cormorant_Garamond-400-italic-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-  font-family: 'Cormorant Garamond';
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/assets/fonts/Cormorant_Garamond-400-italic-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+20AC, U+2122;
-}
-
-/* Design tokens live in ui/ui.css, imported before this file. */
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--header-height) + 22px);
-}
-
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100dvh;
-  background: var(--page);
-  color: var(--ink);
-  font-size: 18px;
-  line-height: 1.55;
-}
-
-button,
-input {
-  font: inherit;
-}
-
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
-}
-
-button {
-  color: inherit;
-}
-
-a {
-  color: inherit;
-}
-
-img {
-  display: block;
-  max-width: 100%;
-}
-
-h1,
-h2,
-h3,
-p,
-figure {
-  margin-top: 0;
-}
-
-h1,
-h2,
-h3 {
-  text-wrap: balance;
-}
-
-h1,
-h2 {
-  font-family: 'Cinzel Decorative', Georgia, serif;
-  letter-spacing: -0.025em;
-}
-
-/* Cinzel Decorative has no lowercase — minuscules render as small caps — and
-   its kern table fuses the small-cap pair "he" into one epigraphic glyph
-   (-384/1000 em). Polish headings never hit that pair, but English is full of
-   it (Where, head, the), so the fusion reads as broken letters. Dropping the
-   kerning for non-Polish headings separates the pairs while keeping the same
-   tracking as Polish. :where() keeps specificity at plain h1/h2. */
-:where(:root:not(:lang(pl))) h1,
-:where(:root:not(:lang(pl))) h2 {
-  font-kerning: none;
-}
-
+/* The tokens, the page base and the primitives come from ui/ui.css,
+   imported before this file; this one lays the page out. */
 h2 {
   font-size: clamp(2rem, 4vw, 3.55rem);
   line-height: 1.08;
 }
-
-:focus-visible {
-  outline: 3px solid var(--accent-strong);
-  outline-offset: 4px;
-}
-
 .sr-only {
   position: absolute;
   width: 1px;
@@ -184,114 +15,6 @@ h2 {
   white-space: nowrap;
   border: 0;
 }
-
-.skip-link {
-  position: fixed;
-  z-index: 2000;
-  top: 10px;
-  left: 10px;
-  padding: 10px 16px;
-  border-radius: var(--radius-small);
-  background: var(--accent);
-  color: var(--accent-ink);
-  transform: translateY(-150%);
-}
-
-.skip-link:focus {
-  transform: translateY(0);
-}
-
-.site-shell {
-  min-height: 100dvh;
-  overflow: clip;
-  background:
-    linear-gradient(180deg, rgb(5 16 13 / 0.32), var(--page) 31%),
-    url('/assets/img/background.webp') top center / max(1600px, 100vw) auto no-repeat,
-    var(--page);
-}
-
-.site-header {
-  position: sticky;
-  z-index: 1000;
-  top: 0;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  height: var(--header-height);
-  align-items: center;
-  gap: 28px;
-  padding: 0 max(24px, calc((100vw - 1320px) / 2));
-  border-bottom: 1px solid rgb(225 195 127 / 0.13);
-  background: rgb(9 25 20 / 0.82);
-  box-shadow: 0 8px 28px rgb(2 11 8 / 0.2);
-  backdrop-filter: blur(18px) saturate(135%);
-}
-
-.brand,
-.footer-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--ink);
-  font-family: 'Cinzel Decorative', Georgia, serif;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.brand img,
-.footer-brand img {
-  width: 42px;
-  height: 42px;
-  object-fit: contain;
-}
-
-.main-nav {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-}
-
-.main-nav button,
-.main-nav a {
-  padding: 9px 13px;
-  border: 0;
-  border-radius: var(--radius-small);
-  background: transparent;
-  color: var(--ink-soft);
-  cursor: pointer;
-  font-size: 0.94rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
-}
-
-.main-nav button:hover,
-.main-nav a:hover {
-  background: rgb(210 166 77 / 0.11);
-  color: var(--ink);
-}
-
-.main-nav button:active,
-.main-nav a:active {
-  transform: translateY(1px) scale(0.985);
-}
-
-.nav-toggle {
-  display: none;
-}
-
-.eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 18px;
-  color: var(--accent-strong);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-
 .hero {
   position: relative;
   display: grid;
@@ -335,17 +58,10 @@ h2 {
   to { opacity: 0.68; transform: translate3d(0, -8px, 0); }
 }
 
-.hero-copy,
-.discovery-gate,
-.hero-progress {
+.discovery-gate {
   position: relative;
   z-index: 1;
 }
-
-.hero-copy {
-  max-width: 700px;
-}
-
 .hero h1 {
   max-width: 780px;
   margin-bottom: 24px;
@@ -355,37 +71,6 @@ h2 {
   line-height: 1.02;
   text-shadow: 0 3px 26px rgb(1 8 6 / 0.7);
 }
-
-.hero-lead {
-  max-width: 54ch;
-  margin-bottom: 30px;
-  color: #ded4bf;
-  font-size: clamp(1.08rem, 1.45vw, 1.28rem);
-  line-height: 1.55;
-}
-
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.hero-world-note {
-  display: flex;
-  max-width: 60ch;
-  align-items: flex-start;
-  gap: 9px;
-  margin: 26px 0 0;
-  color: #aba48f;
-  font-size: 0.82rem;
-}
-
-.hero-world-note svg {
-  flex: none;
-  margin-top: 2px;
-  color: var(--accent);
-}
-
 .discovery-gate {
   width: min(100%, 470px);
   justify-self: end;
@@ -462,195 +147,6 @@ h2 {
   color: #c7bda8;
   font-size: 0.9rem;
 }
-
-.gate-memory {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 18px 0 0;
-  padding-top: 16px;
-  border-top: 1px solid rgb(211 177 100 / 0.2);
-  color: #9f9785;
-  font-size: 0.73rem;
-}
-
-.gate-memory svg {
-  flex: none;
-  color: #c8a85f;
-}
-
-.hero-progress {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: minmax(160px, auto) minmax(120px, 1fr) minmax(260px, auto);
-  align-items: center;
-  gap: 22px;
-  padding: 20px 0 0;
-  border-top: 1px solid var(--line);
-  color: var(--ink-soft);
-  font-size: 0.78rem;
-}
-
-.quest-progress-copy,
-.quest-next-goal {
-  display: grid;
-  gap: 2px;
-}
-
-.quest-progress-copy span,
-.quest-next-goal span {
-  color: #9e9684;
-  font-size: 0.64rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.quest-progress-copy strong,
-.quest-next-goal strong {
-  color: #e8ddc5;
-  font-size: 0.88rem;
-}
-
-.quest-next-goal {
-  padding-left: 22px;
-  border-left: 1px solid var(--line);
-}
-
-.quest-progress-track {
-  height: 5px;
-  overflow: hidden;
-  border-radius: 5px;
-  background: rgb(235 213 163 / 0.1);
-  box-shadow: inset 0 1px 2px rgb(1 8 6 / 0.45);
-}
-
-.quest-progress-track i {
-  display: block;
-  min-width: 3px;
-  height: 100%;
-  border-radius: 5px;
-  background: linear-gradient(90deg, #a9752c, #ebc66f);
-  box-shadow: 0 0 12px rgb(235 198 111 / 0.34);
-  transition: width 450ms ease;
-}
-
-.magic-section {
-  display: grid;
-  max-width: 1240px;
-  grid-template-columns: minmax(0, 1.03fr) minmax(380px, 0.97fr);
-  align-items: center;
-  gap: clamp(48px, 8vw, 110px);
-  margin: 0 auto;
-  padding: clamp(86px, 11vw, 150px) 24px;
-}
-
-.magic-image-wrap {
-  position: relative;
-  margin: 0;
-  padding: 10px;
-  border: 1px solid var(--line-strong);
-  border-radius: 50% 50% 18px 18px;
-  background: rgb(210 166 77 / 0.08);
-  box-shadow: var(--shadow);
-}
-
-.magic-image-wrap::after {
-  content: '';
-  position: absolute;
-  inset: auto 8% -24px 8%;
-  height: 52px;
-  border-radius: 50%;
-  background: rgb(2 10 8 / 0.5);
-  filter: blur(22px);
-}
-
-.magic-image-wrap img {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  aspect-ratio: 4 / 3.25;
-  border-radius: calc(50% - 5px) calc(50% - 5px) 11px 11px;
-  object-fit: cover;
-}
-
-.magic-image-wrap figcaption {
-  position: absolute;
-  z-index: 2;
-  right: 26px;
-  bottom: 24px;
-  left: 26px;
-  padding: 13px 16px;
-  border: 1px solid rgb(235 198 112 / 0.38);
-  border-radius: var(--radius-small);
-  background: rgb(11 28 22 / 0.82);
-  color: #e7dcc5;
-  font-style: italic;
-  text-align: center;
-  backdrop-filter: blur(10px);
-}
-
-.magic-copy > p {
-  max-width: 55ch;
-  margin-bottom: 32px;
-  color: var(--ink-soft);
-}
-
-.journey-steps {
-  position: relative;
-  display: grid;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: journey;
-}
-
-.journey-steps::before {
-  content: '';
-  position: absolute;
-  top: 14px;
-  bottom: 20px;
-  left: 13px;
-  width: 1px;
-  background: linear-gradient(var(--accent), var(--line));
-}
-
-.journey-steps li {
-  position: relative;
-  display: grid;
-  grid-template-columns: 34px 1fr;
-  gap: 14px;
-  align-items: start;
-  padding: 17px 0;
-  border-bottom: 1px solid var(--line);
-  color: var(--accent-strong);
-}
-
-.journey-steps li > svg {
-  position: relative;
-  z-index: 1;
-  padding: 4px;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  background: var(--page);
-}
-
-.journey-steps li:first-child {
-  padding-top: 0;
-}
-
-.journey-steps span {
-  display: grid;
-  color: var(--ink-soft);
-  font-size: 0.95rem;
-}
-
-.journey-steps strong {
-  color: var(--ink);
-  font-size: 1.08rem;
-}
-
 .map-section {
   padding: clamp(76px, 9vw, 126px) max(16px, calc((100vw - 1380px) / 2));
   border-top: 1px solid rgb(211 177 100 / 0.08);
@@ -927,7 +423,6 @@ h2 {
   pointer-events: none;
 }
 
-.map-title,
 .map-level,
 .map-search,
 .map-controls,
@@ -941,31 +436,6 @@ h2 {
   backdrop-filter: blur(12px);
   pointer-events: auto;
 }
-
-.map-title {
-  display: flex;
-  min-height: 54px;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 15px;
-  border-radius: var(--radius-small);
-  line-height: 1.1;
-}
-
-.map-title span {
-  display: grid;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.map-title strong {
-  font-family: 'Cinzel Decorative', Georgia, serif;
-  font-size: 16px;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
 .map-level {
   display: grid;
   min-width: 130px;
@@ -1275,7 +745,7 @@ h2 {
   padding: 8px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-small);
-  background: #0f211b;
+  background: var(--page);
   color: var(--ink);
   font-family: 'Cinzel Decorative', Georgia, serif;
   font-size: 2.15rem;
@@ -1317,111 +787,6 @@ h2 {
 .code-result.error {
   color: var(--danger);
 }
-
-.treasury-banner {
-  display: grid;
-  position: relative;
-  max-width: 1180px;
-  grid-template-columns: minmax(0, 1.15fr) auto auto;
-  align-items: center;
-  gap: clamp(28px, 5vw, 62px);
-  overflow: hidden;
-  margin: 0 auto clamp(90px, 11vw, 150px);
-  padding: clamp(34px, 5vw, 54px);
-  border: 1px solid var(--line-strong);
-  border-radius: 24px 24px 70px 24px;
-  background:
-    radial-gradient(circle at 92% 20%, rgb(210 166 77 / 0.16), transparent 28%),
-    linear-gradient(105deg, rgb(210 166 77 / 0.09), transparent 58%),
-    var(--page-raised);
-  box-shadow: var(--shadow);
-}
-
-.treasury-banner::after {
-  content: '';
-  position: absolute;
-  right: -70px;
-  bottom: -105px;
-  width: 260px;
-  height: 260px;
-  border: 1px solid rgb(210 166 77 / 0.13);
-  border-radius: 50%;
-  box-shadow: 0 0 0 24px rgb(210 166 77 / 0.035), 0 0 0 54px rgb(210 166 77 / 0.025);
-  pointer-events: none;
-}
-
-.treasury-copy,
-.treasury-stats,
-.treasury-actions {
-  position: relative;
-  z-index: 1;
-}
-
-.treasury-banner h2 {
-  margin-bottom: 10px;
-  font-size: clamp(1.65rem, 2.7vw, 2.55rem);
-}
-
-.treasury-banner p {
-  margin-bottom: 0;
-  color: var(--ink-soft);
-}
-
-.treasury-stats {
-  display: flex;
-  gap: 22px;
-}
-
-.treasury-stats span {
-  display: grid;
-  min-width: 62px;
-  color: var(--ink-faint);
-  font-size: 0.72rem;
-}
-
-.treasury-stats strong {
-  color: var(--accent-strong);
-  font-family: 'Cinzel Decorative', Georgia, serif;
-  font-size: 1.45rem;
-}
-
-.treasury-actions {
-  display: grid;
-  gap: 9px;
-}
-
-.site-footer {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: center;
-  gap: 42px;
-  padding: 34px max(24px, calc((100vw - 1240px) / 2));
-  border-top: 1px solid var(--line);
-  background: #091712;
-  color: var(--ink-soft);
-  font-size: 0.86rem;
-}
-
-.site-footer nav {
-  display: flex;
-  gap: 18px;
-}
-
-.site-footer nav a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  text-decoration: none;
-}
-
-.site-footer nav a:hover {
-  color: var(--accent-strong);
-}
-
-.footer-brand {
-  color: var(--ink);
-}
-
 .treasury-toggle {
   position: fixed;
   z-index: 900;
@@ -1800,21 +1165,6 @@ h2 {
   .audio-volume { display: none; }
 }
 
-@media (max-width: 1100px) {
-  .treasury-banner {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .treasury-stats {
-    grid-column: 1;
-  }
-
-  .treasury-actions {
-    grid-row: 1 / 3;
-    grid-column: 2;
-  }
-}
-
 @media (max-width: 960px) {
   .hero {
     grid-template-columns: minmax(0, 1fr) minmax(340px, 0.78fr);
@@ -1823,10 +1173,6 @@ h2 {
 
   .hero h1 {
     font-size: clamp(2.5rem, 6vw, 4rem);
-  }
-
-  .magic-section {
-    gap: 50px;
   }
 
   .map-topbar {
@@ -1847,61 +1193,9 @@ h2 {
     top: 154px;
   }
 
-  .site-footer {
-    grid-template-columns: 1fr auto;
-  }
-
-  .site-footer nav:last-child {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (max-width: 760px) {
-  :root {
-    --header-height: 64px;
-  }
-
-  body {
-    font-size: 17px;
-  }
-
-  .site-header {
-    padding: 0 16px;
-  }
-
-  .brand img {
-    width: 38px;
-    height: 38px;
-  }
-
-  .main-nav {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 12px;
-    left: 12px;
-    display: none;
-    align-items: stretch;
-    padding: 10px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: rgb(11 30 24 / 0.98);
-    box-shadow: var(--shadow);
-  }
-
-  .main-nav.is-open {
-    display: grid;
-  }
-
-  .main-nav button,
-  .main-nav a {
-    min-height: 44px;
-    text-align: left;
-  }
-
-  .nav-toggle {
-    display: inline-grid;
-  }
-
   .hero {
     min-height: auto;
     grid-template-columns: 1fr;
@@ -1914,10 +1208,6 @@ h2 {
     background: linear-gradient(180deg, rgb(7 21 17 / 0.98), rgb(7 21 17 / 0.7));
   }
 
-  .hero-copy {
-    max-width: none;
-  }
-
   .hero h1 {
     max-width: none;
     font-size: clamp(2.15rem, 9vw, 3.15rem);
@@ -1927,33 +1217,6 @@ h2 {
     order: -1;
     width: min(100%, 560px);
     justify-self: start;
-  }
-
-  .hero-progress {
-    grid-column: auto;
-    grid-template-columns: 1fr;
-    gap: 13px;
-    font-size: 0.76rem;
-  }
-
-  .quest-next-goal {
-    padding: 13px 0 0;
-    border-top: 1px solid var(--line);
-    border-left: 0;
-  }
-
-  .magic-section {
-    grid-template-columns: 1fr;
-    gap: 48px;
-    padding: 82px 18px;
-  }
-
-  .magic-image-wrap {
-    order: 2;
-  }
-
-  .magic-copy {
-    order: 1;
   }
 
   .map-section {
@@ -1981,21 +1244,6 @@ h2 {
     left: 10px;
     grid-template-columns: 1fr auto;
     gap: 8px;
-  }
-
-  .map-title {
-    min-width: 0;
-    min-height: 48px;
-    padding: 7px 10px;
-  }
-
-  .map-title > svg,
-  .map-title span > span {
-    display: none;
-  }
-
-  .map-title strong {
-    font-size: 14px;
   }
 
   .map-level {
@@ -2079,39 +1327,6 @@ h2 {
     grid-template-columns: 1fr;
   }
 
-  .treasury-banner {
-    grid-template-columns: 1fr;
-    margin: 0 18px 88px;
-    padding: 28px 24px;
-  }
-
-  .treasury-copy,
-  .treasury-stats,
-  .treasury-actions {
-    grid-row: auto;
-    grid-column: auto;
-  }
-
-  .treasury-stats {
-    flex-wrap: wrap;
-  }
-
-  .treasury-actions {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .site-footer {
-    grid-template-columns: 1fr;
-    gap: 22px;
-    padding: 32px 20px 90px;
-  }
-
-  .site-footer nav,
-  .site-footer nav:last-child {
-    grid-column: auto;
-    flex-wrap: wrap;
-  }
-
   .treasury-modal {
     padding: 36px 20px 24px;
   }
@@ -2140,14 +1355,6 @@ h2 {
 }
 
 @media (max-width: 420px) {
-  .hero-actions {
-    display: grid;
-  }
-
-  .hero-actions .button {
-    width: 100%;
-  }
-
   .discovery-gate {
     padding: 28px 20px 23px;
   }
@@ -2161,28 +1368,9 @@ h2 {
     font-size: 1.65rem;
   }
 
-  .treasury-actions {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .site-header,
-  .map-title,
   .map-level,
   .map-search,
   .map-controls,
@@ -2192,73 +1380,14 @@ h2 {
     backdrop-filter: none;
   }
 }
-
-/* The main screen is a playable expedition board, not a landing-page funnel. */
-.game-intro {
-  display: grid;
-  max-width: 1380px;
-  grid-template-columns: minmax(0, 1fr) 280px;
-  align-items: center;
-  gap: clamp(36px, 7vw, 100px);
-  margin: 0 auto;
-  padding: clamp(42px, 5.5vw, 70px) 24px 30px;
-}
-
-.game-intro h1 {
-  max-width: 850px;
-  margin-bottom: 16px;
-  color: #f3e6be;
-  font-family: 'Cinzel Decorative', Georgia, serif;
-  font-size: clamp(2.35rem, 4.15vw, 4.1rem);
-  font-weight: 900;
-  line-height: 1.02;
-}
-
-.game-intro > div > p:last-child {
-  max-width: 68ch;
-  margin: 0;
-  color: var(--ink-soft);
-  font-size: 1.08rem;
-}
-
-.game-intro-status {
-  display: grid;
-  gap: 8px;
-  padding: 20px;
-  border: 1px solid var(--line-strong);
-  border-radius: 4px 18px 4px 18px;
-  background: linear-gradient(135deg, rgb(210 166 77 / .07), transparent 52%), rgb(11 35 27 / .9);
-  box-shadow: 0 18px 45px rgb(2 13 9 / .24), inset 0 1px rgb(255 226 158 / .06);
-  color: var(--ink);
-  cursor: pointer;
-  text-align: left;
-}
-
-.game-intro-status span {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--accent-strong);
-  font-size: .72rem;
-  font-weight: 700;
-  letter-spacing: .09em;
-  text-transform: uppercase;
-}
-
-.game-intro-status strong { display: flex; align-items: baseline; gap: 7px; font-family: 'Cinzel Decorative', Georgia, serif; font-size: 1.5rem; }
-.game-intro-status strong small { color: var(--ink-soft); font-family: 'Cormorant Garamond', Georgia, serif; font-size: .78rem; font-weight: 600; }
-.game-intro-status i { height: 4px; overflow: hidden; border-radius: 4px; background: rgb(235 213 163 / .1); }
-.game-intro-status b { display: block; min-width: 3px; height: 100%; background: var(--accent); }
-.game-intro-status em { display: flex; align-items: center; justify-content: space-between; margin-top: 2px; color: var(--ink-faint); font-size: .7rem; font-style: normal; }
-
 .expedition-board {
   display: grid;
-  max-width: 1420px;
+  max-width: var(--page-column);
   grid-template-columns: minmax(0, 1fr) 340px;
   align-items: stretch;
   gap: 16px;
   margin: 0 auto;
-  padding: clamp(22px, 3vw, 38px) 18px clamp(68px, 7vw, 96px);
+  padding: clamp(22px, 3vw, 38px) var(--page-gutter) clamp(68px, 7vw, 96px);
 }
 
 .expedition-board .map-section {
@@ -2395,7 +1524,7 @@ h2 {
 .field-guide {
   display: grid;
   width: 100%;
-  max-width: 1420px;
+  max-width: var(--page-column);
   grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
   grid-template-areas:
     'photo intro'
@@ -2404,7 +1533,7 @@ h2 {
   gap: 0;
   overflow: hidden;
   margin: 0 auto;
-  padding: 0 18px clamp(78px, 9vw, 120px);
+  padding: 0 var(--page-gutter) clamp(78px, 9vw, 120px);
 }
 
 .field-guide-intro {
@@ -2435,9 +1564,9 @@ h2 {
    through 1px gaps, same as .field-guide-steps. */
 .lore {
   width: 100%;
-  max-width: 1420px;
+  max-width: var(--page-column);
   margin: 0 auto;
-  padding: 0 18px clamp(78px, 9vw, 120px);
+  padding: 0 var(--page-gutter) clamp(78px, 9vw, 120px);
 }
 
 .lore-board {
@@ -2563,8 +1692,6 @@ h2 {
 .expedition-board .map-topbar { grid-template-columns: 124px minmax(280px, 390px); }
 .expedition-board .map-level { justify-self: start; }
 .expedition-board .map-search { justify-self: end; width: 100%; }
-.expedition-board .map-title { display: none; }
-
 @media (max-width: 1050px) {
   .expedition-board { grid-template-columns: 1fr; }
   .quest-panel { position: static; display: grid; height: auto; grid-template-columns: .75fr 1.25fr; }
@@ -2579,14 +1706,6 @@ h2 {
 }
 
 @media (max-width: 760px) {
-  .game-intro { width: 100vw; max-width: 100vw; grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 38px 18px 24px; }
-  .game-intro > div { min-width: 0; }
-  .game-intro h1 { width: calc(100vw - 36px); max-width: calc(100vw - 36px); font-size: clamp(1.9rem, 8vw, 2.25rem); overflow-wrap: anywhere; text-wrap: wrap; }
-  .game-intro > div > p:last-child { font-size: 1rem; }
-  .game-intro-status { grid-template-columns: 1fr; width: 100%; min-width: 0; }
-  .game-intro-status strong { font-size: 1.35rem; }
-  .game-intro-status i { grid-column: 1 / -1; }
-  .game-intro-status em { grid-column: 1 / -1; }
   .expedition-board { width: 100%; max-width: 100%; grid-template-columns: minmax(0, 1fr); overflow: hidden; padding: 18px 0 72px; }
   .expedition-board .map-section { width: 100%; max-width: 100%; overflow: hidden; }
   .atlas-heading { width: calc(100vw - 24px); max-width: calc(100vw - 24px); grid-template-columns: minmax(0, 1fr); gap: 7px; margin: 0 12px; padding: 16px 17px 15px; }
@@ -2603,7 +1722,7 @@ h2 {
     box-shadow: 0 22px 55px rgb(2 12 8 / .34);
   }
   .quest-panel { display: block; margin: 18px 12px 0; }
-  .field-guide { grid-template-columns: 1fr; grid-template-areas: 'intro' 'steps' 'photo'; grid-template-rows: auto; gap: 0; padding: 0 18px 90px; }
+  .field-guide { grid-template-columns: 1fr; grid-template-areas: 'intro' 'steps' 'photo'; grid-template-rows: auto; gap: 0; padding: 0 var(--page-gutter) 90px; }
   .field-guide-intro { padding: 26px 24px 24px; border: 1px solid var(--line-strong); border-bottom: 0; border-radius: 18px 18px 0 0; }
   .field-guide-intro .eyebrow { margin-bottom: 10px; }
   .field-guide-intro h2 { font-size: clamp(1.8rem, 9vw, 2.4rem); }
@@ -2612,7 +1731,7 @@ h2 {
   .field-guide-steps { border-left: 1px solid var(--line-strong); border-radius: 0; }
   .field-guide-photo { min-height: 290px; height: 42dvh; border-top: 0; border-radius: 0 0 18px 18px; }
   .field-guide-photo blockquote { right: 12px; bottom: 12px; left: 12px; text-align: center; }
-  .lore { padding: 0 18px 90px; }
+  .lore { padding: 0 var(--page-gutter) 90px; }
   .lore-gallery { gap: 7px; }
   .lore-intro { padding: 26px 24px 24px; }
   .lore-intro h2 { max-width: 100%; font-size: clamp(1.55rem, 7.4vw, 2.4rem); overflow-wrap: anywhere; text-wrap: wrap; }
@@ -2788,25 +1907,14 @@ h2 {
 }
 
 /* Consistent interaction feedback and readable game UI. */
-.brand,
-.footer-brand,
-.game-intro-status,
 .quest-progress-mini,
 .quest-kronika,
 .map-search button,
 .map-controls button,
-.treasury-toggle,
-.site-footer nav a {
+.treasury-toggle {
   transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease,
     box-shadow 180ms ease, filter 180ms ease, opacity 180ms ease, transform 180ms ease;
 }
-
-.brand img,
-.footer-brand img {
-  transition: filter 180ms ease, transform 180ms ease;
-}
-
-.gate-memory { font-size: .81rem; }
 .quest-panel-head > span { font-size: .74rem; }
 .quest-panel-head p { font-size: .84rem; }
 .quest-progress-mini span { font-size: .73rem; }
@@ -2848,22 +1956,6 @@ h2 {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .brand:hover,
-  .footer-brand:hover { color: var(--accent-strong); }
-
-  .brand:hover img,
-  .footer-brand:hover img {
-    filter: drop-shadow(0 0 8px rgb(235 198 111 / .42));
-    transform: rotate(-3deg) scale(1.05);
-  }
-
-  .main-nav button:hover,
-  .main-nav a:hover {
-    box-shadow: inset 0 -1px var(--accent);
-    transform: translateY(-1px);
-  }
-
-  .game-intro-status:hover,
   .quest-progress-mini:hover {
     border-color: var(--line-strong);
     color: var(--ink);
@@ -2899,15 +1991,9 @@ h2 {
     transform: translateY(-3px) rotate(-3deg);
   }
 
-  .site-footer nav a:hover {
-    color: var(--accent-strong);
-    text-decoration: underline;
-    text-underline-offset: 4px;
-  }
 }
 
 .quest-kronika > svg:last-child { transition: transform 180ms ease; }
-.game-intro-status:active,
 .quest-progress-mini:active,
 .quest-kronika:active,
 .map-search button:active,

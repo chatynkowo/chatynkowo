@@ -1,0 +1,253 @@
+/* ==========================================================================
+   The page base every entry point shares, imported by ui.css right after
+   the tokens: the two type families, the box model and document defaults,
+   the heading faces, the focus ring, the skip link and the eyebrow label.
+   Page stylesheets (styles.css, ranking.css, profile.css) lay their pages
+   out on top of this and never repeat it.
+   ========================================================================== */
+
+/* ---------- Fonts ---------- */
+@font-face {
+  font-family: 'Cinzel Decorative';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/assets/fonts/Cinzel_Decorative-700-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Cinzel Decorative';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/assets/fonts/Cinzel_Decorative-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+20AC, U+2122;
+}
+
+@font-face {
+  font-family: 'Cinzel Decorative';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/assets/fonts/Cinzel_Decorative-900-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Cinzel Decorative';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/assets/fonts/Cinzel_Decorative-900-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+20AC, U+2122;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/Cormorant_Garamond-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/Cormorant_Garamond-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+20AC, U+2122;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/assets/fonts/Cormorant_Garamond-600-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/assets/fonts/Cormorant_Garamond-600-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+20AC, U+2122;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/Cormorant_Garamond-400-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/Cormorant_Garamond-400-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+20AC, U+2122;
+}
+
+/* ---------- Document ---------- */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-height) + 22px);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100dvh;
+  background: var(--page);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+/* A step smaller on a phone, on every page alike. */
+@media (max-width: 760px) {
+  body {
+    font-size: 17px;
+  }
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+p,
+figure {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+h1,
+h2 {
+  font-family: 'Cinzel Decorative', Georgia, serif;
+  letter-spacing: -0.025em;
+}
+
+/* Cinzel Decorative has no lowercase — minuscules render as small caps — and
+   its kern table fuses the small-cap pair "he" into one epigraphic glyph
+   (-384/1000 em). Polish headings never hit that pair, but English is full of
+   it (Where, head, the), so the fusion reads as broken letters. Dropping the
+   kerning for non-Polish headings separates the pairs while keeping the same
+   tracking as Polish. :where() keeps specificity at plain h1/h2. */
+:where(:root:not(:lang(pl))) h1,
+:where(:root:not(:lang(pl))) h2 {
+  font-kerning: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent-strong);
+  outline-offset: 4px;
+}
+
+/* ---------- Page column ---------- */
+/* The width the page content grows to and the gutter it keeps from the
+   edge: the home page's boards and the leaderboard share the column, the
+   profile keeps its narrower reading column inside the same gutters. */
+:root {
+  --page-column: 1420px;
+  --page-gutter: 18px;
+}
+
+/* The way back to the game at the top of every page away from it
+   (components/SitePage.tsx). */
+.page-back {
+  justify-self: start;
+  margin-top: 24px;
+}
+
+/* ---------- Page shell ---------- */
+/* The canvas of every page: the night sky over the forest fading into the
+   page colour, clipped so nothing wide can scroll the page sideways. */
+.site-shell {
+  min-height: 100dvh;
+  overflow: clip;
+  background:
+    linear-gradient(180deg, rgb(5 16 13 / 0.32), var(--page) 31%),
+    url('/assets/img/background.webp') top center / max(1600px, 100vw) auto no-repeat,
+    var(--page);
+}
+
+/* ---------- Skip link ---------- */
+/* Above every layer, including an open dialog. */
+.skip-link {
+  position: fixed;
+  z-index: 3000;
+  top: 10px;
+  left: 10px;
+  padding: 9px 13px;
+  border-radius: var(--radius-small);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ---------- Eyebrow ---------- */
+/* The small capitals over a heading, with room for a leading icon. */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

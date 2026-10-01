@@ -5,6 +5,7 @@ import type { OAuthProvider, Session } from '@chatynkowo/api'
 import type { StoredFind } from '@chatynkowo/core'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import * as AppleAuthentication from 'expo-apple-authentication'
+import * as Crypto from 'expo-crypto'
 import i18n from '../i18n'
 import { APPLE_SIGN_IN, GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID, SUPABASE_ANON_KEY, SUPABASE_URL } from '../config'
 
@@ -71,7 +72,7 @@ if (googleOffered) GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID, i
 /* What a native sign-in hands over, or null when the seeker closed the
    dialog. Apple shares the name once, on the first sign-in, and never in
    the token; Google's name travels in the token's metadata. */
-type NativeCredential = { token: string; displayName: string | null }
+type NativeCredential = { token: string; displayName: string | null; nonce?: string }
 
 async function googleCredential(): Promise<NativeCredential | null> {
   await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true })
@@ -86,16 +87,21 @@ function isAppleCancellation(error: unknown): boolean {
 }
 
 async function appleCredential(): Promise<NativeCredential | null> {
+  /* The token carries the hash of a nonce only this attempt knows; the
+     backend checks it against the raw one, so a captured token is no use. */
+  const nonce = Crypto.randomUUID()
+  const hashedNonce = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nonce)
   try {
     const credential = await AppleAuthentication.signInAsync({
       requestedScopes: [
         AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
         AppleAuthentication.AppleAuthenticationScope.EMAIL,
       ],
+      nonce: hashedNonce,
     })
     if (!credential.identityToken) throw new Error('Apple sign-in returned no identity token.')
     const displayName = [credential.fullName?.givenName, credential.fullName?.familyName].filter(Boolean).join(' ') || null
-    return { token: credential.identityToken, displayName }
+    return { token: credential.identityToken, displayName, nonce }
   } catch (error) {
     if (isAppleCancellation(error)) return null
     throw error
@@ -113,7 +119,7 @@ export async function signIn(provider: OAuthProvider, onCredential: (displayName
     const credential = provider === 'google' ? await googleCredential() : await appleCredential()
     if (!credential) return { kind: 'cancelled' }
     onCredential(credential.displayName)
-    const session = await api.signInWithIdToken(supabase, provider, credential.token)
+    const session = await api.signInWithIdToken(supabase, provider, credential.token, credential.nonce)
     return { kind: 'ok', session, displayName: credential.displayName }
   } catch (error) {
     return { kind: 'failed', error }
@@ -135,7 +141,7 @@ export async function signOut() {
 /* The profile row, created on first contact with the name the sign-in
    handed over or the translated default. */
 export async function ensureProfile(session: Session, displayName: string | null = null) {
-  return supabase ? api.ensureProfile(supabase, session, { hint: displayName, fallback: i18n.t('ranking.defaultName') }) : null
+  return supabase ? api.ensureProfile(supabase, session, { hint: displayName, fallback: i18n.t('profile.defaultName') }) : null
 }
 
 export function providerAvatarUrl(session: Session) {

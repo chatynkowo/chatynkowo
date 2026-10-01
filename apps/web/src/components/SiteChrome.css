@@ -1,9 +1,10 @@
 .site-header {
+  /* The two pills on the right (the account, the language) share it. */
+  --header-pill-height: 36px;
   position: sticky;
   z-index: 1000;
   top: 0;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   height: var(--header-height, 72px);
   align-items: center;
   gap: 28px;
@@ -23,12 +24,13 @@
   font-family: 'Cinzel Decorative', Georgia, serif;
   font-weight: 700;
   text-decoration: none;
+  transition: color 180ms ease;
 }
 
 .brand img,
 .footer-brand img { width: 42px; height: 42px; object-fit: contain; transition: filter 180ms ease, transform 180ms ease; }
 
-.main-nav { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.main-nav { display: flex; flex: 1 1 auto; min-width: 0; align-items: center; justify-content: flex-end; gap: 4px; }
 .main-nav button,
 .main-nav a {
   padding: 9px 13px;
@@ -43,18 +45,43 @@
   transition: background 180ms ease, box-shadow 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
-.main-nav .nav-primary { border: 1px solid var(--line-strong); background: rgb(210 166 77 / .08); color: var(--ink); }
-.main-nav .nav-back { margin-right: 5px; color: var(--accent-strong); }
+.main-nav button:active,
+.main-nav a:active { transform: translateY(1px) scale(.985); }
+
 .main-nav .nav-arrow { display: none; }
 .nav-toggle { display: none; }
+
+/* The account (components/HeaderAccount.tsx): a pill like the language
+   menu's trigger, with the seeker's picture once signed in. */
+.header-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--header-pill-height);
+  padding: 6px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: rgb(210 166 77 / .06);
+  color: var(--ink-soft);
+  font-size: .84rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.header-account svg { color: var(--accent); }
+.header-account .avatar { width: 22px; height: 22px; font-size: .6rem; }
+.header-account__label { max-width: 10ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.header-account[aria-current] { background: rgb(210 166 77 / .14); color: var(--ink); }
 
 .language-menu { position: relative; display: inline-flex; }
 
 .language-menu-trigger {
   display: inline-flex;
+  min-height: var(--header-pill-height);
   align-items: center;
   gap: 7px;
-  padding: 7px 14px;
+  padding: 6px 14px;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: rgb(210 166 77 / .06);
@@ -66,6 +93,7 @@
   transition: background 180ms ease, color 180ms ease;
 }
 
+.language-menu-trigger__code { display: none; }
 .language-menu-trigger svg { color: var(--accent); transition: transform 180ms ease; }
 .language-menu-trigger[aria-expanded='true'] svg { transform: rotate(180deg); }
 
@@ -182,15 +210,31 @@
   .footer-brand:hover img { filter: drop-shadow(0 0 8px rgb(235 198 111 / .42)); transform: rotate(-3deg) scale(1.05); }
   .main-nav button:hover,
   .main-nav a:hover { background: rgb(210 166 77 / .11); box-shadow: inset 0 -1px var(--accent); color: var(--ink); transform: translateY(-1px); }
+  .header-account:hover { background: rgb(210 166 77 / .14); color: var(--ink); }
 }
 
-@media (max-width: 760px) {
+@media (prefers-reduced-transparency: reduce) {
+  .site-header { backdrop-filter: none; }
+}
+
+@media (max-width: 960px) {
+  .site-footer { grid-template-columns: 1fr auto; }
+  .site-footer nav:last-of-type { grid-column: 1 / -1; }
+}
+
+/* From 1120px up the row of the brand, the navigation, the account with
+   the longest name and the language fits on every page in both languages;
+   below it the navigation folds into the menu. */
+@media (max-width: 1119px) {
+  /* The bar is lower here; the token follows it, so scroll padding and
+     whatever else keeps clear of the bar follow too. */
+  :root { --header-height: 68px; }
+
   .site-header {
-    display: flex;
     width: 100%;
-    height: 68px;
+    height: var(--header-height);
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
     padding: 0 14px;
     border-bottom-color: rgb(225 195 127 / .22);
     background: linear-gradient(90deg, rgb(7 27 20 / .98), rgb(8 34 26 / .96));
@@ -271,15 +315,17 @@
     transition: transform 160ms ease;
   }
 
-  .main-nav .nav-primary { border: 0; border-top: 1px solid rgb(211 177 100 / .13); background: rgb(210 166 77 / .08); }
-  .main-nav .nav-primary .nav-back { display: none; }
-
   @keyframes mobile-menu-in {
     from { opacity: 0; transform: translateY(-8px) scale(.985); }
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
-  .language-menu { margin-left: auto; }
+  /* The account pill keeps its icon alone and takes the push to the right;
+     the menu follows it. */
+  .header-account { margin-left: auto; padding: 6px 10px; }
+  .header-account__label { display: none; }
   .language-menu-trigger { padding: 6px 11px; font-size: .78rem; }
+  .language-menu-trigger__name { display: none; }
+  .language-menu-trigger__code { display: inline; }
 
   .nav-toggle {
     display: inline-grid;
@@ -294,6 +340,15 @@
     box-shadow: inset 0 1px rgb(255 228 164 / .08);
     color: var(--accent-strong);
   }
+}
+
+@media (max-width: 760px) {
   .site-footer { grid-template-columns: 1fr; gap: 22px; padding: 32px 20px 90px; }
   .site-footer nav { flex-wrap: wrap; }
+}
+
+/* The narrowest phones: the wordmark gives way to the controls, the logo
+   stays. */
+@media (max-width: 374px) {
+  .brand span { display: none; }
 }

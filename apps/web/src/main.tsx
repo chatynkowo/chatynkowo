@@ -7,9 +7,12 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import './styles.css'
 import './i18n'
 import App from './App'
+import { AccountProvider } from './providers/AccountProvider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <AccountProvider>
+      <App />
+    </AccountProvider>
   </StrictMode>,
 )

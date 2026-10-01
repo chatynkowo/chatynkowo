@@ -19,7 +19,7 @@ packages/
     public/    the tree the site publishes as is: cottages/ (stories), data/ (manifests), assets/ (recordings, images)
     private/   the secret plaque codes and image originals; never published
     scripts/   the public code-hash lookup builder
-supabase/      backend description (README); the schema itself is not versioned here
+supabase/      backend description (README) and the Sign in with Apple script; the schema itself is not versioned here
 scripts/       repository-wide checks (conventions)
 ```
 
@@ -59,6 +59,9 @@ Supabase project.
 
 - `/` — the game and the Chatynkowo Atlas (`src/main.tsx`),
 - `/ranking.html` — the players' leaderboard (`src/ranking-main.tsx`),
+- `/profile.html` — the seeker's account: the way in, the nickname and
+  picture of the leaderboard entry, the finds the account holds, the way
+  out (`src/profile-main.tsx`),
 - `/admin/` — the content and location editor (`admin/editor.ts`).
 
 Vite builds all entry points in one process. In development the plugin in
@@ -136,25 +139,51 @@ The editor's own interface copy is Polish, for the Polish content team; that is 
 The web app has one shared interface layer, `apps/web/src/ui`, and every
 page and feature component builds on it instead of re-implementing pieces:
 
-- `ui.css` — the primitives: buttons, icon buttons, modal dialogs. Each
+- `ui.css` — the primitives: buttons, icon buttons, modal dialogs, avatars,
+  notices. Each
   entry point imports it first; page stylesheets extend these rules and
   never redefine them. The design tokens it starts with (`--page`, `--ink`,
   `--accent`, `--radius`, `--map-*`, the type families) are generated into
   `ui/tokens.css` from `packages/theme` by `scripts/build-tokens-css.ts`
   before every dev server start, build and check — edit the theme, not the
-  stylesheet.
+  stylesheet. `ui/base.css`, imported next, is the page base every entry
+  shares: the fonts, the document defaults, the heading faces, the focus
+  ring, the skip link and the eyebrow label.
+- `components/SiteChrome.css` — the header, the navigation, the account
+  control, the language menu and the footer, owned by the components that
+  render them (`SiteHeader`, `HeaderAccount`, `LanguageMenu`,
+  `SiteFooter`); a page never restyles the chrome.
 - `icons.ts` — the icon vocabulary. Phosphor is the only icon library and
   this is the only module that imports it; components use the semantic names
   (`CloseIcon`, `ChronicleIcon`, …) and the `iconSize` scale. Swapping a
   glyph or the library is a change in one file.
 - `Button`, `LinkButton`, `IconButton` — the three button contracts
   (`primary`, `ghost`, `subtle`; icon-only controls require a label).
+- `Avatar` — a seeker's picture or their initials; `Notice` — the one
+  inline message (a note, a receipt, a complaint) with the live-region
+  role its tone implies.
 - `Modal` with `useModalLayer` — one dialog for the whole site: backdrop,
   card, close control, Escape on the topmost layer only, page lock and inert
   background, focus into the dialog and back to the opener. Mount it only
   while open and give the card a page-specific class for its look.
 - Specialised controls (map toolbar, audio transport, the Kronika toggle)
   keep their own styles but take their icons from the vocabulary.
+
+Every page is `components/SitePage` around its own `main`: the shell, the
+skip link, the header with the navigation for that page and the account
+control, the way back to the game at the top of every other page, the
+footer, and the document title and description that follow the language.
+The home page's boards and the leaderboard lay their content in the same
+column (`--page-column` in `ui/base.css`); the profile keeps a narrower
+reading column inside the same gutters (`--page-gutter`). The account comes from `providers/AccountProvider`
+(`useAccount`, `useAccountExchange`), mounted by each entry and mirroring
+the app's `SessionProvider`: the session, the profile row read once per
+seeker, the way in and out, and the exchange of finds with the account.
+Feature components live in `src/features/<feature>/` with their own
+stylesheet (`account`, `ranking`), as in `apps/mobile/src/features`. Copy
+that both clients render goes to the shared dictionaries (the account
+block is the shared `profile.*` group); what only the site says stays in
+the site's set (`profilePage.*`).
 
 Markup that React does not render, i.e. the legal pages and the admin
 editor, uses the same Phosphor glyphs through an SVG sprite:

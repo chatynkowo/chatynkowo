@@ -14,6 +14,7 @@ import { localFinds, mergeAccountFinds } from './persistence'
 
 export type { LeaderboardRow, OAuthProvider, Profile, Session } from '@chatynkowo/api'
 export { localFinds, totalCottages }
+export { OAUTH_PROVIDERS } from '@chatynkowo/api'
 
 export const configured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
 export const supabase = configured ? api.createChatynkowoClient({ url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY }) : null
@@ -22,9 +23,20 @@ export async function getSession() {
   return supabase ? api.getSession(supabase) : null
 }
 
-export function signInWith(provider: api.OAuthProvider, redirectTo = location.href) {
-  if (!supabase) throw new Error('The leaderboard backend is not configured.')
-  return api.signInWithOAuth(supabase, provider, redirectTo)
+/* The providers the backend offers; none without a backend. */
+export async function enabledProviders() {
+  return supabase ? api.enabledProviders({ url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY }) : []
+}
+
+export async function signInWith(provider: api.OAuthProvider, redirectTo: string) {
+  if (!supabase) throw new Error('The backend is not configured.')
+  await api.signInWithOAuth(supabase, provider, redirectTo)
+}
+
+/* Every change of the session: a sign-in read from the URL, a token
+   refresh, a sign-out here or in another tab. */
+export function onSessionChange(listener: (session: Session | null) => void): () => void {
+  return supabase ? api.onSessionChange(supabase, listener) : () => {}
 }
 
 export async function signOut() {
@@ -34,7 +46,7 @@ export async function signOut() {
 /* The profile row, created on first contact with the provider's name or
    the translated default. */
 export async function ensureProfile(session: Session) {
-  return supabase ? api.ensureProfile(supabase, session, { fallback: i18n.t('ranking.defaultName') }) : null
+  return supabase ? api.ensureProfile(supabase, session, { fallback: i18n.t('profile.defaultName') }) : null
 }
 
 export function providerAvatarUrl(session: Session) {
@@ -54,12 +66,6 @@ export async function syncAccount(session: Session, merge: MergeRemoteFinds = me
   if (!supabase) return
   merge(await api.fetchFinds(supabase, session))
   await api.syncFinds(supabase, session, localFinds(), await totalCottages())
-}
-
-/* The exchange for whoever is signed in on this browser, if anyone. */
-export async function syncSignedInAccount(merge?: MergeRemoteFinds): Promise<void> {
-  const session = await getSession()
-  if (session) await syncAccount(session, merge)
 }
 
 /* A fresh discovery goes to the account when someone is signed in; the

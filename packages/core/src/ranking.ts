@@ -18,6 +18,21 @@ export function formatElapsed(value: number | string | null | undefined): string
   return minutes ? `${minutes} min` : `${Math.floor(seconds)} s`
 }
 
+/* What a profile editor may change. */
+export type ProfileFields = { display_name: string; avatar_url: string | null }
+
+/* The patch a profile editor sends, or null when nothing would change: an
+   empty nickname keeps the current one or falls back to the caller's
+   default; the avatar is the provider's picture or nothing. */
+export function profilePatch(
+  current: ProfileFields,
+  input: { name: string; showAvatar: boolean; avatarUrl: string | null; fallbackName: string },
+): ProfileFields | null {
+  const display_name = input.name.trim() || current.display_name || input.fallbackName
+  const avatar_url = input.showAvatar ? input.avatarUrl : null
+  return display_name === current.display_name && avatar_url === current.avatar_url ? null : { display_name, avatar_url }
+}
+
 /* Up to two initials for an avatar placeholder. */
 export function initials(name: string): string {
   return name

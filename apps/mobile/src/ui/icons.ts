@@ -117,14 +117,16 @@ export const CreedIcon = HandHeartIcon
 export const ElfIcon = SparkleIcon
 export const ForestIcon = TreeEvergreenIcon
 
+/* ---------- Domain: the account ---------- */
+export const ProfileIcon = UserCircleIcon
+export const SignOutIcon = PhosphorSignOut
+
 /* ---------- Brands ---------- */
 export const InstagramIcon = InstagramLogoIcon
 export const FacebookIcon = FacebookLogoIcon
 
 /* ---------- App-only roles (native surfaces the site does not have) ---------- */
 export const CameraIcon = PhosphorCamera
-export const ProfileIcon = UserCircleIcon
-export const SignOutIcon = PhosphorSignOut
 export const OfflineIcon = WifiSlashIcon
 export const SyncIcon = CloudArrowUpIcon
 export const DownloadIcon = DownloadSimpleIcon

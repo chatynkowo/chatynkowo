@@ -28,7 +28,7 @@ export function SignInButtons({ onSignedIn }: { onSignedIn?: () => void }) {
     <View style={styles.buttons}>
       {account.providers.includes('google') ? (
         <Button variant="primary" block busy={account.busy} onPress={() => void signIn('google')}>
-          {t('ranking.signInGoogle')}
+          {t('profile.signInGoogle')}
         </Button>
       ) : null}
       {account.providers.includes('apple') ? (
@@ -43,7 +43,7 @@ export function SignInButtons({ onSignedIn }: { onSignedIn?: () => void }) {
             buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE_OUTLINE}
             cornerRadius={radius.control}
             style={styles.apple}
-            accessibilityLabel={t('ranking.signInApple')}
+            accessibilityLabel={t('profile.signInApple')}
             onPress={() => void signIn('apple')}
           />
         </View>

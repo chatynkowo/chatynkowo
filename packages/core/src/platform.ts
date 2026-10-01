@@ -10,7 +10,7 @@ export interface ResponseLike {
   text(): Promise<string>
 }
 
-export type FetchInit = { cache?: 'default' | 'no-store' | 'no-cache' | 'reload' | 'force-cache' }
+export type FetchInit = { cache?: 'default' | 'no-store' | 'no-cache' | 'reload' | 'force-cache'; headers?: Record<string, string> }
 
 export type FetchLike = (url: string, init?: FetchInit) => Promise<ResponseLike>
 

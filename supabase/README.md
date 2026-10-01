@@ -9,7 +9,7 @@ versioned in the repository: changes are made in the project, and a local
 
 | Element | Where | Used by |
 |---|---|---|
-| Google and Apple sign-in (browser OAuth on the site, native id tokens in the app) | Supabase Auth | `/ranking.html`, `index.html` (the account exchange), the app |
+| Google and Apple sign-in (browser OAuth on the site, native id tokens in the app) | Supabase Auth | `/profile.html` (the way in and the profile), `index.html` and `/ranking.html` (the account exchange), the app |
 | `profiles` — nickname, avatar, `public_id`, `completed_at` | Postgres | leaderboard, profile |
 | `finds` — discovered cottages per account | Postgres | Kronika sync |
 | `leaderboard(p_total)` — the ranking | SQL function | `/ranking.html` |
@@ -78,8 +78,8 @@ The site and the app share one Supabase Auth. The site signs in through the
 browser OAuth flow (Google, Apple); the app hands the providers' native id
 tokens to `signInWithIdToken`. Apple is offered on the site as well because
 an account that began in the iOS app must be reachable from a browser.
-Nothing here lives in the repository: it is the project's dashboard and the
-two consoles.
+Google is set up in the project's dashboard and Google's console; Apple is
+applied by a script in this directory from the facts in `supabase/.env`.
 
 ### Google
 
@@ -98,26 +98,56 @@ two consoles.
 2. Supabase, Authentication, Providers, Google: the web client's id and
    secret, and under "Authorized Client IDs" the iOS and the Android client
    ids, so the backend accepts the native tokens.
-3. Supabase, Authentication, URL configuration: the site's addresses
-   (`https://www.chatynkowo.pl/ranking.html`, `https://chatynkowo.pl/ranking.html`)
-   among the redirect URLs for the browser flow.
+3. Supabase, Authentication, URL configuration: the profile page, where
+   the browser flow starts and returns
+   (`https://www.chatynkowo.pl/profile.html`, `https://chatynkowo.pl/profile.html`,
+   and the dev server's `/profile.html` for local work), among the
+   redirect URLs.
 
 ### Apple
 
-1. Apple Developer: the App ID `pl.chatynkowo.app` with the Sign in with
-   Apple capability (`app.config.ts` requests it in every build through
-   `ios.usesAppleSignIn`, unless `EXPO_PUBLIC_APPLE_SIGN_IN=0`); a Services ID for the site (its return URL is the project's
-   callback, `https://wqlodfnukdjrulcvzvtk.supabase.co/auth/v1/callback`);
-   a Sign in with Apple key (`.p8`) for that Services ID.
-2. Supabase, Authentication, Providers, Apple: the Services ID as the client
-   id with the secret generated from the key (team id, key id, the `.p8`),
-   and under "Authorized Client IDs" the app's bundle id
-   `pl.chatynkowo.app`, which is what the native identity tokens carry.
+Sign in with Apple needs the paid Apple Developer Program: a free Personal
+Team can create neither a Services ID nor a key.
+
+1. Apple Developer, three records: the App ID `pl.chatynkowo.app` with the
+   Sign in with Apple capability (`app.config.ts` requests it in every build
+   through `ios.usesAppleSignIn`, unless `EXPO_PUBLIC_APPLE_SIGN_IN=0`); a
+   Services ID for the site, with Sign in with Apple configured for the
+   domain `wqlodfnukdjrulcvzvtk.supabase.co` and the return URL
+   `https://wqlodfnukdjrulcvzvtk.supabase.co/auth/v1/callback`; a Sign in
+   with Apple key (the `.p8` file, downloadable once).
+2. `supabase/.env` (from `.env.example`): the key id and the path of the
+   `.p8`, the Services ID and a personal access token. The Apple team and
+   the bundle id are not repeated: the script reads them from the app's
+   configuration (`APPLE_TEAM_ID` in `apps/mobile/.env`, `app.json`), and
+   the project from `supabase link` (above). Then:
+
+   ```bash
+   pnpm auth:apple
+   ```
+
+   `supabase/apple-sign-in.mjs` builds the client secret Apple expects (a
+   JWT signed with the key, valid six months, the most Apple allows) and
+   switches the provider on through the Supabase Management API with the
+   Services ID and the bundle id as its client ids: the first serves the
+   browser flow, the second lets the backend accept the app's identity
+   tokens. The script prints the secret's expiry date; run it again before
+   then, nothing else changes. `pnpm auth:apple --print` shows what would
+   be sent without sending it; the dashboard (Authentication, Providers,
+   Apple) accepts the same values by hand.
+3. Nothing to add on the site or in the app: the site offers the Apple
+   button once the provider is on, the app once its build carries the
+   capability.
 
 ### What a seeker sees
 
-Without the Google client id the app shows only the Apple button on iOS and
-no account controls on Android; without the Apple capability in the build
-(a free Personal Team cannot sign it) the Apple button stays away. The
-Kronika works the same either way: an account only collects what the
-devices found and hands it back to each of them.
+The site signs in on its profile page, with a button per provider
+switched on in the project (Authentication, Providers), read from the auth
+settings when the page loads: until Apple is set up there, only Google
+appears. The header of every page shows the way in, or the signed-in
+seeker's name; the ranking only points to the profile. Without the Google client id
+the app shows only the Apple button on iOS and no account controls on
+Android; without the Apple capability in the build (a free Personal Team
+cannot sign it) the Apple button stays away. The Kronika works the same
+either way: an account only collects what the devices found and hands it
+back to each of them.

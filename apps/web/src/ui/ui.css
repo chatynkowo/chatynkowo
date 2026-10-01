@@ -1,9 +1,10 @@
 /* ==========================================================================
    Shared interface layer: the design tokens (generated from the theme
-   package) and the primitives every page uses (buttons, icon buttons,
-   modal dialogs). Each entry point imports this file first, so page
-   stylesheets (styles.css, ranking.css) extend or override these rules and
-   never redefine them.
+   package), the page base (base.css: fonts, document defaults, skip link,
+   eyebrow) and the primitives every page uses (buttons, icon buttons,
+   modal dialogs, avatars, notices). Each entry point imports this file
+   first, so page stylesheets (styles.css, ranking.css, profile.css) extend
+   or override these rules and never redefine them.
    ========================================================================== */
 
 /* ---------- Design tokens ---------- */
@@ -12,6 +13,9 @@
    --space-*, --icon-*, --map-* and the type families. Edit the tokens
    there; both clients read the same values. */
 @import './tokens.css';
+
+/* ---------- Page base ---------- */
+@import './base.css';
 
 /* ---------- Buttons (ui/Button.tsx) ---------- */
 .button {
@@ -41,8 +45,13 @@
 }
 
 .button:disabled {
-  cursor: wait;
+  cursor: not-allowed;
   opacity: 0.7;
+}
+
+/* An action in flight (the control says so with aria-busy). */
+.button[aria-busy='true'] {
+  cursor: wait;
 }
 
 .button-primary {
@@ -149,4 +158,47 @@ body.modal-open {
 
 .modal-emblem {
   color: var(--accent-strong);
+}
+
+/* ---------- Avatars (ui/Avatar.tsx) ---------- */
+.avatar {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #496b50, #233f31);
+  color: var(--ink);
+  font-family: 'Cinzel Decorative', Georgia, serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  object-fit: cover;
+}
+
+/* ---------- Notices (ui/Notice.tsx) ---------- */
+.notice {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.notice-success,
+.notice-error {
+  padding: 9px 12px;
+  border: 1px solid;
+  border-radius: var(--radius-small);
+  font-size: 0.86rem;
+}
+
+.notice-success {
+  border-color: color-mix(in srgb, var(--success) 40%, transparent);
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+  color: var(--success);
+}
+
+.notice-error {
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
 }
