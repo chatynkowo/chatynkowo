@@ -29,7 +29,10 @@ export type RewardCardProps = {
 
 export const RewardCard = memo(function RewardCard({ level, earned, found, required, unseen, enterIndex, onPress }: RewardCardProps) {
   const { t } = useTranslation()
-  /* The glow needs the art's size, which the flexible column decides. */
+  /* The glow needs the art's size, which the flexible column decides. The
+     picture waits for it too: mounted in the one-point box the glow starts
+     with, it was decoded on Android at that size (a few pixels) and never
+     fetched again once the box grew, so the card showed a blur. */
   const [artSize, setArtSize] = useState(0)
   const showRing = !earned && typeof required === 'number' && required > 0
   const state = earned ? t('treasury.badgeEarned') : t('treasury.badgeLocked')
@@ -39,7 +42,9 @@ export const RewardCard = memo(function RewardCard({ level, earned, found, requi
   const art = (
     <View style={[styles.art, artSize ? { width: artSize } : null]}>
       {level.image ? (
-        <ContentImage uri={contentUrl(level.image)} policy="disk" style={[styles.image, !earned && styles.imageLocked]} />
+        artSize > 0 ? (
+          <ContentImage uri={contentUrl(level.image)} policy="disk" style={[styles.image, !earned && styles.imageLocked]} />
+        ) : null
       ) : earned ? (
         <RewardIcon size={iconSize.hero} weight="fill" color={colors.accentStrong} />
       ) : (
