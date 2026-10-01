@@ -8,8 +8,8 @@ import { codeFromScan } from '@chatynkowo/core'
 import { ScannerViewfinder, type ViewfinderState } from '../src/features/code/ScannerViewfinder'
 import { useCodeEntry, type ResolveOutcome } from '../src/features/code/useCodeEntry'
 import { haptic } from '../src/lib/haptics'
-import { useContent } from '../src/providers'
-import { Button, CameraIcon, CrossfadeText, KeyIcon, Text, colors, headerRightItems, iconSize, mapPalette, radius, sizes, space } from '../src/ui'
+import { useCloseModal, useContent } from '../src/providers'
+import { Button, CameraIcon, CrossfadeText, KeyIcon, NATIVE_HEADER_HEIGHT, Text, colors, headerRightItems, iconSize, mapPalette, radius, sizes, space } from '../src/ui'
 
 /* The QR scanner: the camera under a transparent bar with the torch and
    close items, gold corner marks to aim with, and a pill that says what is
@@ -25,8 +25,6 @@ const MISS_NOTICE_MS = 2000
 const SCAN_THROTTLE_MS = 250
 /* The story arrives after the accepted line has been read. */
 const OPEN_STORY_MS = 500
-/* Height of the transparent native bar, kept clear above the viewfinder. */
-const BAR_HEIGHT = 56
 
 type Notice = 'read' | 'miss' | null
 
@@ -144,10 +142,7 @@ export default function ScanScreen() {
     [lock, miss, submit],
   )
 
-  const close = useCallback(() => {
-    if (router.canGoBack()) router.back()
-    else router.replace('/')
-  }, [router])
+  const close = useCloseModal()
 
   const toggleTorch = useCallback(() => {
     haptic('select')
@@ -187,7 +182,7 @@ export default function ScanScreen() {
   if (!permission.granted) {
     const blocked = permission.canAskAgain === false
     return (
-      <View style={[styles.screen, styles.ask, { paddingTop: insets.top + BAR_HEIGHT + space.lg, paddingBottom: insets.bottom + space.xl }]}>
+      <View style={[styles.screen, styles.ask, { paddingTop: insets.top + NATIVE_HEADER_HEIGHT + space.lg, paddingBottom: insets.bottom + space.xl }]}>
         <Stack.Screen options={headerItems} />
         <View style={styles.askIcon}>
           <CameraIcon size={iconSize.emblem} weight="duotone" color={colors.accentStrong} />
@@ -224,7 +219,7 @@ export default function ScanScreen() {
         active={focused && appActive && !locked}
         onBarcodeScanned={handleScan}
       />
-      <View pointerEvents="none" style={[styles.aim, { paddingTop: insets.top + BAR_HEIGHT, paddingBottom: insets.bottom + space.xl + sizes.button + space.xl }]}>
+      <View pointerEvents="none" style={[styles.aim, { paddingTop: insets.top + NATIVE_HEADER_HEIGHT, paddingBottom: insets.bottom + space.xl + sizes.button + space.xl }]}>
         <ScannerViewfinder state={viewfinder} />
       </View>
       <View style={[styles.pill, { bottom: insets.bottom + space.xl }]} accessibilityLiveRegion="polite">

@@ -59,7 +59,7 @@ function PinFace({ palette, active, customImage }: { palette: PinPalette; active
           </LinearGradient>
         </Defs>
         <Path d={TEARDROP} fill="url(#pin)" stroke={border} strokeWidth={2} />
-        <Path d={TEARDROP} fill="none" stroke="rgba(247, 211, 129, 0.14)" strokeWidth={5} />
+        <Path d={TEARDROP} fill="none" stroke={mapPalette.pinHalo} strokeWidth={5} />
       </Svg>
       <View style={styles.pinContent}>
         {customImage ? (
@@ -156,7 +156,7 @@ export function ClusterBadge({ count }: { count: number }) {
       </Svg>
       <View style={styles.clusterContent}>
         <CottageIcon size={iconSize.sm} weight="fill" color={mapPalette.clusterInk} />
-        <Text weight="bold" style={styles.clusterCount}>
+        <Text weight="bold" variant="compact" style={styles.clusterCount}>
           {count}
         </Text>
       </View>
@@ -237,8 +237,6 @@ const styles = StyleSheet.create({
   },
   clusterCount: {
     color: mapPalette.clusterInk,
-    fontSize: 16,
-    lineHeight: 20,
   },
   user: {
     width: 32,

@@ -9,7 +9,7 @@ import { Screen, space, useTabBarClearance } from '../../../src/ui'
 export default function AboutScreen() {
   const tabBarClearance = useTabBarClearance()
   return (
-    <Screen mode="scroll" contentStyle={{ gap: space.xl, paddingBottom: space.xxl + tabBarClearance }}>
+    <Screen contentStyle={{ gap: space.xl, paddingBottom: space.xxl + tabBarClearance }}>
       <LoreIntro />
       <CreedCard />
       <LoreQuestions />

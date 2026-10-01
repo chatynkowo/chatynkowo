@@ -10,11 +10,15 @@ export const SUPABASE_ANON_KEY: string = process.env.EXPO_PUBLIC_SUPABASE_ANON_K
 /* Origin the published content (data/, cottages/, assets/) is read from. */
 export const CONTENT_BASE_URL: string = process.env.EXPO_PUBLIC_CONTENT_BASE_URL || 'https://www.chatynkowo.pl'
 
-/* Native sign-in stays hidden until the providers are configured in the
-   backend; the app is fully usable signed out, like the site. */
-export const AUTH_ENABLED: boolean = process.env.EXPO_PUBLIC_AUTH_ENABLED === 'true'
-
+/* Which sign-ins the build offers (supabase/README.md, "Sign-in providers");
+   the app is fully usable signed out, like the site. Google needs the
+   backend's web client id, whose tokens the native flow mints, and on iOS
+   its own client id as well; Apple is on unless a build cannot carry the
+   capability (a free Personal Team), which app.config.ts reads from the
+   same variable. */
 export const GOOGLE_WEB_CLIENT_ID: string = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || ''
+export const GOOGLE_IOS_CLIENT_ID: string = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || ''
+export const APPLE_SIGN_IN: boolean = process.env.EXPO_PUBLIC_APPLE_SIGN_IN !== '0'
 
 /* Storage keys, all in one place so a schema bump is a one-line change. */
 export const STORAGE_KEYS = {
@@ -29,4 +33,6 @@ export const STORAGE_KEYS = {
   /* Reward ids the player has already viewed in the Kronika; earned minus
      these is the tab badge. */
   rewardsSeen: 'chatynkowo:rewards-seen:v1',
+  /* The maps app the seeker chose for "Navigate"; a device preference. */
+  mapsApp: 'chatynkowo:maps-app',
 } as const

@@ -4,8 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import type { Cottage } from '@chatynkowo/core'
 import { CottageDirectory } from '../src/features/cottages/CottageDirectory'
-import { useContent, useProgress } from '../src/providers'
-import { colors, space } from '../src/ui'
+import { useCloseModal, useContent, useProgress } from '../src/providers'
+import { colors, readable, space } from '../src/ui'
 
 /* The cottage directory: a page sheet over the Atlas or the Kronika with
    every cottage, the found ones first, a search box and a filter. The
@@ -27,12 +27,7 @@ export default function CottagesScreen() {
     [router],
   )
 
-  /* Back to the screen beneath, or to the Atlas afresh when the directory
-     was the entry point of a link. */
-  const close = useCallback(() => {
-    if (router.canGoBack()) router.back()
-    else router.replace('/')
-  }, [router])
+  const close = useCloseModal()
 
   /* iOS presents the sheet below the status bar; Android draws it full
      screen, so the status bar's height is added there. */
@@ -47,6 +42,7 @@ export default function CottagesScreen() {
 
 const styles = StyleSheet.create({
   screen: {
+    ...readable,
     flex: 1,
     paddingHorizontal: space.lg,
     backgroundColor: colors.pageRaised,

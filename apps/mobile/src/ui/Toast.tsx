@@ -3,7 +3,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, { FadeInDown, FadeInUp, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useActiveToast, useToast, useToastTimer, type ActiveToast, type ToastTone } from '../providers/ToastProvider'
+import { useActiveToast, useToast, useToastClearance, useToastTimer, type ActiveToast, type ToastTone } from '../providers/ToastProvider'
 import { FoundIcon, ShieldIcon, SyncIcon, WarningIcon, type Icon } from './icons'
 import { DURATIONS, ReduceMotion, SPRINGS, leaveDown, leaveUp } from './motion'
 import { PressableScale } from './PressableScale'
@@ -17,8 +17,6 @@ import { colors, iconSize, radius, space } from './tokens'
    its timer while a finger rests on it and leaves the way it came. A newer
    toast replaces the pill outright. */
 
-export { useToast }
-export type { ToastOptions, ToastTone } from '../providers/ToastProvider'
 
 const toneIcon: Record<ToastTone, Icon> = {
   info: SyncIcon,
@@ -41,9 +39,6 @@ const toneInk: Record<ToastTone, string> = {
   error: colors.danger,
 }
 
-/* Clearance above the Atlas's bottom row (which sits on the tab bar) for
-   'bottom' placement. */
-const BOTTOM_CLEARANCE = 120
 /* A flick past this distance or speed, towards the edge, dismisses. */
 const DISMISS_DISTANCE = 24
 const DISMISS_VELOCITY = 600
@@ -61,6 +56,7 @@ function ToastPill({ toast }: { toast: ActiveToast }) {
   const { pause, resume } = useToastTimer()
   const insets = useSafeAreaInsets()
   const tabBarHeight = useTabBarHeight()
+  const clearance = useToastClearance()
   const atBottom = toast.placement === 'bottom'
   const shift = useSharedValue(0)
   const fade = useSharedValue(1)
@@ -98,7 +94,8 @@ function ToastPill({ toast }: { toast: ActiveToast }) {
   const motion = useAnimatedStyle(() => ({ transform: [{ translateY: shift.value }], opacity: fade.value }))
 
   const Glyph = toneIcon[toast.tone]
-  const position = atBottom ? { bottom: (tabBarHeight || insets.bottom) + BOTTOM_CLEARANCE } : { top: insets.top + space.md }
+  /* Above the tab bar, the screen's bottom chrome and a breath. */
+  const position = atBottom ? { bottom: (tabBarHeight || insets.bottom) + space.lg + clearance + space.md } : { top: insets.top + space.md }
   const entering = (atBottom ? FadeInUp : FadeInDown).springify().damping(20).reduceMotion(ReduceMotion.System)
 
   return (

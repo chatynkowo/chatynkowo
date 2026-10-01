@@ -29,8 +29,6 @@ export type ContentValue = {
      reward's threshold. */
   total: number
   status: ContentStatus
-  /* The first resolution is done (cache, network or error). */
-  settled: boolean
   /* The cottages on screen came from the cache and are older than their max
      age; a refresh is under way if the network allows it. */
   stale: boolean
@@ -53,14 +51,7 @@ const ContentContext = createContext<ContentValue | null>(null)
 
 /* Image warming is a convenience; it must never surface an error. */
 function warmImages(uris: string[]) {
-  if (!uris.length) return
-  try {
-    void Promise.resolve()
-      .then(() => prefetchContent(uris))
-      .catch(() => {})
-  } catch {
-    // The stub or the native module is unavailable: images load on demand.
-  }
+  if (uris.length) void prefetchContent(uris)
 }
 
 export function ContentProvider({ initial, children }: { initial: BootResult; children: ReactNode }) {
@@ -76,7 +67,6 @@ export function ContentProvider({ initial, children }: { initial: BootResult; ch
   const [lookup, setLookup] = useState<CodeLookup | null>(() => boot.lookup?.value ?? null)
   const [status, setStatus] = useState<ContentStatus>(boot.cottages ? 'ready' : 'loading')
   const [lookupStatus, setLookupStatus] = useState<ContentStatus>(boot.lookup ? 'ready' : 'loading')
-  const [settled, setSettled] = useState(Boolean(boot.cottages))
   const [stale, setStale] = useState(() => Boolean(boot.cottages) && !isFresh(boot.cottages, CACHE_MAX_AGE_MS.stories))
 
   /* Latest values for the loaders, which are subscribed once. */
@@ -135,9 +125,6 @@ export function ContentProvider({ initial, children }: { initial: BootResult; ch
             /* Nothing to show for this language: an error state. Content
                already on screen (previous language, earlier load) stays. */
             setStatus((current) => (current === 'ready' ? current : 'error'))
-          })
-          .finally(() => {
-            if (alive()) setSettled(true)
           }),
       )
     }
@@ -272,14 +259,13 @@ export function ContentProvider({ initial, children }: { initial: BootResult; ch
       lookupStatus,
       total: cottages.length,
       status,
-      settled,
       stale,
       refresh,
       refreshLookup,
       cottageBySlug,
       prefetchStoryPhotos,
     }),
-    [language, cottages, rewards, lookup, lookupStatus, status, settled, stale, refresh, refreshLookup, cottageBySlug, prefetchStoryPhotos],
+    [language, cottages, rewards, lookup, lookupStatus, status, stale, refresh, refreshLookup, cottageBySlug, prefetchStoryPhotos],
   )
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>

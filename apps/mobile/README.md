@@ -25,10 +25,17 @@ npx expo run:ios                    # macOS only
 npx expo start --dev-client         # later starts, with the client already installed
 ```
 
-The native projects (`android/`, `ios/`) are generated from `app.json` by
-continuous native generation and are not committed; `expo run:*` creates
-them on demand. After changing `app.json` or adding a native module, run
+The native projects (`android/`, `ios/`) are generated from `app.json` (and
+`app.config.ts`, which adds what depends on the environment) by continuous
+native generation and are not committed; `expo run:*` creates them on
+demand. After changing either file or adding a native module, run
 `npx expo prebuild --clean` or simply `expo run:*` again.
+
+Tablets are first-class: the iPhone keeps portrait, the iPad takes every
+orientation (`UISupportedInterfaceOrientations~ipad`), and since iPadOS 26
+runs apps in windows of any shape, reading content keeps to the readable
+width (`sizes.readable`, the `readable` column style in `src/ui`) while the
+Atlas stays full-bleed.
 
 Configuration comes from `EXPO_PUBLIC_*` variables in `apps/mobile/.env`
 (template: `.env.example`); without the file the app uses the production
@@ -122,14 +129,14 @@ app/                     expo-router routes
   (tabs)/ranking/        its own native stack: the leaderboard list, the rules and share header items
   (tabs)/profile/        its own native stack: grouped settings (account, language, lore, legal, social),
                          about.tsx (the lore sections) and guide.tsx (the onboarding pager replayed)
-  code.tsx               the code entry as a form sheet (auto-submits at the fourth digit)
+  code.tsx               the code entry as a sheet (auto-submits at the fourth digit)
   scan.tsx               the QR scanner, full screen under a transparent bar with torch and close items
   cottages.tsx           every cottage, found first, with a search box and an undiscovered-only filter: one page
                          sheet from the Atlas's search control (keyboard up) and the Kronika's progress card
   story/[slug].tsx       the story as a page sheet: the unlock ceremony the first time, a plain revisit later
   celebrate.tsx          the reward reveal, a transparent modal the Atlas presents after a story
-  reward/[id].tsx        one reward card, a form sheet that opens at medium height and expands to full
-  rules.tsx              the ranking rules, form sheet
+  reward/[id].tsx        one reward card, a sheet that opens at three fifths and can be pulled to the top
+  rules.tsx              the ranking rules, a sheet sized to its content
   +native-intent.tsx     where a URL handed to the app goes (plaque links with a code, story and reward links)
   +not-found.tsx         redirects to the Atlas
 src/
@@ -137,13 +144,17 @@ src/
   i18n/                  the i18next instance: "translation" + "mobile" namespaces, device locale, remembered choice
   ui/                    the interface layer: tokens, fonts, icons (plus the tab glyphs and the native header symbols), motion
                          tokens, Text, Button/LinkButton/IconButton on PressableScale, Screen, ContentImage (expo-image),
-                         Skeleton, ProgressRing, ProgressBar, CrossfadeText, PageDots, GlowPulse, EmptyState, Toast,
-                         SettingsList, SheetHandle, TabStack, headerItems, TextField, MarkdownView
+                         Skeleton, ProgressRing, CrossfadeText, PageDots, GlowPulse, EmptyState, Toast,
+                         SettingsList, Sheet (the base of every sheet route), TabStack, headerItems, TextField, MarkdownView
   lib/                   adapters: bootstrap (what the splash reads), cached content client, progress + sync-queue
                          storage, Supabase and native sign-in, audio (expo-audio), recordings (file system), maps
                          hand-off, position, reachability store, haptics, accessibility announcements
-  providers/             BootProvider, NetworkProvider, SessionProvider, ContentProvider, ProgressProvider, ToastProvider
+  providers/             BootProvider, NetworkProvider, SessionProvider, ContentProvider, ProgressProvider, ToastProvider,
+                         useCloseModal (the one way a modal route closes)
   features/              screen-level components per area: atlas/, code/, cottages/ (the directory both tabs open), story/, kronika/, ranking/, profile/, welcome/
+app.config.ts            the configuration that depends on the environment: Sign in with Apple (the capability and its
+                         plugin, unless EXPO_PUBLIC_APPLE_SIGN_IN is 0), the Google sign-in plugin with the iOS URL scheme
+                         derived from EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID, the Apple team that signs device builds
 plugins/                 config plugins: with-scene-delegate.js (UIScene life cycle for the iOS 27 SDK)
 locales/                 native permission strings per language (iOS Info.plist)
 assets/                  app icon, adaptive icon layers, the splash emblem and the logo, generated from the brand logo in
@@ -186,9 +197,16 @@ through `src/lib/haptics.ts`.
   lives in AsyncStorage with URL detection off; token refresh runs only in
   the foreground. Sign-in is native: Google (`@react-native-google-signin`)
   and Apple (`expo-apple-authentication`), both handed to
-  `signInWithIdToken`. It is hidden behind `EXPO_PUBLIC_AUTH_ENABLED` until
-  the providers are configured in the backend; the app is fully usable
-  signed out.
+  `signInWithIdToken`. The build offers what it can: the Google button once
+  `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` is set (on iOS once
+  `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` is too), the Apple button on iOS unless
+  `EXPO_PUBLIC_APPLE_SIGN_IN=0` left the capability out of the build; with
+  neither, the account controls stay hidden and the app runs signed out,
+  like the site. A closed
+  dialog is not a failure; a failure is a toast and a console line. Signing
+  out revokes the session when the backend can be reached and forgets it on
+  the device either way; the sync queue ends with the session, the Kronika
+  stays.
 
 ## Native pieces
 
@@ -200,8 +218,8 @@ through `src/lib/haptics.ts`.
 | Story audio | `expo-audio` | background playback (`UIBackgroundModes: audio` via its plugin) and lock-screen / notification controls (`setActiveForLockScreen`); a language without a recording falls back to the Polish original when the file fails to load |
 | Recordings offline | `expo-file-system` | "Save on this device" downloads the mp3 into the document directory, one folder per language; a saved file plays from disk |
 | QR | `expo-camera` | `CameraView` scanning `qr` only, torch from the header; the code is resolved on the scanner itself through the same `useCodeEntry` as manual entry |
-| Tabs and stacks | `react-native-screens` through expo-router | a custom tab bar (`Tabs` from expo-router/js-tabs with the `tabBar` prop; it reports its height through `useTabBarHeight` so screens keep clear of it), native stack headers (transparent with the system glass on iOS), `formSheet` routes for the code, reward and rules, `modal` page sheets for the story and the cottage list |
-| Cottage sheet | `@gorhom/bottom-sheet` | the in-screen parchment sheet over the map with three snaps; the map stays pannable and the camera keeps room for the sheet |
+| Tabs and stacks | `react-native-screens` through expo-router | a custom tab bar (`Tabs` from expo-router/js-tabs with the `tabBar` prop; it reports its height through `useTabBarHeight` so screens keep clear of it), native stack headers (transparent with the system glass on iOS), `transparentModal` routes carrying the shared sheet (src/ui/Sheet.tsx) for the code, reward and rules, `modal` page sheets for the story and the cottage list |
+| Sheets | `@gorhom/bottom-sheet` | one base for every sheet: the in-screen parchment panel over the map (three snaps, the map stays pannable, the camera keeps room for it) and the sheet routes (the code gate, a reward, the rules), which open at their own height or part-way and can be pulled to the top; a scroll inside moves the content first |
 | Motion | `react-native-reanimated` 4 + `react-native-gesture-handler` | springs, entrances, the progress ring, the scrub bar, the toast gesture; every animation passes `ReduceMotion.System` |
 | Haptics | `expo-haptics` | one module (`src/lib/haptics.ts`): selection on controls, light on primary actions, medium on a pin and the seal, success and error on the code result |
 | Images | `expo-image` | `ContentImage`: memory and disk cache, cross-dissolve, retries with a backoff and on reconnect, a quiet fallback after the last failure, prefetch of the reward art and the found cottages' photos |
@@ -209,13 +227,20 @@ through `src/lib/haptics.ts`.
 | Fonts | `expo-font` + `@expo-google-fonts/*` | Cormorant Garamond and Cinzel Decorative, imported per weight; the repository's woff2 files cannot be used natively |
 | Locale | `expo-localization` | the device language picks the dictionary and, through `detectCountry`, the map's home country (never geolocation) |
 | Country names | `@formatjs/intl-displaynames` | Hermes has no `Intl.DisplayNames`; the polyfill with Polish and English data names a cottage's country in the map panel, as the site does |
+| Release size | `expo-build-properties` | R8 and resource shrinking in Android release builds (`enableMinifyInReleaseBuilds`, `enableShrinkResourcesInReleaseBuilds`): the Java/Kotlin code drops from 55 MB to about 21 MB before packaging; the native libraries ship their own keep rules, so no rules of ours |
+| Locale filter | `plugins/with-locale-filters.js` | config plugin that writes the Android Gradle plugin's `localeFilters` from `expo.locales` in app.json, so the libraries' strings in the other eighty languages stay out of the APK (Google Play does the same split from an app bundle) |
 | Scene life cycle | `plugins/with-scene-delegate.js` | config plugin for the iOS 27 SDK, which asserts at launch unless the app adopts UIScene: the generated `AppDelegate` conforms to `ExpoReactNativeFactoryProvider` and stops starting React Native itself, a `SceneDelegate` subclasses Expo's `ExpoAppSceneDelegate` (it creates the window and starts React Native from the scene), and `Info.plist` gets the `UIApplicationSceneManifest`; idempotent, skipped from SDK 58 on (the template adopts scenes itself), refuses an expo older than 57.0.25 |
 
-Google sign-in on iOS additionally needs the library's config plugin with
-the `iosUrlScheme` from the Google Cloud console; add it to `app.json`
-`plugins` when the provider is configured (the plugin refuses to run
-without the scheme, which is why it is not listed yet). Apple sign-in needs
-the capability on the App ID; `ios.usesAppleSignIn` is already set.
+Sign-in setup lives in `supabase/README.md` (the Google and Apple
+providers, their client ids, the Supabase side). On the app's side
+everything comes from `.env` through `app.config.ts`, and a change there is
+followed by a native rebuild: the Google sign-in plugin joins the build with
+`EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` read backwards as its iOS URL scheme (the
+plugin refuses to run without one); Sign in with Apple, the capability on
+the App ID (`ios.usesAppleSignIn`) and the `expo-apple-authentication`
+plugin, is in every build unless `EXPO_PUBLIC_APPLE_SIGN_IN=0`, which a free
+Personal Team sets because it cannot sign the capability; `APPLE_TEAM_ID`
+names the team that signs device builds.
 
 TODO universal links: the plaque QR carries `https://www.chatynkowo.pl/?kod=NNNN`. The Android half is in place (`android.intentFilters` for `https://www.chatynkowo.pl/`, `/index.html` and `https://chatynkowo.pl/` with `autoVerify`; it stays a plain browser choice until the site serves `/.well-known/assetlinks.json` with `delegate_permission/common.handle_all_urls` for `pl.chatynkowo.app` and the release signing SHA-256). The iOS half is not: add `ios.associatedDomains: ["applinks:www.chatynkowo.pl", "applinks:chatynkowo.pl"]` to `app.json` only once the site serves `/.well-known/apple-app-site-association` (applinks for `<TEAMID>.pl.chatynkowo.app` with components for `/` and `/index.html` carrying a `kod` or `code` query, so `ranking.html` share links keep opening the website), because the Associated Domains capability changes device code signing. `app/+native-intent.tsx` already maps both URL forms to the code sheet.
 
@@ -225,8 +250,14 @@ TODO universal links: the plaque QR carries `https://www.chatynkowo.pl/?kod=NNNN
   name for name (`CloseIcon`, `ChronicleIcon`, ...) and the `iconSize`
   scale; the role names are the theme's `SHARED_ICON_ROLES` and
   `MOBILE_ICON_ROLES`, checked at compile time. `phosphor-react-native` is
-  imported nowhere else, and no emoji or typographic glyph is used as an
-  icon. `scripts/check-conventions.mjs` enforces both as part of `pnpm check`.
+  imported nowhere else, and only through its per-icon entries
+  (`phosphor-react-native/src/icons/<Name>`): Metro does not tree-shake,
+  and the package root would put all 1500 icons in the bundle. Those
+  entries are sources, so the type check needs Expo's augmentations
+  (`src/types/expo.d.ts` keeps the reference in every checkout; the
+  generated `expo-env.d.ts` is ignored). No emoji or typographic glyph is
+  used as an icon. `scripts/check-conventions.mjs` enforces all of this as
+  part of `pnpm check`.
 - Screens compose the primitives in `src/ui` and never restyle them; the
   tokens come from `@chatynkowo/theme`, the same package the site's
   stylesheet is generated from, so a colour changes in one place for both

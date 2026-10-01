@@ -87,6 +87,13 @@ const OSM_TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 const FRAME_PADDING = { top: 48, right: 48, bottom: 48, left: 48 }
 /* How far around the seeker the arrival frame reaches at least, in km. */
 const ARRIVAL_RADIUS_KM = 1
+/* The least radius drawn for the position's accuracy circle, in metres,
+   so a precise fix still shows a ring. */
+const MIN_ACCURACY_M = 25
+/* A frame of a whole land (the reset, the arrival) and the zoom into a
+   cluster. */
+const FIT_MS = 900
+const CLUSTER_MS = 800
 /* Android draws marker views in the order they reach the map, so the
    targets are raised above the seeker's dot; iOS orders markers by
    latitude unless told otherwise, and the dot alone is told. */
@@ -328,7 +335,7 @@ export const AtlasMap = memo(
 
     const searchArea = useMemo(() => (selected ? circleFeature(selected, SEARCH_AREA_RADIUS_M) : EMPTY), [selected])
     const userAccuracy = useMemo(
-      () => (userPosition?.accuracy ? circleFeature(userPosition, Math.max(userPosition.accuracy, 25)) : EMPTY),
+      () => (userPosition?.accuracy ? circleFeature(userPosition, Math.max(userPosition.accuracy, MIN_ACCURACY_M)) : EMPTY),
       [userPosition],
     )
 
@@ -337,12 +344,12 @@ export const AtlasMap = memo(
       () => ({
         resetView: () => {
           touched.current = true
-          camera.current?.fitBounds(home, { padding: FRAME_PADDING, duration: 900 })
+          camera.current?.fitBounds(home, { padding: FRAME_PADDING, duration: FIT_MS })
         },
-        showPosition: (position) => camera.current?.easeTo({ center: [position.lng, position.lat], zoom: toMapZoom(POSITION_ZOOM), duration: 900 }),
+        showPosition: (position) => camera.current?.easeTo({ center: [position.lng, position.lat], zoom: toMapZoom(POSITION_ZOOM), duration: FIT_MS }),
         arriveAt: (seeker, nearest) => {
           if (touched.current) return
-          camera.current?.fitBounds(toLngLatBounds(boundsAround(seeker, nearest ? [nearest] : [], ARRIVAL_RADIUS_KM)), { padding: FRAME_PADDING, duration: 900 })
+          camera.current?.fitBounds(toLngLatBounds(boundsAround(seeker, nearest ? [nearest] : [], ARRIVAL_RADIUS_KM)), { padding: FRAME_PADDING, duration: FIT_MS })
         },
         frameCottage: (cottage, bottomPadding, mode = 'ease') => {
           touched.current = true
@@ -419,7 +426,7 @@ export const AtlasMap = memo(
         lastMarkerPress.current = Date.now()
         touched.current = true
         haptic('select')
-        camera.current?.easeTo({ center: [lng, lat], zoom: toMapZoom(Math.min(index.getClusterExpansionZoom(id), CLUSTERS_UNTIL_ZOOM + 1)), duration: 800 })
+        camera.current?.easeTo({ center: [lng, lat], zoom: toMapZoom(Math.min(index.getClusterExpansionZoom(id), CLUSTERS_UNTIL_ZOOM + 1)), duration: CLUSTER_MS })
       },
       [index],
     )

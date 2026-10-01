@@ -8,10 +8,10 @@ import { Text } from './Text'
 import { colors } from './tokens'
 
 /* Finds out of the total as a ring: the quest card on the Atlas, the
-   Kronika header, the story unlock row. The arc sweeps from its previous
-   value to the new one over the reveal duration and tells the caller when
-   it has settled (for a haptic). The first render draws the value in place;
-   only real changes animate. */
+   Kronika header, the reward cards and the reward sheet. The arc sweeps
+   from its previous value to the new one over the reveal duration and
+   tells the caller when it has settled (for a haptic). The first render
+   draws the value in place; only real changes animate. */
 
 export type ProgressRingProps = {
   size: 24 | 34 | 40 | 56 | 64
@@ -81,7 +81,7 @@ export function ProgressRing({ size, value, max, stroke = size / 10, label, onSe
       </Svg>
       {label ? (
         <View style={styles.label} pointerEvents="none">
-          <Text variant="small" weight="semibold" numberOfLines={1} maxFontSizeMultiplier={1.2} style={size < 40 ? styles.tiny : undefined}>
+          <Text variant={size < 40 ? 'micro' : 'small'} weight="semibold" numberOfLines={1} maxFontSizeMultiplier={1.2}>
             {label}
           </Text>
         </View>
@@ -103,9 +103,5 @@ const styles = StyleSheet.create({
     left: 0,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  tiny: {
-    fontSize: 10,
-    lineHeight: 12,
   },
 })

@@ -44,22 +44,34 @@ const maxMultiplier: Record<TextVariant, number> = {
   eyebrow: 1.3,
   body: 1.6,
   small: 1.6,
+  caption: 1.3,
+  compact: 1.35,
+  digit: 1.2,
+  label: 1.2,
+  micro: 1.2,
 }
 
 /* Display roles are the site's h1/h2 in Cinzel Decorative; heading is its
    h3 (Cormorant 600); the eyebrow is Cormorant 600 in spaced small
-   capitals, accent coloured, as on every section header of the site. */
+   capitals, accent coloured, as on every section header of the site; the
+   caption is the map chrome's smaller eyebrow in the caller's colour; the
+   digit is a plaque code's figure in the display face. */
 const variantStyles = StyleSheet.create({
   small: typeScale.small,
   body: typeScale.body,
+  compact: typeScale.compact,
+  label: typeScale.label,
+  micro: typeScale.micro,
   heading: { ...typeScale.heading, fontFamily: fonts.semibold },
   title: { ...typeScale.title, fontFamily: fonts.display },
   display: { ...typeScale.display, fontFamily: fonts.display },
   eyebrow: { ...typeScale.eyebrow, fontFamily: fonts.semibold, textTransform: 'uppercase', color: colors.accentStrong },
+  caption: { ...typeScale.caption, fontFamily: fonts.semibold, textTransform: 'uppercase' },
+  digit: { ...typeScale.digit, fontFamily: fonts.display },
 })
 
 export function Text({ variant = 'body', tone, weight, align, style, maxFontSizeMultiplier, ...rest }: TextProps) {
-  const fixedFace = variant === 'title' || variant === 'display' || variant === 'eyebrow' || variant === 'heading'
+  const fixedFace = variant === 'title' || variant === 'display' || variant === 'eyebrow' || variant === 'heading' || variant === 'caption' || variant === 'digit'
   return (
     <NativeText
       maxFontSizeMultiplier={maxFontSizeMultiplier ?? maxMultiplier[variant]}

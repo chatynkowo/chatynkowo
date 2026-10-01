@@ -11,10 +11,10 @@ import { Podium } from '../../../src/features/ranking/Podium'
 import { useLeaderboard } from '../../../src/features/ranking/useLeaderboard'
 import { haptic } from '../../../src/lib/haptics'
 import { useContent, useOnline, useProgress, useSession } from '../../../src/providers'
-import { Button, EmptyState, RewardIcon, ShieldIcon, SkeletonRow, Text, colors, headerRightItems, layoutLinear, space, useTabBarClearance, type HeaderItemSpec } from '../../../src/ui'
+import { Button, EmptyState, RewardIcon, ShieldIcon, SkeletonRow, Text, colors, headerRightItems, layoutLinear, readable, space, useTabBarClearance, type HeaderItemSpec } from '../../../src/ui'
 
-/* The Ranking tab: the site's leaderboard as a native list under a large
-   title. The account block sits at the top (sign-in, or the seeker's place
+/* The Ranking tab: the site's leaderboard as a native list under a
+   standard title. The account block sits at the top (sign-in, or the seeker's place
    and the state of the exchange with the account), then the podium and
    the seekers in order, a page at a time: the next page follows the scroll
    and, for anyone who does not scroll to the end, a button in the footer.
@@ -111,7 +111,7 @@ export default function RankingScreen() {
       action={{ label: t('mobile:common.retry'), onPress: () => void refresh() }}
     />
   ) : updatedAt === null ? (
-    <View accessibilityLabel={t('ranking.loading')}>
+    <View accessible accessibilityRole="progressbar" accessibilityLabel={t('ranking.loading')}>
       {Array.from({ length: SKELETON_ROWS }, (_, index) => (
         <SkeletonRow key={index} />
       ))}
@@ -142,12 +142,14 @@ export default function RankingScreen() {
         renderItem={renderRow}
         getItemLayout={(_, index) => ({ length: LEADERBOARD_ROW_HEIGHT, offset: LEADERBOARD_ROW_HEIGHT * index, index })}
         initialNumToRender={INITIAL_ROWS}
+        /* As in the Kronika: an avatar clipped while loading can stay blank. */
+        removeClippedSubviews={false}
         itemLayoutAnimation={layoutLinear}
         onEndReached={loadMore}
         onEndReachedThreshold={END_REACHED_THRESHOLD}
         contentInsetAdjustmentBehavior="automatic"
         scrollIndicatorInsets={{ bottom: tabBarClearance }}
-        contentContainerStyle={[styles.content, { paddingBottom: space.xxl + tabBarClearance }]}
+        contentContainerStyle={[styles.content, readable, { paddingBottom: space.xxl + tabBarClearance }]}
         ListHeaderComponent={header}
         ListFooterComponent={footer}
         ListEmptyComponent={empty}

@@ -139,7 +139,7 @@ function TabItem({ name, options, focused, onPress, onLongPress }: TabItemProps)
 function Badge({ value }: { value: number | string }) {
   return (
     <View style={styles.badge} pointerEvents="none">
-      <Text tone="accentInk" weight="semibold" numberOfLines={1} maxFontSizeMultiplier={1.2} style={styles.badgeText}>
+      <Text variant="micro" tone="accentInk" weight="semibold" numberOfLines={1}>
         {String(value)}
       </Text>
     </View>
@@ -184,13 +184,13 @@ function DiscoverSlot({ label, accessibilityLabel, scanLabel, onPress, onLongPre
 function TabLabel({ color, decorative, children }: { color: string; decorative?: boolean; children: string }) {
   return (
     <Text
-      variant="small"
+      variant="label"
       weight="semibold"
       numberOfLines={1}
       maxFontSizeMultiplier={1.3}
       accessibilityElementsHidden={decorative}
       importantForAccessibility={decorative ? 'no-hide-descendants' : 'auto'}
-      style={[styles.label, { color }]}
+      style={{ color }}
     >
       {children}
     </Text>
@@ -235,14 +235,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: radius.pill,
     backgroundColor: colors.accent,
-  },
-  badgeText: {
-    fontSize: 10,
-    lineHeight: 12,
-  },
-  label: {
-    fontSize: 12,
-    lineHeight: 14,
   },
   /* The column overflows the bar upward by the raise, which puts the
      button's centre on the top edge and its label on the tabs' baseline. */

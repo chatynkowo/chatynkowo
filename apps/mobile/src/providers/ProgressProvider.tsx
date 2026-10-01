@@ -2,9 +2,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import {
   backfillBadges,
   discoverCottage,
+  emptyQueue,
   enqueueFind,
   foundCount as countFound,
   mergeFinds,
+  mergeProgress,
   queuedFinds,
   settleFinds,
   type DiscoveryResult,
@@ -13,9 +15,9 @@ import {
 } from '@chatynkowo/core'
 import { STORAGE_KEYS } from '../config'
 import type { BootResult } from '../lib/bootstrap'
-import { loadProgressStrict, loadQueueStrict, saveProgress, saveQueue } from '../lib/progress-store'
+import { loadProgress, loadQueue, saveProgress, saveQueue } from '../lib/progress-store'
 import { writeJson } from '../lib/storage'
-import { pullFinds, pushFinds } from '../lib/sync'
+import { fetchFinds, pushFinds } from '../lib/sync'
 import { useContent } from './ContentProvider'
 import { useForeground, useOnline, useReconnect } from './NetworkProvider'
 import { useSession } from './SessionProvider'
@@ -32,8 +34,6 @@ import { useSession } from './SessionProvider'
 
 export type ProgressValue = {
   state: StoredState
-  /* Always true: the stored progress arrives with the bootstrap result. */
-  hydrated: boolean
   foundSlugs: Set<string>
   foundCount: number
   /* Finds not yet saved to the account. */
@@ -144,12 +144,10 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
     const retry = () => {
       timer = setTimeout(async () => {
         try {
-          const [stored, storedQueue] = await Promise.all([loadProgressStrict(), loadQueueStrict()])
+          const [stored, storedQueue] = await Promise.all([loadProgress(), loadQueue()])
           if (cancelled) return
           persistBlocked.current = false
-          const merged = mergeFinds(stateRef.current, stored.found)
-          for (const [id, badge] of Object.entries(stored.badges)) if (!merged.badges[id]) merged.badges[id] = badge
-          await commitState(merged)
+          await commitState(mergeProgress(stateRef.current, stored))
           const pending = storedQueue.pending.reduce((queue, find) => enqueueFind(queue, find.slug, find.foundAt), queueRef.current)
           commitQueue(pending)
         } catch {
@@ -196,7 +194,8 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
 
   /* On sign-in, the account and the device exchange finds: everything local
      goes up, everything remote comes down, the earliest date wins. Once per
-     account; a failure forgets the attempt so a reconnect retries it. */
+     account; a failure (logged) forgets the attempt so a reconnect or the
+     next return to the foreground retries it. */
   const exchangedFor = useRef<string | null>(null)
   const exchangeAttempt = useRef(0)
   const exchange = useCallback(async () => {
@@ -210,26 +209,36 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
     setExchanging(true)
     try {
       const pushed = await pushFinds(current, stateRef.current.found, totalRef.current)
-      const remote = await pullFinds(current)
+      const remote = await fetchFinds(current)
       if (cancelled()) return
       if (Object.keys(remote).length) await commitState(mergeFinds(stateRef.current, remote))
       if (!pushed) exchangedFor.current = null
-    } catch {
+    } catch (error) {
+      console.error('[sync] exchange', error)
       if (!cancelled()) exchangedFor.current = null
     } finally {
       if (mounted.current && exchangeAttempt.current === attempt) setExchanging(false)
     }
   }, [commitState])
 
-  const hydrated = true
   const userId = session?.user.id
   const contentReady = total > 0
   useEffect(() => {
     if (!userId) exchangedFor.current = null
-    if (!hydrated || !userId || !contentReady) return
+    if (!userId || !contentReady) return
     void exchange()
-  }, [hydrated, userId, contentReady, exchange])
+  }, [userId, contentReady, exchange])
   useReconnect(() => void exchange())
+  useForeground(() => void exchange())
+
+  /* The queue belongs to the account it was waiting for: signing out ends
+     it (the exchange on the next sign-in pushes the whole Kronika anyway),
+     and finds made signed out queue up afresh for whoever signs in next. */
+  const previousUserId = useRef(userId)
+  useEffect(() => {
+    if (previousUserId.current && !userId && queueRef.current.pending.length) commitQueue(emptyQueue())
+    previousUserId.current = userId
+  }, [userId, commitQueue])
 
   /* Cottages and the reward config can change what is already earned (a
      new level, a lowered threshold, finds merged from the account).
@@ -257,8 +266,7 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
             return outcome.next
           })
         })
-        stateRef.current = result.next
-        await saveProgress(result.next)
+        await commitState(result.next)
         if (result.isNew) {
           commitQueue(enqueueFind(queueRef.current, slug, result.next.found[slug].foundAt))
           setLastFound({ slug, at: Date.now() })
@@ -273,7 +281,7 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
       run.then(settle, settle)
       return run
     },
-    [commitQueue],
+    [commitState, commitQueue],
   )
 
   const shiftCelebration = useCallback(() => setCelebration((ids) => ids.slice(1)), [])
@@ -328,7 +336,6 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
   const value = useMemo<ProgressValue>(
     () => ({
       state,
-      hydrated,
       foundSlugs,
       foundCount: countFound(state),
       pendingCount: queue.pending.length,

@@ -27,7 +27,7 @@ export const Podium = memo(function Podium({ rows, total, isMine }: PodiumProps)
     { row: rows[2], place: 3 },
   ]
   return (
-    <View style={styles.podium} accessibilityLabel={t('ranking.podiumAria')}>
+    <View style={styles.podium}>
       {order.map(({ row, place }) => {
         const avatar = row.avatar_url ? (
           <ContentImage uri={row.avatar_url} radius={radius.pill} style={styles.avatar} />
@@ -43,6 +43,8 @@ export const Podium = memo(function Podium({ rows, total, isMine }: PodiumProps)
             key={row.public_id}
             entering={enterUp(ENTER_DELAY_MS[place] ?? 0)}
             style={[styles.card, place === 1 && styles.cardFirst, isMine(row) && styles.cardMine]}
+            accessible
+            accessibilityLabel={[t('ranking.place', { place }), row.display_name + (isMine(row) ? ` ${t('ranking.you')}` : ''), `${row.found}/${total}`].join(', ')}
           >
             <Text variant="title" tone="accent">
               {place}

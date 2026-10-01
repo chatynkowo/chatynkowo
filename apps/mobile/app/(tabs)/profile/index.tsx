@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next'
 import { SITE_ORIGIN, SOCIAL_LINKS } from '@chatynkowo/core'
 import { AccountSection } from '../../../src/features/profile/AccountSection'
 import { LANGUAGES, setLanguage, toLanguage } from '../../../src/i18n'
-import { useSession } from '../../../src/providers'
-import { FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, SignOutIcon, colors, iconSize, space, useTabBarClearance } from '../../../src/ui'
+import { useSession, useToast } from '../../../src/providers'
+import { FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, SignOutIcon, colors, iconSize, readable, space, useTabBarClearance } from '../../../src/ui'
 
 /* The Profile tab: grouped settings in the system idiom. The account block
    (nickname, avatar, sign-in), the language, the lore (how to play, about),
@@ -20,6 +20,7 @@ export default function ProfileScreen() {
   const { t, i18n } = useTranslation()
   const router = useRouter()
   const account = useSession()
+  const toast = useToast()
   const tabBarClearance = useTabBarClearance()
   const language = toLanguage(i18n.resolvedLanguage ?? i18n.language)
 
@@ -33,7 +34,14 @@ export default function ProfileScreen() {
   const confirmSignOut = () =>
     Alert.alert(t('mobile:profile.signOutConfirm'), t('mobile:profile.signOutBody'), [
       { text: t('mobile:common.cancel'), style: 'cancel' },
-      { text: t('ranking.signOut'), style: 'destructive', onPress: () => void account.signOut() },
+      {
+        text: t('ranking.signOut'),
+        style: 'destructive',
+        onPress: () =>
+          void account.signOut().then((outcome) => {
+            if (outcome === 'failed') toast.show({ tone: 'error', text: t('mobile:profile.signOutFailed') })
+          }),
+      },
     ])
 
   const external = t('mobile:profile.openExternal')
@@ -124,7 +132,7 @@ export default function ProfileScreen() {
       renderItem={({ item }) => item.node}
       style={styles.list}
       /* The list runs under the floating tab bar; its last block stays clear of it. */
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarClearance + space.xxl }]}
+      contentContainerStyle={[styles.content, readable, { paddingBottom: tabBarClearance + space.xxl }]}
       contentInsetAdjustmentBehavior="automatic"
       scrollIndicatorInsets={{ bottom: tabBarClearance }}
       automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}

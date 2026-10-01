@@ -15,14 +15,19 @@
     },
     "ios": {
       "bundleIdentifier": "pl.chatynkowo.app",
-      "supportsTablet": false,
-      "usesAppleSignIn": true,
+      "supportsTablet": true,
       "infoPlist": {
         "UIBackgroundModes": [
           "audio"
         ],
         "LSApplicationQueriesSchemes": [
           "comgooglemaps"
+        ],
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationPortraitUpsideDown",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
         ]
       }
     },
@@ -69,7 +74,7 @@
       "expo-localization",
       "expo-dev-client",
       "./plugins/with-scene-delegate",
-      "expo-apple-authentication",
+      "./plugins/with-locale-filters",
       "@maplibre/maplibre-react-native",
       [
         "expo-camera",
@@ -106,7 +111,16 @@
         }
       ],
       "expo-image",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

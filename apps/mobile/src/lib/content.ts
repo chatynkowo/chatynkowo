@@ -29,8 +29,6 @@ export const { url: contentUrl, storyAudio } = content
 
 export type CachedResult<T> = {
   value: T
-  /* Served from the device rather than the network. */
-  fromCache: boolean
   /* Older than its max age; a background refresh is under way. */
   stale: boolean
 }
@@ -48,7 +46,7 @@ export type CachedOptions<T> = {
 
 /* Cache entry names: one per published file, stories and rewards per
    language. The lookup is the same for every language. */
-export const CACHE_NAMES = {
+const CACHE_NAMES = {
   cottages: (language: Language) => `cottages:${language}`,
   rewards: (language: Language) => `rewards:${language}`,
   codeLookup: 'codeLookup',
@@ -100,14 +98,14 @@ export async function cached<T>(
     try {
       const value = await loader()
       await writeEntry(name, value)
-      return { value, fromCache: false, stale: false }
+      return { value, stale: false }
     } catch (error) {
       if (!entry) throw error
-      return { value: entry.value, fromCache: true, stale: !isFresh(entry, maxAgeMs) }
+      return { value: entry.value, stale: !isFresh(entry, maxAgeMs) }
     }
   }
   if (entry && (isFresh(entry, maxAgeMs) || offline)) {
-    return { value: entry.value, fromCache: true, stale: !isFresh(entry, maxAgeMs) }
+    return { value: entry.value, stale: !isFresh(entry, maxAgeMs) }
   }
   if (entry) {
     void loader()
@@ -118,11 +116,11 @@ export async function cached<T>(
       .catch(() => {
         // Still offline, or the site is down: the stale copy stays in use.
       })
-    return { value: entry.value, fromCache: true, stale: true }
+    return { value: entry.value, stale: true }
   }
   const value = await loader()
   await writeEntry(name, value)
-  return { value, fromCache: false, stale: false }
+  return { value, stale: false }
 }
 
 export function loadCottagesCached(language: Language, options?: CachedOptions<Cottage[]>) {

@@ -23,9 +23,12 @@ type LeaderboardRowProps = { row: Row; place: number; total: number; mine: boole
 export const LeaderboardRow = memo(function LeaderboardRow({ row, place, total, mine }: LeaderboardRowProps) {
   const { t } = useTranslation()
   const elapsed = formatElapsed(row.elapsed_seconds)
+  const time = t('ranking.time', { value: elapsed ?? t('ranking.noTime') })
   const entering = place <= ANIMATED_ROWS ? enterDown(Math.min(place - 1, MAX_STAGGER_STEPS) * STAGGER_MS) : undefined
+  /* One element per row for the screen reader: place, name, count, time. */
+  const label = [`${place}.`, row.display_name + (mine ? ` ${t('ranking.you')}` : ''), `${row.found}/${total}`, time].join(', ')
   return (
-    <Animated.View entering={entering} style={[styles.row, mine && styles.rowMine]} accessibilityRole="text">
+    <Animated.View entering={entering} style={[styles.row, mine && styles.rowMine]} accessible accessibilityLabel={label}>
       <Text variant="heading" tone={place <= 3 ? 'accent' : 'faint'} style={styles.place}>
         {place}
       </Text>
@@ -44,7 +47,7 @@ export const LeaderboardRow = memo(function LeaderboardRow({ row, place, total, 
           {mine ? ` ${t('ranking.you')}` : ''}
         </Text>
         <Text variant="small" tone="faint" numberOfLines={1}>
-          {t('ranking.time', { value: elapsed ?? t('ranking.noTime') })}
+          {time}
         </Text>
       </View>
       <Text weight="bold" tone={row.completed ? 'accent' : 'ink'}>

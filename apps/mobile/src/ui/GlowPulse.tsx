@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
-import { useCallback, useEffect } from 'react'
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native'
+import { useEffect } from 'react'
+import { StyleSheet, View } from 'react-native'
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg'
-import Animated, { cancelAnimation, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated'
-import { EASING, ReduceMotion, SPRINGS } from './motion'
+import Animated, { cancelAnimation, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated'
+import { EASING, ReduceMotion } from './motion'
 import { colors } from './tokens'
 
 /* A soft gold halo behind a seal, a reward card or the podium winner,
@@ -65,29 +65,6 @@ export function GlowPulse({ size, cycles = 2, active = true, children }: GlowPul
       {children}
     </View>
   )
-}
-
-/* One-shot pulse for a view that already exists (a Kronika card that just
-   turned new): spread `style` on an Animated.View or a PressableScale and
-   call `trigger()` when the moment comes. The view swells a little and
-   springs back; nothing happens under reduced motion. */
-export function usePulseOnce(): { style: StyleProp<ViewStyle>; trigger: () => void } {
-  const reduceMotion = useReducedMotion()
-  const scale = useSharedValue(1)
-
-  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
-
-  const trigger = useCallback(() => {
-    if (reduceMotion) return
-    scale.value = withSequence(
-      withTiming(1.04, { duration: 220, easing: EASING.out, reduceMotion: ReduceMotion.System }),
-      withSpring(1, SPRINGS.gentle),
-    )
-  }, [reduceMotion, scale])
-
-  /* The animated style only moves on an Animated component; on a plain View
-     it is the resting style, which is the contract's static fallback. */
-  return { style: style as StyleProp<ViewStyle>, trigger }
 }
 
 const styles = StyleSheet.create({

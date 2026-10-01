@@ -3,10 +3,10 @@ import { AccessibilityInfo, ActionSheetIOS, Platform, StyleSheet, View, findNode
 import BottomSheet, { BottomSheetScrollView, useBottomSheetSpringConfigs } from '@gorhom/bottom-sheet'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
-import type { Cottage } from '@chatynkowo/core'
+import { countryName, type Cottage } from '@chatynkowo/core'
 import { haptic } from '../../lib/haptics'
 import { openInMaps, type MapsApp } from '../../lib/navigate'
-import { Button, CloseIcon, colors, FoundIcon, IconButton, iconSize, mapPalette, MarkdownView, NavigateIcon, NotebookIcon, PinIcon, radius, space, TAB_BAR_OVERHANG, Text } from '../../ui'
+import { Button, CloseIcon, colors, FoundIcon, IconButton, iconSize, mapPalette, MarkdownView, NavigateIcon, NotebookIcon, PinIcon, radius, readable, space, SPRINGS, TAB_BAR_OVERHANG, Text } from '../../ui'
 
 /* The parchment sheet that rises over the map when a cottage is chosen,
    the site's cottage panel on a phone: the country, the name, who lives
@@ -34,14 +34,6 @@ export function sheetHeightForIndex(index: number, containerHeight: number): num
 /* VoiceOver moves to the title once the enter spring has settled. */
 const FOCUS_DELAY_MS = 450
 
-function countryName(code: string, locale: string) {
-  try {
-    return new Intl.DisplayNames([locale], { type: 'region' }).of(code) ?? code
-  } catch {
-    return code
-  }
-}
-
 type CottageSheetProps = {
   cottage: Cottage
   found: boolean
@@ -61,7 +53,7 @@ export const CottageSheet = forwardRef<CottageSheetHandle, CottageSheetProps>(fu
 ) {
   const { t, i18n } = useTranslation()
   const router = useRouter()
-  const springs = useBottomSheetSpringConfigs({ damping: 22, stiffness: 220, mass: 0.9 })
+  const springs = useBottomSheetSpringConfigs(SPRINGS.settle)
   const lastIndex = useRef<number>(initialIndex)
   const titleRef = useRef<View>(null)
 
@@ -138,13 +130,11 @@ export const CottageSheet = forwardRef<CottageSheetHandle, CottageSheetProps>(fu
       onClose={onClose}
       containerStyle={styles.container}
     >
-      <View
-        style={styles.body}
-      >
+      <View style={styles.body}>
         <BottomSheetScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <Text variant="eyebrow" style={styles.country}>
-              {countryName(cottage.country, i18n.resolvedLanguage ?? 'pl')}
+              {countryName(cottage.country, i18n.resolvedLanguage ?? i18n.language)}
             </Text>
             <View
               ref={titleRef}
@@ -203,15 +193,17 @@ const styles = StyleSheet.create({
     backgroundColor: mapPalette.panel,
     borderTopWidth: 1,
     borderColor: mapPalette.panelBorder,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
+    borderTopLeftRadius: radius.sheet,
+    borderTopRightRadius: radius.sheet,
   },
   handle: {
     width: 44,
     height: 4,
-    backgroundColor: 'rgba(73, 52, 31, 0.28)',
+    backgroundColor: mapPalette.panelHandle,
   },
+  /* The scroll and the close button share the readable column. */
   body: {
+    ...readable,
     flex: 1,
   },
   content: {

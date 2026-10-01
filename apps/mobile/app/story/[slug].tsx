@@ -11,8 +11,8 @@ import { StoryBody } from '../../src/features/story/StoryBody'
 import { HERO_ASPECT, HERO_UNDER_BAR, StoryHero } from '../../src/features/story/StoryHero'
 import { announce } from '../../src/lib/announce'
 import { haptic } from '../../src/lib/haptics'
-import { useContent, useProgress } from '../../src/providers'
-import { Button, Screen, Text, colors, sizes, space } from '../../src/ui'
+import { useCloseModal, useContent, useProgress } from '../../src/providers'
+import { Button, NATIVE_HEADER_HEIGHT, Screen, Text, colors, sizes, space, withAlpha } from '../../src/ui'
 
 /* A cottage's tale, presented as a modal: the first time straight from the
    code gate with the unlock ceremony (`unlocked=1`), later from the Atlas as
@@ -20,18 +20,11 @@ import { Button, Screen, Text, colors, sizes, space } from '../../src/ui'
    tale for a cottage that has not been found: such a link lands on the
    cottage's clue in the Atlas instead. */
 
-/* The native bar the hero scrolls under on iOS. */
-const BAR_HEIGHT = 44
 /* Room under the sticky button so the tale's last lines clear it. */
 const STICKY_CLEARANCE = sizes.button + space.xl * 2
 const STICKY_FADE_HEIGHT = 24
 
 /* The page colour made transparent, for the fade above the sticky button. */
-function withAlpha(hex: string, alpha: number) {
-  const value = hex.replace('#', '')
-  return `rgba(${parseInt(value.slice(0, 2), 16)}, ${parseInt(value.slice(2, 4), 16)}, ${parseInt(value.slice(4, 6), 16)}, ${alpha})`
-}
-
 const STICKY_GRADIENT = [withAlpha(colors.page, 0), colors.page] as const
 
 export default function StoryScreen() {
@@ -39,7 +32,7 @@ export default function StoryScreen() {
   const router = useRouter()
   const { slug, unlocked } = useLocalSearchParams<{ slug: string; unlocked?: string }>()
   const { cottageBySlug } = useContent()
-  const { hydrated, foundSlugs, setStoryOpen } = useProgress()
+  const { foundSlugs, setStoryOpen } = useProgress()
   const cottage = cottageBySlug(slug)
   const found = foundSlugs.has(slug)
 
@@ -47,8 +40,8 @@ export default function StoryScreen() {
      the tabs already beneath (a fresh copy would stack a second Atlas), or
      the Atlas in this screen's place when the link was the entry point. */
   useEffect(() => {
-    if (cottage && hydrated && !found) router.dismissTo({ pathname: '/', params: { focus: slug } })
-  }, [cottage, hydrated, found, slug, router])
+    if (cottage && !found) router.dismissTo({ pathname: '/', params: { focus: slug } })
+  }, [cottage, found, slug, router])
 
   /* The Atlas's celebration presenter waits while a story is on top. */
   useEffect(() => {
@@ -66,14 +59,13 @@ export default function StoryScreen() {
       </Screen>
     )
   }
-  if (!hydrated || !found) return null
+  if (!found) return null
 
   return <StoryView cottage={cottage} ceremony={unlocked === '1'} />
 }
 
 function StoryView({ cottage, ceremony }: { cottage: Cottage; ceremony: boolean }) {
   const { t } = useTranslation()
-  const router = useRouter()
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
   const { width } = useWindowDimensions()
@@ -82,14 +74,10 @@ function StoryView({ cottage, ceremony }: { cottage: Cottage; ceremony: boolean 
   const scrollY = useSharedValue(0)
   const [titleShown, setTitleShown] = useState(false)
 
-  /* A page sheet sits below the status bar, so the bar is its own height. */
-  const barHeight = BAR_HEIGHT
-  /* The hero starts at the top of the content: under the transparent bar on
-     iOS, right below the opaque bar on Android. */
-  const heroTop = 0
   const heroHeight = Math.round(width / HERO_ASPECT)
-  /* The bar takes the title once the hero has scrolled out from under it. */
-  const titleThreshold = heroHeight - (HERO_UNDER_BAR ? barHeight : 0)
+  /* The bar takes the title once the hero has scrolled out from under it
+     (a page sheet sits below the status bar, so the bar is its own height). */
+  const titleThreshold = heroHeight - (HERO_UNDER_BAR ? NATIVE_HEADER_HEIGHT : 0)
 
   const onScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y
@@ -111,10 +99,7 @@ function StoryView({ cottage, ceremony }: { cottage: Cottage; ceremony: boolean 
     if (ceremony) announce(`${t('story.unlocked')}. ${cottage.title}`)
   }, [ceremony, cottage.title, t])
 
-  const close = useCallback(() => {
-    if (router.canGoBack()) router.back()
-    else router.replace('/')
-  }, [router])
+  const close = useCloseModal()
 
   /* The banner names the level earned last; opening it closes the story
      and lets the Atlas present the celebration without its usual wait. */
@@ -138,7 +123,7 @@ function StoryView({ cottage, ceremony }: { cottage: Cottage; ceremony: boolean 
         contentContainerStyle={{ paddingBottom: bottomPadding }}
         showsVerticalScrollIndicator={false}
       >
-        <StoryHero cottage={cottage} scrollY={scrollY} ceremony={ceremony} topInset={heroTop} />
+        <StoryHero cottage={cottage} scrollY={scrollY} ceremony={ceremony} />
         <StoryBody
           cottage={cottage}
           ceremony={ceremony}

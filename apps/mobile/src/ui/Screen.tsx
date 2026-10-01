@@ -1,17 +1,17 @@
 import type { ReactNode } from 'react'
 import { useCallback, useState } from 'react'
-import { RefreshControl, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native'
+import { RefreshControl, ScrollView, StyleSheet, type StyleProp, type ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { readable } from './layout'
 import { colors, space } from './tokens'
 
 /* The body of a screen under a native header: a scrolling column with the
-   page padding and the shared gap, or a flex view for screens that scroll
-   themselves. No safe-area handling and no drawn header: the native stack
-   owns both, and the content inset adjusts under a transparent bar. Screens
-   with no header at all (welcome) ask for the top inset explicitly. */
+   page padding and the shared gap, kept to the readable width. No safe-area
+   handling and no drawn header: the native stack owns both, and the content
+   inset adjusts under a transparent bar. Screens with no header at all ask
+   for the top inset explicitly. */
 
 export type ScreenProps = {
-  mode?: 'scroll' | 'fill'
   /* Horizontal page padding; off for edge-to-edge content. */
   padded?: boolean
   refreshing?: boolean
@@ -25,7 +25,7 @@ export type ScreenProps = {
   children: ReactNode
 }
 
-export function Screen({ mode = 'scroll', padded = true, refreshing, onRefresh, keyboard = 'none', topInset = false, contentStyle, children }: ScreenProps) {
+export function Screen({ padded = true, refreshing, onRefresh, keyboard = 'none', topInset = false, contentStyle, children }: ScreenProps) {
   const insets = useSafeAreaInsets()
   const [busy, setBusy] = useState(false)
 
@@ -43,15 +43,13 @@ export function Screen({ mode = 'scroll', padded = true, refreshing, onRefresh, 
 
   const inset = topInset ? { paddingTop: insets.top + space.lg } : null
 
-  if (mode === 'fill') {
-    return <View style={[styles.fill, padded && styles.padded, inset, contentStyle]}>{children}</View>
-  }
-
   return (
     <ScrollView
       style={styles.scroll}
-      contentContainerStyle={[styles.content, padded && styles.padded, inset, contentStyle]}
+      contentContainerStyle={[styles.content, readable, padded && styles.padded, inset, contentStyle]}
       contentInsetAdjustmentBehavior="automatic"
+      /* iOS draws the indicator under the automatic content inset unless
+         an inset of its own is set; one point keeps it in place. */
       scrollIndicatorInsets={{ right: 1 }}
       automaticallyAdjustKeyboardInsets
       keyboardShouldPersistTaps="handled"
@@ -80,10 +78,6 @@ const styles = StyleSheet.create({
   content: {
     paddingTop: space.lg,
     paddingBottom: space.xxl,
-    gap: space.lg,
-  },
-  fill: {
-    flex: 1,
     gap: space.lg,
   },
   padded: {

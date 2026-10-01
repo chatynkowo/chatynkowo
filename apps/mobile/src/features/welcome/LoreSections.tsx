@@ -147,7 +147,7 @@ export function TrailPhoto() {
 export function ExpeditionNotes() {
   const { t } = useTranslation()
   return (
-    <View style={styles.notes} accessibilityLabel={t('quest.notesAria')}>
+    <View style={styles.notes}>
       <View style={styles.note}>
         <TrailIcon size={iconSize.md} color={colors.accentStrong} />
         <Text variant="small" tone="soft" style={styles.noteText}>

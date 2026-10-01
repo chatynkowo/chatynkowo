@@ -14,9 +14,8 @@ const CODE_PARAM = /[?&#](?:kod|code)=\d{4}(?!\d)/i
 const SCHEME_ROUTE = /^chatynkowo:\/\/(story|reward)\//
 const SITE_URL = /^https?:\/\/(www\.)?chatynkowo\.pl/i
 
-export async function redirectSystemPath({ path, initial }: { path: string; initial: boolean }): Promise<string> {
+export async function redirectSystemPath({ path }: { path: string; initial: boolean }): Promise<string> {
   try {
-    if (__DEV__) console.info('native-intent', { path, initial })
     const code = CODE_PARAM.test(path) ? codeFromScan(path) : null
     /* The same flag the bootstrap reads for the Protected guard: until the
        welcome was seen the tabs do not exist, so every link lands there. */

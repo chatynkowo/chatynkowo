@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, Switch, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { DISPLAY_NAME_MAX_LENGTH } from '@chatynkowo/core'
+import { providerAvatarUrl } from '../../lib/sync'
 import { useProgress, useSession, useToast } from '../../providers'
 import { ProfileIcon, SettingsRow, SettingsSection, TextField, colors, iconSize, space } from '../../ui'
 import { SignInButtons } from '../ranking/SignInButtons'
 
 /* The account block of the Profile: signed in, the nickname and the avatar
-   toggle saving implicitly (on blur, on return, on toggle) with a toast as
-   the receipt, and the finds counter with the sync state as the footer;
-   signed out, the sign-in buttons or, while sign-in is switched off, a note
-   that the finds are safe on the device. */
+   toggle saving implicitly (when the field is left, on toggle) with a toast
+   as the receipt or the complaint, and the finds counter with the sync
+   state as the footer; signed out, the sign-in buttons or, in a build with
+   no sign-in, a note that the finds are safe on the device. */
 
 export function AccountSection() {
   const { t } = useTranslation()
@@ -25,24 +27,28 @@ export function AccountSection() {
     setShowAvatar(Boolean(account.profile?.avatar_url))
   }, [account.profile])
 
-  /* Same payload as before: an empty nickname keeps the current one or
-     falls back to the default; the avatar is the provider's picture or
-     nothing. Nothing is sent when nothing changed. */
+  /* An empty nickname keeps the current one or falls back to the default;
+     the avatar is the provider's picture or nothing. Nothing is sent when
+     nothing changed, and nothing while a save is in flight. A refused save
+     keeps the typed name in the field for the next try and puts the switch
+     back. */
   async function save(nextName: string, nextAvatar: boolean) {
     const profile = account.profile
-    const displayName = nextName.trim() || profile?.display_name || t('ranking.defaultName')
-    if (profile && displayName === profile.display_name && nextAvatar === Boolean(profile.avatar_url)) {
+    const session = account.session
+    if (!profile || !session || saving) return
+    const displayName = nextName.trim() || profile.display_name || t('ranking.defaultName')
+    if (displayName === profile.display_name && nextAvatar === Boolean(profile.avatar_url)) {
       setName(displayName)
       return
     }
-    const metadata = account.session?.user.user_metadata ?? {}
-    const providerAvatar = String(metadata.avatar_url || metadata.picture || '') || null
     setSaving(true)
     try {
-      await account.saveProfile({ display_name: displayName, avatar_url: nextAvatar ? providerAvatar : null })
+      await account.saveProfile({ display_name: displayName, avatar_url: nextAvatar ? providerAvatarUrl(session) : null })
       toast.show({ tone: 'success', text: t('mobile:profile.saved') })
-    } catch {
-      // The typed value stays in the field; the next blur sends it again.
+    } catch (error) {
+      console.error('[account] profile', error)
+      setShowAvatar(Boolean(profile.avatar_url))
+      toast.show({ tone: 'error', text: t('mobile:profile.saveFailed') })
     } finally {
       setSaving(false)
     }
@@ -68,6 +74,18 @@ export function AccountSection() {
     )
   }
 
+  /* Signed in, the row not read yet (or not readable right now): nothing to
+     edit until it arrives with the next reconnect. */
+  if (!account.profile) {
+    return (
+      <SettingsSection title={title}>
+        <View style={styles.padded}>
+          <ActivityIndicator color={colors.accentStrong} accessibilityLabel={t('mobile:ranking.exchanging')} />
+        </View>
+      </SettingsSection>
+    )
+  }
+
   const footer = [
     t('mobile:profile.finds', { count: foundCount }),
     pendingCount > 0 ? t('mobile:common.pendingSync', { count: pendingCount }) : null,
@@ -84,10 +102,9 @@ export function AccountSection() {
             label={t('ranking.nickname')}
             value={name}
             onChangeText={setName}
-            maxLength={40}
+            maxLength={DISPLAY_NAME_MAX_LENGTH}
             autoCapitalize="words"
             returnKeyType="done"
-            onSubmitEditing={() => void save(name, showAvatar)}
             onBlur={() => void save(name, showAvatar)}
           />
         </View>

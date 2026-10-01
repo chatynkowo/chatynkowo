@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import type { Cottage } from '@chatynkowo/core'
 import { announce } from '../../lib/announce'
 import { content } from '../../lib/content'
-import { ContentImage, DURATIONS, EASING, PageDots, ReduceMotion, colors, space, useReducedMotion } from '../../ui'
+import { colors, ContentImage, DURATIONS, EASING, PageDots, ReduceMotion, space, useReducedMotion, withAlpha } from '../../ui'
 
 /* The cottage's photos, full-bleed at the top of the story: a paged strip
    whose pictures drift a quarter slower than the pages, fading into the page
@@ -29,23 +29,12 @@ type StoryHeroProps = {
   /* The story's vertical scroll offset. */
   scrollY: SharedValue<number>
   ceremony: boolean
-  /* Space above the pictures on platforms whose bar is opaque. */
-  topInset?: number
 }
 
-/* A colour with the alpha replaced: the gradient starts as the page colour
-   made transparent, not as black. */
-function withAlpha(hex: string, alpha: number) {
-  const value = hex.replace('#', '')
-  const r = parseInt(value.slice(0, 2), 16)
-  const g = parseInt(value.slice(2, 4), 16)
-  const b = parseInt(value.slice(4, 6), 16)
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
-}
-
+/* The gradient starts as the page colour made transparent, not as black. */
 const GRADIENT = [withAlpha(colors.page, 0), colors.page] as const
 
-export function StoryHero({ cottage, scrollY, ceremony, topInset = 0 }: StoryHeroProps) {
+export function StoryHero({ cottage, scrollY, ceremony }: StoryHeroProps) {
   const { t } = useTranslation()
   const { width } = useWindowDimensions()
   const reduceMotion = useReducedMotion()
@@ -91,7 +80,7 @@ export function StoryHero({ cottage, scrollY, ceremony, topInset = 0 }: StoryHer
   )
 
   return (
-    <Animated.View style={[styles.hero, { paddingTop: topInset, transformOrigin: 'top' }, stretch]}>
+    <Animated.View style={[styles.hero, { transformOrigin: 'top' }, stretch]}>
       <Animated.FlatList
         data={photos}
         keyExtractor={(uri) => uri}

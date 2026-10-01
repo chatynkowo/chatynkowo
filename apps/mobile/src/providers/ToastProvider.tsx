@@ -16,13 +16,22 @@ export type ToastOptions = {
   action?: { label: string; onPress: () => void }
   /* How long the toast stays; 3500 ms by default. */
   durationMs?: number
-  /* Under the status bar by default; 'bottom' floats above the Atlas chrome. */
+  /* Under the status bar by default; 'bottom' floats above the tab bar and
+     whatever chrome the screen in front has reported (see
+     `setBottomClearance`). */
   placement?: 'top' | 'bottom'
 }
 
 export type ActiveToast = ToastOptions & { id: number }
 
-type ToastApi = { show: (options: ToastOptions) => void; hide: () => void }
+type ToastApi = {
+  show: (options: ToastOptions) => void
+  hide: () => void
+  /* The height of the chrome at the bottom of the screen in front, which a
+     bottom toast stays above; the screen reports it while it is focused
+     and zero when it leaves. */
+  setBottomClearance: (px: number) => void
+}
 
 /* For the host only: hold the timer while pressed, let it run on release. */
 type ToastTimer = { pause: () => void; resume: () => void }
@@ -34,9 +43,11 @@ const MIN_REMAINING_MS = 800
 const ToastApiContext = createContext<ToastApi | null>(null)
 const ToastTimerContext = createContext<ToastTimer | null>(null)
 const ToastStateContext = createContext<ActiveToast | null>(null)
+const ToastClearanceContext = createContext(0)
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [current, setCurrent] = useState<ActiveToast | null>(null)
+  const [bottomClearance, setBottomClearance] = useState(0)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const nextId = useRef(0)
   /* When the running timer fires, and how much was left when it was held. */
@@ -94,13 +105,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => clearTimer, [])
 
-  const api = useMemo<ToastApi>(() => ({ show, hide }), [show, hide])
+  const api = useMemo<ToastApi>(() => ({ show, hide, setBottomClearance }), [show, hide])
   const timerApi = useMemo<ToastTimer>(() => ({ pause, resume }), [pause, resume])
 
   return (
     <ToastApiContext.Provider value={api}>
       <ToastTimerContext.Provider value={timerApi}>
-        <ToastStateContext.Provider value={current}>{children}</ToastStateContext.Provider>
+        <ToastStateContext.Provider value={current}>
+          <ToastClearanceContext.Provider value={bottomClearance}>{children}</ToastClearanceContext.Provider>
+        </ToastStateContext.Provider>
       </ToastTimerContext.Provider>
     </ToastApiContext.Provider>
   )
@@ -111,6 +124,7 @@ const noop: ToastApi = {
     if (__DEV__) console.warn('useToast: no ToastProvider above this component')
   },
   hide: () => {},
+  setBottomClearance: () => {},
 }
 
 const noTimer: ToastTimer = { pause: () => {}, resume: () => {} }
@@ -127,4 +141,9 @@ export function useActiveToast(): ActiveToast | null {
 /* The timer controls, for the host. */
 export function useToastTimer(): ToastTimer {
   return useContext(ToastTimerContext) ?? noTimer
+}
+
+/* The bottom chrome a bottom toast stays above, for the host. */
+export function useToastClearance(): number {
+  return useContext(ToastClearanceContext)
 }

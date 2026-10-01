@@ -1,5 +1,6 @@
 import { Linking, Platform } from 'react-native'
 import type { LatLng } from '@chatynkowo/core'
+import { STORAGE_KEYS } from '../config'
 import { readJson, writeJson } from './storage'
 
 /* "Navigate" on a cottage: hand the pin to the system maps app. On iOS the
@@ -16,10 +17,6 @@ export type NavigateOptions = {
   chooser?: (choices: MapsApp[]) => Promise<MapsApp | null>
 }
 
-/* The remembered maps app on iOS. Local to this adapter: it is a device
-   preference, not part of the seeker's data. */
-const MAPS_APP_KEY = 'chatynkowo:maps-app'
-
 async function canOpen(url: string) {
   try {
     return await Linking.canOpenURL(url)
@@ -32,12 +29,12 @@ async function canOpen(url: string) {
    chosen now; the choice is kept for the next cottage. */
 async function iosChoice(googleUrl: string, chooser?: NavigateOptions['chooser']): Promise<MapsApp | null> {
   if (!(await canOpen(googleUrl))) return 'apple'
-  const remembered = await readJson<MapsApp>(MAPS_APP_KEY)
+  const remembered = await readJson<MapsApp>(STORAGE_KEYS.mapsApp)
   if (remembered === 'apple' || remembered === 'google') return remembered
   if (!chooser) return 'apple'
   const picked = await chooser(['apple', 'google'])
   if (!picked) return null
-  void writeJson(MAPS_APP_KEY, picked)
+  void writeJson(STORAGE_KEYS.mapsApp, picked)
   return picked
 }
 

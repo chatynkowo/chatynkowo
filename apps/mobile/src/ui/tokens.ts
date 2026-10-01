@@ -4,7 +4,7 @@
    theme's font families to the names expo-font registers (see fonts.ts). */
 import { fontFamilies } from '@chatynkowo/theme'
 
-export { colors, iconSize, mapPalette, radius, sizes, space, typeScale, type ButtonVariant, type IconSize } from '@chatynkowo/theme'
+export { colors, iconSize, mapPalette, radius, sizes, space, typeScale, withAlpha, type ButtonVariant, type IconSize } from '@chatynkowo/theme'
 
 export const fonts = {
   body: fontFamilies.body.regular,

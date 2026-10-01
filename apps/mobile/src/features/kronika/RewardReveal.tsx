@@ -36,7 +36,7 @@ export function RewardReveal() {
   const { celebration, shiftCelebration, clearCelebration } = useProgress()
   const { rewards } = useContent()
 
-  /* Reached through one path only, so a double back can never happen. */
+  /* Every way out passes this flag, so a double back can never happen. */
   const leaving = useRef(false)
   const leave = useCallback(
     (then?: () => void) => {
@@ -97,10 +97,14 @@ export function RewardReveal() {
   const art = Math.min(ART_MAX, cardWidth - 2 * space.xl)
   const intro = firstBlock(level.body)
 
-  const openKronika = () =>
-    leave(() => {
-      requestAnimationFrame(() => router.navigate('/kronika'))
-    })
+  /* Navigating to the tab beneath brings the stack back to the tabs, which
+     takes this card with it: one step, no back of its own. */
+  const openKronika = () => {
+    if (leaving.current) return
+    leaving.current = true
+    clearCelebration()
+    router.navigate('/kronika')
+  }
 
   return (
     <View style={styles.screen} accessibilityViewIsModal>

@@ -6,7 +6,7 @@ import NetInfo, { type NetInfoState } from '@react-native-community/netinfo'
    as online so a cold start never waits on it. The hooks built on this
    store live in src/providers/NetworkProvider.tsx. */
 
-export function isOnline(state: NetInfoState): boolean {
+function isOnline(state: NetInfoState): boolean {
   return state.isConnected === false ? false : state.isInternetReachable !== false
 }
 

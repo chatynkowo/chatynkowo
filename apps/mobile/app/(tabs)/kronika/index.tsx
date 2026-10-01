@@ -6,10 +6,10 @@ import { finalLevelId, kronikaLevels, nextLevel, requiredFinds, type RewardLevel
 import { CollectionHeader } from '../../../src/features/kronika/CollectionHeader'
 import { RewardCard } from '../../../src/features/kronika/RewardCard'
 import { useContent, useProgress } from '../../../src/providers'
-import { ChronicleIcon, EmptyState, LinkButton, SkeletonCard, colors, space, useTabBarClearance } from '../../../src/ui'
+import { ChronicleIcon, EmptyState, LinkButton, SkeletonCard, colors, readable, space, useTabBarClearance } from '../../../src/ui'
 
 /* The Kronika tab: the collection of reward levels, earned and still locked,
-   as a two-column grid under a large native title, with the progress card
+   as a two-column grid under a standard native title, with the progress card
    (which opens the cottage directory) and the published intro above it.
    Seals earned since the last visit are marked "new" for this visit and
    then counted as seen, which clears the tab badge. The full set unlocks
@@ -34,14 +34,14 @@ export default function KronikaScreen() {
   const { t } = useTranslation()
   const router = useRouter()
   const { rewards, total, status, refresh } = useContent()
-  const { state, foundCount, hydrated, unseenRewards, markRewardsSeen } = useProgress()
+  const { state, foundCount, unseenRewards, markRewardsSeen } = useProgress()
   const tabBarClearance = useTabBarClearance()
   const [refreshing, setRefreshing] = useState(false)
 
   const levels = useMemo(() => kronikaLevels(rewards.levels, state.badges), [rewards.levels, state.badges])
   const next = useMemo(() => nextLevel(state, rewards.levels, total), [state, rewards.levels, total])
   const completed = total > 0 && Boolean(state.badges[finalLevelId(rewards.levels)])
-  const loading = !hydrated || (levels.length === 0 && status === 'loading')
+  const loading = levels.length === 0 && status === 'loading'
 
   /* The ribbons of this visit: the unseen ids as they were when the tab
      focused, kept while the provider already counts them as seen. */
@@ -143,7 +143,10 @@ export default function KronikaScreen() {
         renderItem={renderCell}
         numColumns={2}
         columnWrapperStyle={styles.row}
-        contentContainerStyle={[styles.content, { paddingBottom: space.xxl + tabBarClearance }]}
+        /* Android clips off-screen rows by default and a picture clipped
+           while loading can stay blank once it comes into view. */
+        removeClippedSubviews={false}
+        contentContainerStyle={[styles.content, readable, { paddingBottom: space.xxl + tabBarClearance }]}
         contentInsetAdjustmentBehavior="automatic"
         scrollIndicatorInsets={{ bottom: tabBarClearance }}
         ListHeaderComponent={header}

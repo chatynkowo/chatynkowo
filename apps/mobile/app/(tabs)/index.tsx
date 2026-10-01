@@ -7,14 +7,14 @@ import { useTranslation } from 'react-i18next'
 import { nearestPlace, nextLevel, type Cottage, type LatLng } from '@chatynkowo/core'
 import { AtlasMap, LEVEL_KEYS, type AtlasMapHandle, type FrameMode, type MapLevel, type OutOfSight } from '../../src/features/atlas/AtlasMap'
 import { CottageSheet, sheetHeightForIndex, type CottageSheetHandle, type SnapIndex } from '../../src/features/atlas/CottageSheet'
-import { ControlBar, LevelCard, MapTip, NearestBeacon, StatusPill } from '../../src/features/atlas/MapChrome'
+import { ControlBar, LevelCard, MapTip, NearestBeacon, StatusPill, formatDistance } from '../../src/features/atlas/MapChrome'
 import { MapVignette } from '../../src/features/atlas/MapVignette'
 import { QuestCard } from '../../src/features/atlas/QuestCard'
 import { useAtlasFocus, type FocusReason } from '../../src/features/atlas/useAtlasFocus'
 import { useLocate } from '../../src/features/atlas/useLocate'
 import { announce } from '../../src/lib/announce'
 import { haptic } from '../../src/lib/haptics'
-import { useContent, useOnline, useProgress } from '../../src/providers'
+import { useContent, useOnline, useProgress, useToast } from '../../src/providers'
 import {
   AtlasIcon,
   colors,
@@ -228,6 +228,14 @@ export default function AtlasScreen() {
     const { height } = event.nativeEvent.layout
     setChrome((current) => (current.bottom === height ? current : { ...current, bottom: height }))
   }, [])
+  /* The toasts of the locate control float above this chrome. */
+  const toast = useToast()
+  useFocusEffect(
+    useCallback(() => {
+      toast.setBottomClearance(chrome.bottom)
+      return () => toast.setBottomClearance(0)
+    }, [toast, chrome.bottom]),
+  )
   const goToNearest = useCallback(() => {
     if (outOfSight) openAt(outOfSight.cottage, 1, 'fly')
   }, [outOfSight, openAt])
@@ -241,7 +249,7 @@ export default function AtlasScreen() {
     }
     if (voicedNearest.current === outOfSight.cottage.slug) return
     voicedNearest.current = outOfSight.cottage.slug
-    announce(t('mobile:atlas.nearestAria', { title: outOfSight.cottage.title, distance: t('mobile:atlas.distanceKm', { value: Math.round(outOfSight.distanceKm).toLocaleString(i18n.resolvedLanguage) }) }))
+    announce(t('mobile:atlas.nearestAria', { title: outOfSight.cottage.title, distance: formatDistance(outOfSight.distanceKm, i18n.resolvedLanguage ?? i18n.language, t) }))
   }, [outOfSight, selected, t, i18n.resolvedLanguage])
 
   const onFocusCottage = useCallback(

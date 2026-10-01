@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { BackHandler, Image, ScrollView, StyleSheet, View, useWindowDimensions, type FlatList, type LayoutChangeEvent } from 'react-native'
-import Animated, { runOnJS, useAnimatedReaction, useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated'
+import { BackHandler, ScrollView, StyleSheet, View, useWindowDimensions, type FlatList, type LayoutChangeEvent } from 'react-native'
+import Animated, { useAnimatedReaction, useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
+import { Image } from 'expo-image'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect, useNavigation, useRouter, type Href } from 'expo-router'
 import { useTranslation } from 'react-i18next'
@@ -9,7 +11,7 @@ import logo from '../../../assets/logo.png'
 import { announce } from '../../lib/announce'
 import { haptic } from '../../lib/haptics'
 import { markWelcomeSeen, useBoot } from '../../providers'
-import { Button, ForwardIcon, KeyIcon, PageDots, colors, iconSize, space, useTabBarHeight } from '../../ui'
+import { Button, ForwardIcon, KeyIcon, PageDots, colors, iconSize, readable, space, useTabBarHeight } from '../../ui'
 import { GuideTrail } from './GuideTrail'
 import { CreedCard, ExpeditionNotes, GuideHeading, LoreIntro, LoreQuestions, TrailPhoto } from './LoreSections'
 
@@ -60,7 +62,7 @@ export function OnboardingPager({ mode, code }: OnboardingPagerProps) {
   const finish = useCallback(
     (then?: Href) => {
       boot.setPendingHref(then ?? null)
-      boot.setWelcomeSeen(true)
+      boot.markWelcomeSeen()
     },
     [boot],
   )
@@ -113,7 +115,7 @@ export function OnboardingPager({ mode, code }: OnboardingPagerProps) {
   useAnimatedReaction(
     () => (width > 0 ? Math.round(scrollX.value / width) : 0),
     (next, previous) => {
-      if (next !== previous) runOnJS(onPageChange)(Math.min(PAGE_COUNT - 1, Math.max(0, next)))
+      if (next !== previous) scheduleOnRN(onPageChange, Math.min(PAGE_COUNT - 1, Math.max(0, next)))
     },
     [width, onPageChange],
   )
@@ -150,7 +152,7 @@ export function OnboardingPager({ mode, code }: OnboardingPagerProps) {
   const pages: Record<(typeof PAGE_KEYS)[number], ReactNode> = {
     lore: (
       <>
-        <Image source={logo} style={styles.logo} resizeMode="contain" accessibilityIgnoresInvertColors />
+        <Image source={logo} style={styles.logo} contentFit="contain" accessible={false} />
         <LoreIntro />
       </>
     ),
@@ -253,6 +255,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   page: {
+    ...readable,
     flexGrow: 1,
     paddingHorizontal: space.lg,
     paddingBottom: space.xl,
@@ -271,6 +274,7 @@ const styles = StyleSheet.create({
     gap: space.sm,
   },
   footer: {
+    ...readable,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

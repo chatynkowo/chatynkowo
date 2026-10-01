@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import type { Cottage } from '@chatynkowo/core'
+import { formatDay, type Cottage } from '@chatynkowo/core'
 import { NewRewardBanner } from '../kronika/NewRewardBanner'
 import { FoundIcon, MarkdownView, Text, colors, iconSize, space } from '../../ui'
 import { SealStamp } from './SealStamp'
@@ -26,7 +26,7 @@ export type StoryBodyProps = {
 export function StoryBody({ cottage, ceremony, foundAt, newReward, onOpenReward, onSealSettled }: StoryBodyProps) {
   const { t, i18n } = useTranslation()
   const mode = ceremony ? 'ceremony' : 'revisit'
-  const foundOn = foundAt ? new Date(foundAt).toLocaleDateString(i18n.resolvedLanguage) : null
+  const foundOn = foundAt ? formatDay(foundAt, i18n.resolvedLanguage ?? i18n.language) : null
   let order = 0
   const next = () => order++
 
@@ -42,7 +42,7 @@ export function StoryBody({ cottage, ceremony, foundAt, newReward, onOpenReward,
         </View>
         {!ceremony && foundOn ? (
           <Text variant="small" tone="faint" style={styles.foundOn}>
-            {t('mobile:kronika.earnedOn', { date: foundOn })}
+            {t('mobile:cottages.foundOn', { date: foundOn })}
           </Text>
         ) : null}
       </StoryUnlockReveal>

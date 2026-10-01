@@ -1,36 +1,36 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Keyboard, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, type ComponentRef } from 'react'
+import { Keyboard, Pressable, StyleSheet, useWindowDimensions } from 'react-native'
 import Animated, { cancelAnimation, interpolateColor, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated'
-import { useFocusEffect } from 'expo-router'
 import { useTranslation } from 'react-i18next'
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import { haptic } from '../../lib/haptics'
-import { DURATIONS, ReduceMotion, SPRINGS, Text, colors, fonts, radius, space, useReducedMotion } from '../../ui'
+import { DURATIONS, ReduceMotion, SPRINGS, Text, colors, radius, space, useReducedMotion } from '../../ui'
 import type { CodePhase } from './useCodeEntry'
 import { SHAKE_MS, useShake } from './useShake'
 
-/* Four digit boxes under one invisible input, so the numeric keyboard,
+/* Four digit boxes drawn over one hidden input, so the numeric keyboard,
    paste and one-time-code autofill all work as on a plain field while the
-   boxes look like the site's pin input. The input lies over the whole row
-   and is the one control: a tap on the boxes is a native tap on it, so it
-   takes the focus back however the keyboard was put away, and the boxes
-   are decoration hidden from assistive tech. Each digit bumps its box, a
-   check pulses the row, an error shakes it red, an accepted code fills it
-   gold. */
+   boxes look like the site's pin input. The input is the code sheet's own
+   (a rising keyboard then extends the sheet) and sits as a point in the
+   row's corner, so nothing it types can show beside the boxes; a tap
+   anywhere on the row focuses it, which takes the focus back however the
+   keyboard was put away. The input is the one control for assistive tech;
+   the boxes are decoration. Each digit bumps its box, a check pulses the
+   row, an error shakes it red, an accepted code fills it gold. */
 
 type PinInputProps = {
   value: string
   onChange: (value: string) => void
   onSubmit: () => void
   phase: CodePhase
-  /* Focus the input (and raise the keyboard) whenever the route is focused. */
-  autoFocus?: boolean
 }
+
+/* The field, for the screen to focus once its sheet has settled. */
+export type PinInputHandle = { focus: () => void }
 
 const LENGTH = 4
 const MAX_BOX_WIDTH = 60
 const BOX_RATIO = 1.2
-/* A beat after the sheet appears, so the keyboard rises with it settled. */
-const FOCUS_DELAY_MS = 80
 const BUMP_MS = 90
 const TONE_MS = 200
 const PULSE_HALF_MS = 700
@@ -40,10 +40,10 @@ const PULSE_STATIC = 0.8
 /* The border and fill follow one value: 0 at rest, 1 in error, 2 accepted. */
 const PHASE_TONE: Record<CodePhase, number> = { idle: 0, checking: 0, waiting: 0, error: 1, success: 2 }
 
-export function PinInput({ value, onChange, onSubmit, phase, autoFocus = false }: PinInputProps) {
+export const PinInput = forwardRef<PinInputHandle, PinInputProps>(function PinInput({ value, onChange, onSubmit, phase }, ref) {
   const { t } = useTranslation()
   const { width: windowWidth } = useWindowDimensions()
-  const input = useRef<TextInput>(null)
+  const input = useRef<ComponentRef<typeof BottomSheetTextInput>>(undefined)
   const [focused, setFocused] = useState(false)
   /* Android keeps the input focused when the keyboard is hidden with Back,
      so the active box follows the keyboard itself. */
@@ -62,14 +62,7 @@ export function PinInput({ value, onChange, onSubmit, phase, autoFocus = false }
   const activeIndex = Math.min(value.length, LENGTH - 1)
 
   const focus = useCallback(() => input.current?.focus(), [])
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!autoFocus) return
-      const timer = setTimeout(focus, FOCUS_DELAY_MS)
-      return () => clearTimeout(timer)
-    }, [autoFocus, focus]),
-  )
+  useImperativeHandle(ref, () => ({ focus }), [focus])
 
   /* A digit added ticks; removed or cleared digits are silent. */
   const previousLength = useRef(value.length)
@@ -92,13 +85,13 @@ export function PinInput({ value, onChange, onSubmit, phase, autoFocus = false }
   }
 
   return (
-    <View style={styles.wrap}>
+    <Pressable style={styles.wrap} onPress={() => input.current?.focus()} accessible={false}>
       <Animated.View style={[styles.boxes, shakeStyle]} pointerEvents="none" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
         {Array.from({ length: LENGTH }, (_, index) => (
           <PinBox key={index} digit={value[index] ?? ''} active={focused && keyboardShown && index === activeIndex} phase={phase} width={boxWidth} />
         ))}
       </Animated.View>
-      <TextInput
+      <BottomSheetTextInput
         ref={input}
         value={value}
         onChangeText={onChange}
@@ -113,12 +106,12 @@ export function PinInput({ value, onChange, onSubmit, phase, autoFocus = false }
         returnKeyType="done"
         caretHidden
         selectionColor="transparent"
-        accessibilityLabel={t('mobile:code.pasteAria')}
+        accessibilityLabel={t('mobile:code.inputAria')}
         style={styles.input}
       />
-    </View>
+    </Pressable>
   )
-}
+})
 
 function PinBox({ digit, active, phase, width }: { digit: string; active: boolean; phase: CodePhase; width: number }) {
   const reduceMotion = useReducedMotion()
@@ -166,7 +159,7 @@ function PinBox({ digit, active, phase, width }: { digit: string; active: boolea
 
   return (
     <Animated.View style={[styles.box, { width, height: Math.round(width * BOX_RATIO) }, motion]}>
-      <Text variant="display" style={styles.digit} adjustsFontSizeToFit numberOfLines={1}>
+      <Text variant="digit" adjustsFontSizeToFit numberOfLines={1}>
         {digit}
       </Text>
     </Animated.View>
@@ -188,19 +181,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.control,
   },
-  digit: {
-    fontFamily: fonts.display,
-    fontSize: 30,
-    lineHeight: 36,
-  },
-  /* Over the whole row, drawing nothing: a transparent colour rather than
-     a zero opacity, which would stop the touches on iOS. */
+  /* A point in the row's corner, drawing nothing: a zero opacity would
+     also hide it from the screen reader. */
   input: {
     position: 'absolute',
     top: 0,
-    right: 0,
-    bottom: 0,
     left: 0,
+    width: 1,
+    height: 1,
     color: 'transparent',
     backgroundColor: 'transparent',
   },

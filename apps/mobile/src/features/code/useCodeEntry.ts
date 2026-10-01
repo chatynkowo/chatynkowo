@@ -20,8 +20,8 @@ import { useContent, useOnline, useProgress } from '../../providers'
 export type CodePhase = 'idle' | 'checking' | 'waiting' | 'error' | 'success'
 
 export type ResolveOutcome =
-  | { kind: 'new'; slug: string; title: string; isMismatch: boolean }
-  | { kind: 'found'; slug: string; title: string; isMismatch: boolean }
+  | { kind: 'new' }
+  | { kind: 'found' }
   | { kind: 'invalid' }
   | { kind: 'unknown' }
   | { kind: 'waiting' }
@@ -153,7 +153,7 @@ export function useCodeEntry({ expectedSlug, codeParam, onOutcome, successDelayM
         moveTo('success', { key, params })
         haptic('success')
         announce(current.t(key, params))
-        current.onOutcome?.({ kind: result.isNew ? 'new' : 'found', slug: cottage.slug, title: cottage.title, isMismatch })
+        current.onOutcome?.({ kind: result.isNew ? 'new' : 'found' })
         openTimer.current = setTimeout(
           () => {
             openTimer.current = null
@@ -228,7 +228,6 @@ export function useCodeEntry({ expectedSlug, codeParam, onOutcome, successDelayM
     phase,
     messageKey: message?.key ?? null,
     messageParams: message?.params,
-    checking: phase === 'checking',
     reset,
   }
 }

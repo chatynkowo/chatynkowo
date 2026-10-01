@@ -3,7 +3,7 @@ import { StyleSheet, View, type DimensionValue, type LayoutChangeEvent, type Sty
 import { LinearGradient } from 'expo-linear-gradient'
 import Animated, { cancelAnimation, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated'
 import { EASING, ReduceMotion } from './motion'
-import { colors, mapPalette, radius, space } from './tokens'
+import { colors, mapPalette, radius, space, withAlpha } from './tokens'
 
 /* Placeholders for content that is still loading: a block, a leaderboard
    row, a Kronika grid cell and the whole map. A faint strip of light sweeps
@@ -15,13 +15,7 @@ const BREATH_MS = 900
 const REST_OPACITY = 0.7
 
 /* The ink at eight percent: the light of the sweep. */
-function inkAt(alpha: number): string {
-  const hex = colors.ink.slice(1)
-  const channel = (index: number) => parseInt(hex.slice(index, index + 2), 16)
-  return `rgba(${channel(0)}, ${channel(2)}, ${channel(4)}, ${alpha})`
-}
-
-const SWEEP = ['transparent', inkAt(0.08), 'transparent'] as const
+const SWEEP = ['transparent', withAlpha(colors.ink, 0.08), 'transparent'] as const
 
 export function Skeleton({ width, height, radius: corner = radius.control, style }: { width: DimensionValue; height: number; radius?: number; style?: StyleProp<ViewStyle> }) {
   const reduceMotion = useReducedMotion()

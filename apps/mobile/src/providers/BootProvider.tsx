@@ -13,8 +13,9 @@ import { writeJson } from '../lib/storage'
 
 type BootValue = {
   welcomeSeen: boolean
-  /* Flips the guard and remembers the visit on the device. */
-  setWelcomeSeen: (seen: boolean) => void
+  /* The onboarding was seen: the root's guard flips to the tabs and the
+     device remembers the visit. */
+  markWelcomeSeen: () => void
   pendingHref: Href | null
   setPendingHref: (href: Href | null) => void
   initial: BootResult
@@ -26,14 +27,14 @@ export function BootProvider({ initial, children }: { initial: BootResult; child
   const [welcomeSeen, setSeen] = useState(initial.welcomeSeen)
   const [pendingHref, setPendingHref] = useState<Href | null>(null)
 
-  const setWelcomeSeen = useCallback((seen: boolean) => {
-    setSeen(seen)
-    void (seen ? markWelcomeSeen() : writeJson(STORAGE_KEYS.welcomeSeen, false))
+  const markSeen = useCallback(() => {
+    setSeen(true)
+    void markWelcomeSeen()
   }, [])
 
   const value = useMemo<BootValue>(
-    () => ({ welcomeSeen, setWelcomeSeen, pendingHref, setPendingHref, initial }),
-    [welcomeSeen, setWelcomeSeen, pendingHref, initial],
+    () => ({ welcomeSeen, markWelcomeSeen: markSeen, pendingHref, setPendingHref, initial }),
+    [welcomeSeen, markSeen, pendingHref, initial],
   )
 
   return <BootContext.Provider value={value}>{children}</BootContext.Provider>

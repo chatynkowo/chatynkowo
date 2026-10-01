@@ -2,13 +2,12 @@ import { Platform } from 'react-native'
 import * as Haptics from 'expo-haptics'
 
 /* Every haptic in the app goes through here, so the mapping from a moment
-   to a feel is decided once (section 3 of the design). Fire and forget: a
-   missing engine or a simulator never surfaces as an error. */
+   to a feel is decided once: selection on controls, light on primary
+   actions, medium on a pin and the seal, success and error on the code
+   result. Fire and forget: a missing engine (a simulator, some tablets)
+   never surfaces as an error. */
 
 export type HapticKind = 'select' | 'light' | 'medium' | 'success' | 'warning' | 'error'
-
-/* One switch to silence every haptic, e.g. for a screen recording. */
-const HAPTICS_ENABLED = true
 
 function perform(kind: HapticKind): Promise<void> {
   switch (kind) {
@@ -29,17 +28,7 @@ function perform(kind: HapticKind): Promise<void> {
 }
 
 export function haptic(kind: HapticKind): void {
-  if (!HAPTICS_ENABLED || Platform.OS === 'web') return
-  try {
-    perform(kind).catch(() => {
-      // No haptic engine (simulator, some tablets): silently skip.
-    })
-  } catch {
-    // Same: a haptic is never worth an error.
-  }
-}
-
-/* The stable reference for components that want a hook-shaped API. */
-export function useHaptic(): (kind: HapticKind) => void {
-  return haptic
+  perform(kind).catch(() => {
+    // No haptic engine: silently skip.
+  })
 }

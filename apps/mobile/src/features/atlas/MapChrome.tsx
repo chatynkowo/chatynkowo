@@ -15,8 +15,10 @@ import type { OutOfSight } from './AtlasMap'
 export function LevelCard({ label, level }: { label: string; level: string }) {
   return (
     <View style={[styles.card, styles.level]} accessibilityLiveRegion="polite">
-      <Text style={styles.levelLabel}>{label}</Text>
-      <CrossfadeText value={level} weight="bold" style={styles.levelValue} />
+      <Text variant="caption" style={styles.chromeInk}>
+        {label}
+      </Text>
+      <CrossfadeText value={level} variant="compact" weight="bold" style={styles.chromeInk} />
     </View>
   )
 }
@@ -144,9 +146,9 @@ function edgePoint(heading: number, area: Size, pill: Size, exclude: { top: numb
   return { left: x - pill.width / 2, top: y - pill.height / 2 }
 }
 
-/* A distance for the beacon: metres below a kilometre, one decimal below
-   ten, whole kilometres beyond. */
-function formatDistance(km: number, locale: string, t: (key: string, values: Record<string, string>) => string): string {
+/* A distance for the beacon and its announcement: metres below a
+   kilometre, one decimal below ten, whole kilometres beyond. */
+export function formatDistance(km: number, locale: string, t: (key: string, values: Record<string, string>) => string): string {
   const metres = Math.round((km * 1000) / 50) * 50
   if (metres < 1000) return t('mobile:atlas.distanceM', { value: metres.toLocaleString(locale) })
   return t('mobile:atlas.distanceKm', { value: km.toLocaleString(locale, { maximumFractionDigits: km < 10 ? 1 : 0 }) })
@@ -229,17 +231,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
   },
-  levelLabel: {
+  chromeInk: {
     color: mapPalette.chromeInk,
-    fontSize: 11,
-    lineHeight: 14,
-    letterSpacing: 1.3,
-    textTransform: 'uppercase',
-  },
-  levelValue: {
-    color: mapPalette.chromeInk,
-    fontSize: 15,
-    lineHeight: 20,
   },
   bar: {
     flexDirection: 'row',

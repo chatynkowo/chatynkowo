@@ -7,8 +7,10 @@
       the generated SVG sprite. Typographic punctuation (dashes, quotes,
       ellipsis, middle dot) is fine.
    2. @phosphor-icons/react is imported only by the web icon vocabulary,
-      phosphor-react-native only by the mobile one, and @phosphor-icons/core
-      only by the sprite generator.
+      phosphor-react-native only by the mobile one (and there only through
+      its per-icon entries: the root entry carries every icon, and Metro
+      does not tree-shake), and @phosphor-icons/core only by the sprite
+      generator.
 
    Authored content (packages/content/public and private) is not checked:
    it is data, not code. */
@@ -34,12 +36,16 @@ const SKIP_FILES = new Set(['apps/web/public/icons.svg', 'apps/web/src/ui/tokens
    list icon. */
 const GLYPH = /[\u00D7\u2022\u2190-\u21FF\u2300-\u23FF\u25A0-\u27BF\u2900-\u297F\u2B00-\u2BFF\u{1F000}-\u{1FAFF}\uFE0F]/u
 
-/* Module specifiers, i.e. the quoted package name — prose mentions in
-   comments and docs are fine. */
+/* Module specifiers, i.e. the quoted package name (for the native package
+   also its per-icon entries, the only ones the vocabulary uses) — prose
+   mentions in comments and docs are fine. */
 const ICON_LIBRARY_RULES = [
   { pattern: /['"]@phosphor-icons\/react['"]/, allowed: ['apps/web/src/ui/icons.ts'], hint: 'import icons from the vocabulary in apps/web/src/ui/icons.ts' },
   { pattern: /['"]@phosphor-icons\/core['"]/, allowed: ['apps/web/scripts/build-icon-sprite.mjs'], hint: 'static markup uses the sprite built by apps/web/scripts/build-icon-sprite.mjs' },
-  { pattern: /['"]phosphor-react-native['"]/, allowed: ['apps/mobile/src/ui/icons.ts'], hint: 'import icons from the vocabulary in apps/mobile/src/ui/icons.ts' },
+  { pattern: /['"]phosphor-react-native(\/[^'"]*)?['"]/, allowed: ['apps/mobile/src/ui/icons.ts'], hint: 'import icons from the vocabulary in apps/mobile/src/ui/icons.ts' },
+  /* A value import from the root entry (one line, or the closing line of a
+     multi-line one); type-only imports are erased and may use the root. */
+  { pattern: /^(import (?!type\b)[^;]*|\})\s*from ['"]phosphor-react-native['"]/, allowed: [], hint: 'import each icon from phosphor-react-native/src/icons/<Name>; the root entry puts every icon in the bundle' },
 ]
 
 function* walk(path) {

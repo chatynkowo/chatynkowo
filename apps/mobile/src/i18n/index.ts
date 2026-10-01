@@ -13,7 +13,6 @@ export { DEFAULT_LANGUAGE, LANGUAGES, toLanguage, type Language } from '@chatynk
    as the starting language. A choice made in the app is remembered in
    AsyncStorage and restored by `restoreLanguage` at start-up. */
 
-
 /* The device's first language that the app ships, else Polish. */
 function deviceLanguage(): Language {
   for (const locale of getLocales()) {

@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
-import type { Cottage, StoredState } from '@chatynkowo/core'
+import { formatDay, type Cottage, type StoredState } from '@chatynkowo/core'
 import { haptic } from '../../lib/haptics'
 import { Button, CloseIcon, CottageIcon, FoundIcon, IconButton, PressableScale, Text, TextField, colors, iconSize, radius, space } from '../../ui'
 
@@ -77,7 +77,7 @@ export function CottageDirectory({ cottages, found, searching = false, onSelect,
           </Text>
           <Text variant="small" tone="faint" numberOfLines={1}>
             {foundAt
-              ? t('mobile:cottages.foundOn', { date: new Date(foundAt).toLocaleDateString(i18n.resolvedLanguage) })
+              ? t('mobile:cottages.foundOn', { date: formatDay(foundAt, i18n.resolvedLanguage ?? i18n.language) })
               : `${t('map.residentPrefix')} ${cottage.occupant || t('map.defaultOccupant')}`}
           </Text>
         </View>

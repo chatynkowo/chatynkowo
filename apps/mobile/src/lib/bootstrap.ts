@@ -2,7 +2,7 @@ import { emptyProgress, emptyQueue, type StoredState, type SyncQueue } from '@ch
 import { STORAGE_KEYS } from '../config'
 import i18n, { restoreLanguage, toLanguage, type Language } from '../i18n'
 import { readCachedEntries, type CachedEntries } from './content'
-import { loadProgressStrict, loadQueueStrict } from './progress-store'
+import { loadProgress, loadQueue } from './progress-store'
 import { readJson } from './storage'
 
 /* Everything the first frame needs, read from the device behind the native
@@ -29,12 +29,12 @@ export type BootResult = {
   storageOk: boolean
 }
 
-export const BOOT_TIMEOUT_MS = 1500
+const BOOT_TIMEOUT_MS = 1500
 
 const NO_CONTENT: CachedEntries = { cottages: null, rewards: null, lookup: null }
 
 /* The language i18next is on right now, as a content language. */
-export function currentLanguage(): Language {
+function currentLanguage(): Language {
   return toLanguage(i18n.resolvedLanguage ?? i18n.language)
 }
 
@@ -58,8 +58,8 @@ export async function bootstrap(): Promise<BootResult> {
   const language = restoreLanguage().then(currentLanguage)
   const [resolvedLanguage, progress, queue, welcomeSeen, rewardsSeen, content] = await Promise.all([
     raced(language, deadline, currentLanguage()),
-    loadProgressStrict().catch(unreadable(emptyProgress)),
-    loadQueueStrict().catch(unreadable(emptyQueue)),
+    loadProgress().catch(unreadable(emptyProgress)),
+    loadQueue().catch(unreadable(emptyQueue)),
     raced(readJson<boolean>(STORAGE_KEYS.welcomeSeen), deadline, false),
     raced(readJson<unknown>(STORAGE_KEYS.rewardsSeen), deadline, null),
     raced(language.then(readCachedEntries), deadline, NO_CONTENT),

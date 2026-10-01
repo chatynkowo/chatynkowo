@@ -86,8 +86,9 @@ export function useLeaderboard(total: number): LeaderboardState {
       setPage((current) => Math.min(current, pagesFor(next.length)))
       setUpdatedAt(now)
       setError(false)
-    } catch {
+    } catch (error) {
       if (requestId.current !== id) return
+      console.error('[ranking] leaderboard', error)
       errorRef.current = true
       setError(true)
     } finally {

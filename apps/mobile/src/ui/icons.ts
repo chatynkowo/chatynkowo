@@ -7,63 +7,65 @@
    - phosphor-react-native is the only icon library, and this file is the
      only module allowed to import it; scripts/check-conventions.mjs fails
      the build on any other import. Screens use the semantic names below.
+   - Each icon comes from its own entry (`src/icons/<Name>`), never from the
+     package root: Metro does not tree-shake, and the root carries all 1500
+     icons, several megabytes in the bundle for the fifty in use. The same
+     script rejects a value import from the root.
    - Never use emoji or typographic symbols (arrows, crosses, ticks) as
      icons, in markup or in comments — the same script rejects them.
    - Sizes come from `iconSize`, not from ad-hoc numbers.
 
    When a shared role is added, add it to SHARED_ICON_ROLES in the theme and
    to both vocabularies; app-only roles go to MOBILE_ICON_ROLES. */
-import {
-  ArrowCounterClockwiseIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  ArrowUpIcon,
-  BookOpenTextIcon,
-  CameraIcon as PhosphorCamera,
-  CaretDownIcon,
-  CaretLeftIcon,
-  CaretRightIcon,
-  CheckCircleIcon,
-  CheckIcon as PhosphorCheck,
-  CircleNotchIcon,
-  CloudArrowUpIcon,
-  CrownIcon,
-  DownloadSimpleIcon,
-  FacebookLogoIcon,
-  FlashlightIcon,
-  FootprintsIcon,
-  GpsFixIcon,
-  HandHeartIcon,
-  HouseLineIcon,
-  InfoIcon as PhosphorInfo,
-  InstagramLogoIcon,
-  KeyIcon as PhosphorKey,
-  LightningSlashIcon,
-  LockKeyOpenIcon,
-  MagnifyingGlassIcon,
-  MapPinIcon,
-  MapTrifoldIcon,
-  MinusIcon,
-  MoonStarsIcon,
-  NavigationArrowIcon,
-  PauseIcon as PhosphorPause,
-  PlayIcon as PhosphorPlay,
-  PlusIcon,
-  QrCodeIcon,
-  ShareNetworkIcon,
-  ShieldCheckIcon,
-  SignOutIcon as PhosphorSignOut,
-  SparkleIcon,
-  SpeakerHighIcon,
-  SpeakerSlashIcon,
-  TranslateIcon,
-  TreeEvergreenIcon,
-  TrophyIcon,
-  UserCircleIcon,
-  WarningIcon as PhosphorWarning,
-  WifiSlashIcon,
-  XIcon,
-} from 'phosphor-react-native'
+import { ArrowCounterClockwiseIcon } from 'phosphor-react-native/src/icons/ArrowCounterClockwise'
+import { ArrowLeftIcon } from 'phosphor-react-native/src/icons/ArrowLeft'
+import { ArrowRightIcon } from 'phosphor-react-native/src/icons/ArrowRight'
+import { ArrowUpIcon } from 'phosphor-react-native/src/icons/ArrowUp'
+import { BookOpenTextIcon } from 'phosphor-react-native/src/icons/BookOpenText'
+import { CameraIcon as PhosphorCamera } from 'phosphor-react-native/src/icons/Camera'
+import { CaretDownIcon } from 'phosphor-react-native/src/icons/CaretDown'
+import { CaretLeftIcon } from 'phosphor-react-native/src/icons/CaretLeft'
+import { CaretRightIcon } from 'phosphor-react-native/src/icons/CaretRight'
+import { CheckCircleIcon } from 'phosphor-react-native/src/icons/CheckCircle'
+import { CheckIcon as PhosphorCheck } from 'phosphor-react-native/src/icons/Check'
+import { CircleNotchIcon } from 'phosphor-react-native/src/icons/CircleNotch'
+import { CloudArrowUpIcon } from 'phosphor-react-native/src/icons/CloudArrowUp'
+import { CrownIcon } from 'phosphor-react-native/src/icons/Crown'
+import { DownloadSimpleIcon } from 'phosphor-react-native/src/icons/DownloadSimple'
+import { FacebookLogoIcon } from 'phosphor-react-native/src/icons/FacebookLogo'
+import { FlashlightIcon } from 'phosphor-react-native/src/icons/Flashlight'
+import { FootprintsIcon } from 'phosphor-react-native/src/icons/Footprints'
+import { GpsFixIcon } from 'phosphor-react-native/src/icons/GpsFix'
+import { HandHeartIcon } from 'phosphor-react-native/src/icons/HandHeart'
+import { HouseLineIcon } from 'phosphor-react-native/src/icons/HouseLine'
+import { InfoIcon as PhosphorInfo } from 'phosphor-react-native/src/icons/Info'
+import { InstagramLogoIcon } from 'phosphor-react-native/src/icons/InstagramLogo'
+import { KeyIcon as PhosphorKey } from 'phosphor-react-native/src/icons/Key'
+import { LightningSlashIcon } from 'phosphor-react-native/src/icons/LightningSlash'
+import { LockKeyOpenIcon } from 'phosphor-react-native/src/icons/LockKeyOpen'
+import { MagnifyingGlassIcon } from 'phosphor-react-native/src/icons/MagnifyingGlass'
+import { MapPinIcon } from 'phosphor-react-native/src/icons/MapPin'
+import { MapTrifoldIcon } from 'phosphor-react-native/src/icons/MapTrifold'
+import { MinusIcon } from 'phosphor-react-native/src/icons/Minus'
+import { MoonStarsIcon } from 'phosphor-react-native/src/icons/MoonStars'
+import { NavigationArrowIcon } from 'phosphor-react-native/src/icons/NavigationArrow'
+import { PauseIcon as PhosphorPause } from 'phosphor-react-native/src/icons/Pause'
+import { PlayIcon as PhosphorPlay } from 'phosphor-react-native/src/icons/Play'
+import { PlusIcon } from 'phosphor-react-native/src/icons/Plus'
+import { QrCodeIcon } from 'phosphor-react-native/src/icons/QrCode'
+import { ShareNetworkIcon } from 'phosphor-react-native/src/icons/ShareNetwork'
+import { ShieldCheckIcon } from 'phosphor-react-native/src/icons/ShieldCheck'
+import { SignOutIcon as PhosphorSignOut } from 'phosphor-react-native/src/icons/SignOut'
+import { SparkleIcon } from 'phosphor-react-native/src/icons/Sparkle'
+import { SpeakerHighIcon } from 'phosphor-react-native/src/icons/SpeakerHigh'
+import { SpeakerSlashIcon } from 'phosphor-react-native/src/icons/SpeakerSlash'
+import { TranslateIcon } from 'phosphor-react-native/src/icons/Translate'
+import { TreeEvergreenIcon } from 'phosphor-react-native/src/icons/TreeEvergreen'
+import { TrophyIcon } from 'phosphor-react-native/src/icons/Trophy'
+import { UserCircleIcon } from 'phosphor-react-native/src/icons/UserCircle'
+import { WarningIcon as PhosphorWarning } from 'phosphor-react-native/src/icons/Warning'
+import { WifiSlashIcon } from 'phosphor-react-native/src/icons/WifiSlash'
+import { XIcon } from 'phosphor-react-native/src/icons/X'
 
 import type { Icon } from 'phosphor-react-native'
 import type { NativeStackHeaderItemButton } from 'expo-router'
@@ -166,7 +168,6 @@ export const TAB_ICONS = {
   ranking: { Glyph: RewardIcon },
   profile: { Glyph: ProfileIcon },
 } as const satisfies Record<string, TabIcon>
-
 
 export type HeaderSymbol = {
   /* iOS: the SF Symbol the native bar draws. */

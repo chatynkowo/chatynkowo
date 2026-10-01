@@ -34,10 +34,10 @@ export function QuestCard({ found, total, upcoming, onSettled }: QuestCardProps)
     >
       <ProgressRing size={34} value={found} max={total} onSettled={onSettled} />
       <View style={styles.text}>
-        <Text weight="semibold" style={styles.eyebrow} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+        <Text variant="caption" style={styles.chromeInk} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
           {t('quest.stage', { stage: found + 1 })}
         </Text>
-        <Text weight="bold" style={styles.progress} numberOfLines={1}>
+        <Text weight="bold" variant="compact" style={styles.chromeInk} numberOfLines={1}>
           {t('mobile:atlas.progress', { found, total })}
         </Text>
         <Text variant="small" style={styles.next} numberOfLines={2}>
@@ -65,17 +65,8 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     gap: 1,
   },
-  eyebrow: {
+  chromeInk: {
     color: mapPalette.chromeInk,
-    fontSize: 11,
-    lineHeight: 14,
-    letterSpacing: 1.3,
-    textTransform: 'uppercase',
-  },
-  progress: {
-    color: mapPalette.chromeInk,
-    fontSize: 16,
-    lineHeight: 20,
   },
   next: {
     color: mapPalette.chromeInk,
