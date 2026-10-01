@@ -155,7 +155,9 @@ export const sharedPl = {
     title: 'Ranking Zdobywców',
     lede: 'Zobacz tropicieli, którzy odnaleźli najwięcej opowieści Chatynkowa — i swoje miejsce w Kronice.',
     notConfigured: 'Ranking nie jest jeszcze skonfigurowany.',
-    signIn: 'Zaloguj przez Google, aby dołączyć',
+    signIn: 'Zaloguj się, aby dołączyć',
+    signInGoogle: 'Zaloguj przez Google',
+    signInApple: 'Zaloguj przez Apple',
     signedInPrefix: 'Zalogowano jako',
     defaultName: 'Zdobywca',
     share: 'Udostępnij mój wynik',
@@ -194,6 +196,7 @@ export const sharedPl = {
     nickname: 'Pseudonim',
     showAvatar: 'Pokaż zdjęcie z konta Google',
     save: 'Zapisz zmiany',
+    saveFailed: 'Nie udało się zapisać. Spróbuj ponownie.',
   },
   footer: {
     docsAria: 'Dokumenty',

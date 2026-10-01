@@ -2,6 +2,7 @@ import {
   backfillBadges as applyBackfill,
   discoverCottage as applyDiscovery,
   emptyProgress,
+  mergeFinds,
   normalizeProgress,
   type RewardLevel,
   type StoredFind,
@@ -52,4 +53,17 @@ export function backfillBadges(state: StoredState, levels: RewardLevel[], total:
   const result = applyBackfill(state, levels, total)
   if (result) saveState(result.next)
   return result
+}
+
+/* The account's finds merged into the browser's progress (the earliest
+   date wins, nothing is removed) and saved: the new state when something
+   changed, null when the browser knew it all. A page that holds the
+   progress in memory passes its own copy, so a find made meanwhile is
+   kept. */
+export function mergeAccountFinds(remote: Record<string, StoredFind>, current: StoredState = loadStoredState()): StoredState | null {
+  const merged = mergeFinds(current, remote)
+  const changed = Object.entries(merged.found).some(([slug, find]) => current.found[slug]?.foundAt !== find.foundAt)
+  if (!changed) return null
+  saveState(merged)
+  return merged
 }

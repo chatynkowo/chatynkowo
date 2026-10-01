@@ -4,10 +4,10 @@ import { marked } from './lib/markdown'
 import { useTranslation } from 'react-i18next'
 import { toLanguage } from './i18n'
 import { content, loadCottages, loadRewards, resolveCode, storyAudio } from './lib/content'
-import { backfillBadges, discoverCottage, loadStoredState } from './lib/persistence'
+import { backfillBadges, discoverCottage, loadStoredState, mergeAccountFinds } from './lib/persistence'
 import { fallbackRewards, finalLevelId, requiredFinds } from '@chatynkowo/core'
 import { initializeAnalytics, track } from './lib/analytics'
-import { syncNewFind } from './lib/sync'
+import { syncNewFind, syncSignedInAccount } from './lib/sync'
 import type { Cottage, RewardLevel, RewardsConfig, StoredState } from '@chatynkowo/core'
 import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
@@ -118,6 +118,26 @@ function App() {
   }, [language])
 
   useEffect(() => initializeAnalytics(), [])
+
+  /* A signed-in seeker gets the account's finds into this browser (and the
+     browser's into the account) on every visit, merged into the progress
+     as it stands when the answer arrives; a failed exchange waits for the
+     next visit. */
+  const storedRef = useRef(stored)
+  useEffect(() => {
+    storedRef.current = stored
+  })
+  useEffect(() => {
+    let current = true
+    syncSignedInAccount((remote) => {
+      const merged = current ? mergeAccountFinds(remote, storedRef.current) : null
+      if (merged) setStored(merged)
+      return merged
+    }).catch((reason: unknown) => console.error(reason))
+    return () => {
+      current = false
+    }
+  }, [])
 
   /* An open story dialog must follow a content reload — re-point it at the
      freshly loaded cottage with the same slug. */
@@ -265,7 +285,7 @@ function App() {
         track(`found-${cottage.slug}`, `Odkryto: ${cottage.title}`)
         track(`progress-${count}`, `Postęp: ${count}`)
         const foundAt = result.next.found[cottage.slug].foundAt
-        void syncNewFind(cottage.slug, foundAt, count)
+        syncNewFind(cottage.slug, foundAt, count).catch((reason: unknown) => console.error(reason))
       }
       if (result.newlyEarned.length) {
         const latest = rewards.levels.find((level) => level.id === result.newlyEarned.at(-1))

@@ -69,7 +69,7 @@ for the legal pages) live in `apps/web/public/`.
 
 ## Backend
 
-The shared backend is a Supabase project: Google sign-in, the `profiles` and
+The shared backend is a Supabase project: Google and Apple sign-in, the `profiles` and
 `finds` tables, the `leaderboard()` function. The schema lives in the
 Supabase project itself (migration dumps are ignored by git), the client
 code in `packages/api`, the description and procedures in

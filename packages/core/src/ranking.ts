@@ -1,5 +1,8 @@
-/* Display rules of the leaderboard, shared by the ranking page and the
-   app's Ranking tab. */
+/* Rules of the leaderboard, shared by the ranking page and the app's
+   Ranking tab. */
+
+/* The longest nickname the leaderboard shows. */
+export const DISPLAY_NAME_MAX_LENGTH = 40
 
 /* The expedition duration as "2 d 3 h", "3 h 12 min", "12 min" or "40 s",
    or null when there is none — the caller renders the localized "no time"

@@ -2,9 +2,10 @@ import type { RewardLevel, StoredFind, StoredState } from './types'
 import { requiredFinds } from './rewards'
 
 /* Progress rules, free of any storage. The web wraps these with localStorage
-   (apps/web/src/lib/persistence.ts); the mobile app will wrap them with its
-   own storage and the backend sync. Every function returns a new state and
-   never mutates its input. */
+   (apps/web/src/lib/persistence.ts), the mobile app with its own storage
+   and the sync queue (apps/mobile/src/providers/ProgressProvider.tsx), and
+   both merge the account's finds back in with `mergeFinds`. Every function
+   returns a new state and never mutates its input. */
 
 export const PROGRESS_VERSION = 1
 
@@ -90,6 +91,18 @@ export function mergeFinds(state: StoredState, incoming: Record<string, StoredFi
   for (const [slug, find] of Object.entries(incoming)) {
     const current = next.found[slug]
     if (!current || find.foundAt < current.foundAt) next.found[slug] = { ...current, ...find }
+  }
+  return next
+}
+
+/* Merge a whole progress record from this device read late (a storage that
+   answered after the app had moved on): finds as `mergeFinds`, badges with
+   the earliest `earnedAt` winning, nothing removed. */
+export function mergeProgress(state: StoredState, other: StoredState): StoredState {
+  const next = mergeFinds(state, other.found)
+  for (const [id, badge] of Object.entries(other.badges)) {
+    const current = next.badges[id]
+    if (!current || badge.earnedAt < current.earnedAt) next.badges[id] = badge
   }
   return next
 }

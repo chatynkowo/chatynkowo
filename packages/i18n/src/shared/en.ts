@@ -153,7 +153,9 @@ export const sharedEn: typeof sharedPl = {
     title: "Explorers' Leaderboard",
     lede: 'See the trackers who have found the most tales of Chatynkowo — and your own place in the Chronicle.',
     notConfigured: 'The leaderboard is not set up yet.',
-    signIn: 'Sign in with Google to join',
+    signIn: 'Sign in to join',
+    signInGoogle: 'Sign in with Google',
+    signInApple: 'Sign in with Apple',
     signedInPrefix: 'Signed in as',
     defaultName: 'Explorer',
     share: 'Share my result',
@@ -192,6 +194,7 @@ export const sharedEn: typeof sharedPl = {
     nickname: 'Nickname',
     showAvatar: 'Show my Google account photo',
     save: 'Save changes',
+    saveFailed: 'Could not save. Try again.',
   },
   footer: {
     docsAria: 'Documents',

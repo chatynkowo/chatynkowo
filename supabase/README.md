@@ -9,7 +9,7 @@ versioned in the repository: changes are made in the project, and a local
 
 | Element | Where | Used by |
 |---|---|---|
-| Google sign-in (OAuth) | Supabase Auth | `/ranking.html` |
+| Google and Apple sign-in (browser OAuth on the site, native id tokens in the app) | Supabase Auth | `/ranking.html`, `index.html` (the account exchange), the app |
 | `profiles` — nickname, avatar, `public_id`, `completed_at` | Postgres | leaderboard, profile |
 | `finds` — discovered cottages per account | Postgres | Kronika sync |
 | `leaderboard(p_total)` — the ranking | SQL function | `/ranking.html` |
@@ -67,7 +67,57 @@ schema. Put the local project's URL and key into `apps/web/.env`.
   entitlements, physical product codes): `supabase/functions/<name>/` as an
   Edge Function; the client calls it through `client.functions.invoke`.
 - **Sign-in in the app**: Google through the native flow plus Sign in with
-  Apple (an App Store requirement whenever Google is offered). Both providers
-  are enabled in the Auth dashboard; the client code stays in `packages/api`.
+  Apple (an App Store requirement whenever Google is offered); the client
+  code stays in `packages/api`. The setup is below.
 - **Content** stays in the repository and the `/admin/` editor; the app
   fetches it from `https://www.chatynkowo.pl`.
+
+## Sign-in providers
+
+The site and the app share one Supabase Auth. The site signs in through the
+browser OAuth flow (Google, Apple); the app hands the providers' native id
+tokens to `signInWithIdToken`. Apple is offered on the site as well because
+an account that began in the iOS app must be reachable from a browser.
+Nothing here lives in the repository: it is the project's dashboard and the
+two consoles.
+
+### Google
+
+1. Google Cloud, the project behind the site's OAuth consent screen: three
+   OAuth client ids.
+   - **Web** (already there for the site): its id and secret are the Supabase
+     Google provider's credentials. The app needs the same id as
+     `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`: native Google sign-in asks for a
+     token minted for this web client.
+   - **iOS**: bundle id `pl.chatynkowo.app`. Its client id
+     (`<id>.apps.googleusercontent.com`) is `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`;
+     `app.config.ts` reverses it into the URL scheme the sign-in plugin needs.
+   - **Android**: package `pl.chatynkowo.app` plus the SHA-1 of every signing
+     key the app ships with (the debug key, the upload key, and Google Play's
+     app signing key from the Play console).
+2. Supabase, Authentication, Providers, Google: the web client's id and
+   secret, and under "Authorized Client IDs" the iOS and the Android client
+   ids, so the backend accepts the native tokens.
+3. Supabase, Authentication, URL configuration: the site's addresses
+   (`https://www.chatynkowo.pl/ranking.html`, `https://chatynkowo.pl/ranking.html`)
+   among the redirect URLs for the browser flow.
+
+### Apple
+
+1. Apple Developer: the App ID `pl.chatynkowo.app` with the Sign in with
+   Apple capability (`app.config.ts` requests it in every build through
+   `ios.usesAppleSignIn`, unless `EXPO_PUBLIC_APPLE_SIGN_IN=0`); a Services ID for the site (its return URL is the project's
+   callback, `https://wqlodfnukdjrulcvzvtk.supabase.co/auth/v1/callback`);
+   a Sign in with Apple key (`.p8`) for that Services ID.
+2. Supabase, Authentication, Providers, Apple: the Services ID as the client
+   id with the secret generated from the key (team id, key id, the `.p8`),
+   and under "Authorized Client IDs" the app's bundle id
+   `pl.chatynkowo.app`, which is what the native identity tokens carry.
+
+### What a seeker sees
+
+Without the Google client id the app shows only the Apple button on iOS and
+no account controls on Android; without the Apple capability in the build
+(a free Personal Team cannot sign it) the Apple button stays away. The
+Kronika works the same either way: an account only collects what the
+devices found and hands it back to each of them.

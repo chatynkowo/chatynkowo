@@ -3,10 +3,9 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { Button, CloseIcon, CottageIcon, FoundIcon, IconButton, LinkButton, LocateIcon, NavigateIcon, PinIcon, ResetViewIcon, SearchIcon, SpinnerIcon, ZoomInIcon, ZoomOutIcon, iconSize } from '../ui'
 import L from 'leaflet'
 import 'leaflet.markercluster'
-import { COUNTRY_BOUNDS, countryAt, detectCountry, EUROPE_BOUNDS } from '@chatynkowo/core'
+import { COUNTRY_BOUNDS, countryAt, detectCountry, EUROPE_BOUNDS, countryName } from '@chatynkowo/core'
 import { marked } from '../lib/markdown'
 import { useTranslation } from 'react-i18next'
-import type { TFunction } from 'i18next'
 import type { Cottage } from '@chatynkowo/core'
 
 type MapExplorerProps = {
@@ -32,14 +31,6 @@ const REGION_ZOOM = 9.5
 const TRAIL_ZOOM = 13.5
 /* Where the kraj rung starts over the sea or outside the country presets. */
 const DEFAULT_KRAJ_ZOOM = 5.5
-
-function countryName(code: string, locale: string) {
-  try {
-    return new Intl.DisplayNames([locale], { type: 'region' }).of(code) ?? code
-  } catch {
-    return code
-  }
-}
 
 function cottageIcon(pinImg: string | undefined, found: boolean, active: boolean) {
   const inner = pinImg
@@ -446,7 +437,7 @@ export function MapExplorer({ cottages, foundSlugs, onOpenCode }: MapExplorerPro
         <aside className="cottage-panel" aria-label={t('map.panelAria', { title: selected.title })}>
           <div className="cottage-panel-handle" aria-hidden="true" />
           <IconButton className="panel-close" label={t('map.closePanel')} onClick={closeCottage}><CloseIcon size={iconSize.md} /></IconButton>
-          <p className="cottage-region">{countryName(selected.country, i18n.resolvedLanguage ?? 'pl')}</p>
+          <p className="cottage-region">{countryName(selected.country, i18n.resolvedLanguage ?? i18n.language)}</p>
           <h3>{selected.title}</h3>
           <p className="cottage-resident">{t('map.residentPrefix')} <strong>{selected.occupant || t('map.defaultOccupant')}</strong></p>
           {foundSlugs.has(selected.slug) ? (
