@@ -1,7 +1,6 @@
 import { StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import type { RewardLevel } from '@chatynkowo/core'
-import { haptic } from '../../lib/haptics'
 import { ChronicleIcon, MarkdownView, NextIcon, PressableScale, ProgressRing, Text, colors, iconSize, radius, space } from '../../ui'
 
 /* The head of the Kronika grid: the subtitle with the chronicle emblem, the
@@ -38,12 +37,11 @@ export function CollectionHeader({ found, total, next, intro, note, onOpenList }
         <ChronicleIcon size={iconSize.emblem} weight="duotone" color={colors.accentStrong} />
       </View>
       <PressableScale
-        haptic="select"
         onPress={onOpenList}
         accessibilityLabel={[t('mobile:kronika.progressAria', { found, total }), quest, t('mobile:kronika.openListAria')].filter(Boolean).join('. ')}
         style={styles.card}
       >
-        <ProgressRing size={64} value={found} max={total} label={String(found)} onSettled={() => haptic('light')} />
+        <ProgressRing size={64} value={found} max={total} label={String(found)} />
         <View style={styles.cardText}>
           <Text weight="bold">{progress}</Text>
           {quest ? (

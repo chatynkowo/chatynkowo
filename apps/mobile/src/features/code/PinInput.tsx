@@ -3,7 +3,6 @@ import { Keyboard, Pressable, StyleSheet, useWindowDimensions } from 'react-nati
 import Animated, { cancelAnimation, interpolateColor, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
-import { haptic } from '../../lib/haptics'
 import { DURATIONS, ReduceMotion, SPRINGS, Text, colors, radius, space, useReducedMotion } from '../../ui'
 import type { CodePhase } from './useCodeEntry'
 import { SHAKE_MS, useShake } from './useShake'
@@ -63,13 +62,6 @@ export const PinInput = forwardRef<PinInputHandle, PinInputProps>(function PinIn
 
   const focus = useCallback(() => input.current?.focus(), [])
   useImperativeHandle(ref, () => ({ focus }), [focus])
-
-  /* A digit added ticks; removed or cleared digits are silent. */
-  const previousLength = useRef(value.length)
-  useEffect(() => {
-    if (value.length > previousLength.current) haptic('select')
-    previousLength.current = value.length
-  }, [value])
 
   /* The error shakes the row and hands the focus back once the boxes clear. */
   useEffect(() => {

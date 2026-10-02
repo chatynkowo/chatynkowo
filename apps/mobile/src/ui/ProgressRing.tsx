@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { StyleSheet, View } from 'react-native'
 import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated'
-import { scheduleOnRN } from 'react-native-worklets'
 import Svg, { Circle, type CircleProps } from 'react-native-svg'
 import { DURATIONS, EASING, ReduceMotion } from './motion'
 import { Text } from './Text'
@@ -9,9 +8,8 @@ import { colors } from './tokens'
 
 /* Finds out of the total as a ring: the quest card on the Atlas, the
    Kronika header, the reward cards and the reward sheet. The arc sweeps
-   from its previous value to the new one over the reveal duration and
-   tells the caller when it has settled (for a haptic). The first render
-   draws the value in place; only real changes animate. */
+   from its previous value to the new one over the reveal duration. The
+   first render draws the value in place; only real changes animate. */
 
 export type ProgressRingProps = {
   size: 24 | 34 | 40 | 56 | 64
@@ -21,13 +19,11 @@ export type ProgressRingProps = {
   stroke?: number
   /* Centre text, small semibold. */
   label?: string
-  /* Called when the sweep has finished (used for a haptic). */
-  onSettled?: () => void
 }
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle)
 
-export function ProgressRing({ size, value, max, stroke = size / 10, label, onSettled }: ProgressRingProps) {
+export function ProgressRing({ size, value, max, stroke = size / 10, label }: ProgressRingProps) {
   const ratio = max > 0 ? Math.min(1, Math.max(0, value / max)) : 0
   const radius = (size - stroke) / 2
   const circumference = 2 * Math.PI * radius
@@ -36,8 +32,6 @@ export function ProgressRing({ size, value, max, stroke = size / 10, label, onSe
      ring was, not from zero. */
   const progress = useSharedValue(ratio)
   const mounted = useRef(false)
-  const settled = useRef(onSettled)
-  settled.current = onSettled
 
   useEffect(() => {
     if (!mounted.current) {
@@ -45,11 +39,7 @@ export function ProgressRing({ size, value, max, stroke = size / 10, label, onSe
       progress.value = ratio
       return
     }
-    const notify = () => settled.current?.()
-    progress.value = withTiming(ratio, { duration: DURATIONS.reveal, easing: EASING.out, reduceMotion: ReduceMotion.System }, (finished) => {
-      'worklet'
-      if (finished) scheduleOnRN(notify)
-    })
+    progress.value = withTiming(ratio, { duration: DURATIONS.reveal, easing: EASING.out, reduceMotion: ReduceMotion.System })
   }, [ratio, progress])
 
   const arcProps = useAnimatedProps<CircleProps>(() => ({

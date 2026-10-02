@@ -1,10 +1,9 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Tabs, type BottomTabBarProps, type BottomTabNavigationOptions } from 'expo-router/js-tabs'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { useCelebrationPresenter } from '../../src/features/atlas/useCelebrationPresenter'
-import { haptic } from '../../src/lib/haptics'
-import { useProgress } from '../../src/providers'
+import { useBoot, useProgress } from '../../src/providers'
 import { TAB_ICONS, TabBar, colors, type DiscoverAction, type Icon } from '../../src/ui'
 
 /* The expedition loop as four tabs around one raised action: the Atlas
@@ -15,9 +14,11 @@ import { TAB_ICONS, TabBar, colors, type DiscoverAction, type Icon } from '../..
    over the tab screens, which read its height through useTabBarHeight().
    Icons are the vocabulary's tab glyphs, labels come from the "mobile"
    namespace, and the Kronika carries the badge of seals not yet viewed
-   (mounted only while the count is above zero). Adding a tab is one more
-   Tabs.Screen here plus a folder (with a Stack _layout) or a file in this
-   directory. */
+   (mounted only while the count is above zero). The layout also hosts the
+   two things that must act once the tabs are in the navigation state: the
+   celebration presenter and the route the onboarding left behind. Adding a
+   tab is one more Tabs.Screen here plus a folder (with a Stack _layout) or
+   a file in this directory. */
 
 export default function TabsLayout() {
   const { t } = useTranslation()
@@ -29,14 +30,8 @@ export default function TabsLayout() {
       label: t('mobile:tabs.discover'),
       accessibilityLabel: t('mobile:tabs.discoverAria'),
       scanLabel: t('mobile:code.scan'),
-      onPress: () => {
-        haptic('light')
-        router.push('/code')
-      },
-      onLongPress: () => {
-        haptic('medium')
-        router.push('/scan')
-      },
+      onPress: () => router.push('/code'),
+      onLongPress: () => router.push('/scan'),
     }),
     [t, router],
   )
@@ -44,9 +39,9 @@ export default function TabsLayout() {
   return (
     <>
       <CelebrationPresenter />
+      <PendingHref />
       <Tabs
         backBehavior="initialRoute"
-        screenListeners={{ tabPress: () => haptic('select') }}
         tabBar={(props: BottomTabBarProps) => <TabBar {...props} discover={discover} />}
         screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.page } }}
       >
@@ -65,6 +60,23 @@ export default function TabsLayout() {
 /* The reward card after a story, presented over whichever tab is showing. */
 function CelebrationPresenter() {
   useCelebrationPresenter()
+  return null
+}
+
+/* The onboarding leaves a route behind ("Wpisz kod", a plaque link on a
+   fresh install). Mounted here, the tabs are in the navigation state by
+   definition; the push waits one frame so the Protected swap settles. */
+function PendingHref() {
+  const router = useRouter()
+  const { pendingHref, setPendingHref } = useBoot()
+
+  useEffect(() => {
+    if (!pendingHref) return
+    const href = pendingHref
+    setPendingHref(null)
+    requestAnimationFrame(() => router.push(href))
+  }, [pendingHref, router, setPendingHref])
+
   return null
 }
 

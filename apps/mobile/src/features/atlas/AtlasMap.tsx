@@ -16,7 +16,6 @@ import {
   type ViewStateChangeEvent,
 } from '@maplibre/maplibre-react-native'
 import { bearingDegrees, boundsAround, COUNTRY_BOUNDS, countryAt, detectCountry, EUROPE_BOUNDS, homeBounds, homeCountry, isWithinBounds, nearestPlace, type BoundsTuple, type Cottage, type LatLng } from '@chatynkowo/core'
-import { haptic } from '../../lib/haptics'
 import type { Position } from '../../lib/location'
 import { mapPalette, space } from '../../ui'
 import { ClusterBadge, CottagePin, UserDot } from './pins'
@@ -425,7 +424,6 @@ export const AtlasMap = memo(
       (id: number, lng: number, lat: number) => {
         lastMarkerPress.current = Date.now()
         touched.current = true
-        haptic('select')
         camera.current?.easeTo({ center: [lng, lat], zoom: toMapZoom(Math.min(index.getClusterExpansionZoom(id), CLUSTERS_UNTIL_ZOOM + 1)), duration: CLUSTER_MS })
       },
       [index],

@@ -4,7 +4,6 @@ import BottomSheet, { BottomSheetScrollView, useBottomSheetSpringConfigs } from 
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { countryName, type Cottage } from '@chatynkowo/core'
-import { haptic } from '../../lib/haptics'
 import { openInMaps, type MapsApp } from '../../lib/navigate'
 import { Button, CloseIcon, colors, FoundIcon, IconButton, iconSize, mapPalette, MarkdownView, NavigateIcon, NotebookIcon, PinIcon, radius, readable, space, SPRINGS, TAB_BAR_OVERHANG, Text } from '../../ui'
 
@@ -62,7 +61,6 @@ export const CottageSheet = forwardRef<CottageSheetHandle, CottageSheetProps>(fu
       if (index === lastIndex.current) return
       lastIndex.current = index
       if (index < 0) return
-      haptic('select')
       onSnap(index)
     },
     [onSnap],
@@ -96,10 +94,7 @@ export const CottageSheet = forwardRef<CottageSheetHandle, CottageSheetProps>(fu
     [t],
   )
 
-  const navigate = () => {
-    haptic('light')
-    void openInMaps(cottage, cottage.title, { chooser })
-  }
+  const navigate = () => void openInMaps(cottage, cottage.title, { chooser })
   const haveCode = () => router.push({ pathname: '/code', params: { slug: cottage.slug } })
   const openStory = () => router.push({ pathname: '/story/[slug]', params: { slug: cottage.slug } })
 

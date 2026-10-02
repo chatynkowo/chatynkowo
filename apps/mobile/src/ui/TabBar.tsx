@@ -111,8 +111,7 @@ type TabItemProps = {
 }
 
 /* One tab: the glyph (filled when selected) with its badge, the label
-   under it. The press feedback is the scale alone; the tab press haptic is
-   the layout's listener. */
+   under it. The press feedback is the scale alone. */
 function TabItem({ name, options, focused, onPress, onLongPress }: TabItemProps) {
   const color = focused ? colors.accentStrong : colors.inkFaint
   return (
@@ -147,8 +146,7 @@ function Badge({ value }: { value: number | string }) {
 }
 
 /* The gold button in the middle slot: a press opens the code sheet, a long
-   press (or the "scan" accessibility action) the scanner. The haptics
-   belong to the actions, so the pressable fires none itself; the label is
+   press (or the "scan" accessibility action) the scanner. The label is
    decoration next to the button's own accessible name. */
 function DiscoverSlot({ label, accessibilityLabel, scanLabel, onPress, onLongPress }: DiscoverAction) {
   const onAccessibilityAction = (event: AccessibilityActionEvent) => {

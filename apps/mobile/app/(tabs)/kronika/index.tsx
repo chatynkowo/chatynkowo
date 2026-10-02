@@ -34,7 +34,7 @@ export default function KronikaScreen() {
   const { t } = useTranslation()
   const router = useRouter()
   const { rewards, total, status, refresh } = useContent()
-  const { state, foundCount, unseenRewards, markRewardsSeen } = useProgress()
+  const { state, foundCount, unseenRewards, celebration, markRewardsSeen } = useProgress()
   const tabBarClearance = useTabBarClearance()
   const [refreshing, setRefreshing] = useState(false)
 
@@ -44,17 +44,21 @@ export default function KronikaScreen() {
   const loading = levels.length === 0 && status === 'loading'
 
   /* The ribbons of this visit: the unseen ids as they were when the tab
-     focused, kept while the provider already counts them as seen. */
+     focused, kept while the provider already counts them as seen. A level
+     still waiting for its celebration is left to the card, which clears the
+     queue itself; the next focus marks it seen. */
   const [highlighted, setHighlighted] = useState<Set<string>>(() => new Set())
   const unseenRef = useRef(unseenRewards)
+  const celebrationRef = useRef(celebration)
   useEffect(() => {
     unseenRef.current = unseenRewards
+    celebrationRef.current = celebration
   })
   useFocusEffect(
     useCallback(() => {
       const ids = unseenRef.current
       setHighlighted((current) => (sameIds(current, ids) ? current : new Set(ids)))
-      if (!ids.length) return
+      if (!ids.length || celebrationRef.current.length) return
       const timer = setTimeout(markRewardsSeen, MARK_SEEN_DELAY_MS)
       return () => clearTimeout(timer)
     }, [markRewardsSeen]),

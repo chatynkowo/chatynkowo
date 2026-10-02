@@ -3,7 +3,6 @@ import { Alert, AppState, Linking } from 'react-native'
 import { useFocusEffect } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { EUROPE_BOUNDS, isWithinBounds } from '@chatynkowo/core'
-import { haptic } from '../../lib/haptics'
 import { forgetLocated, hasLocatedBefore, locate, permissionState, requestPermission, watchPosition, type Position } from '../../lib/location'
 import { useToast } from '../../providers'
 import type { AtlasMapHandle } from './AtlasMap'
@@ -125,7 +124,6 @@ export function useLocate(map: RefObject<AtlasMapHandle | null>, { onFirstFix }:
 
   const notice = useCallback(
     (text: string) => {
-      /* The toast fires the warning haptic itself. */
       toast.show({ tone: 'warning', text, placement: 'bottom', durationMs: NOTICE_MS })
     },
     [toast],
@@ -135,7 +133,6 @@ export function useLocate(map: RefObject<AtlasMapHandle | null>, { onFirstFix }:
   const centreOn = useCallback(
     (fix: Position) => {
       if (!isWithinBounds(fix, EUROPE_BOUNDS)) return notice(t('map.locateOutside'))
-      haptic('light')
       map.current?.showPosition(fix)
     },
     [map, notice, t],
@@ -152,7 +149,6 @@ export function useLocate(map: RefObject<AtlasMapHandle | null>, { onFirstFix }:
     setLocating(false)
     if (result.kind === 'denied') {
       if (!result.canAskAgain) {
-        haptic('warning')
         Alert.alert(t('mobile:atlas.locateDenied'), undefined, [
           { text: t('mobile:common.close'), style: 'cancel' },
           { text: t('mobile:code.openSettings'), onPress: () => void Linking.openSettings() },

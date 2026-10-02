@@ -1,7 +1,6 @@
 import { StyleSheet, View } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
-import { haptic } from '../../lib/haptics'
 import { PressableScale, ProgressRing, Text, mapPalette, radius, space } from '../../ui'
 
 /* The quest line as a card on the map: the ring of finds out of the total,
@@ -12,19 +11,14 @@ type QuestCardProps = {
   found: number
   total: number
   upcoming: { name: string; remaining: number } | null
-  /* Called when the ring has finished sweeping to a new value. */
-  onSettled?: () => void
 }
 
-export function QuestCard({ found, total, upcoming, onSettled }: QuestCardProps) {
+export function QuestCard({ found, total, upcoming }: QuestCardProps) {
   const { t } = useTranslation()
   const router = useRouter()
   if (total === 0) return null
 
-  const open = () => {
-    haptic('select')
-    router.navigate('/kronika')
-  }
+  const open = () => router.navigate('/kronika')
 
   return (
     <PressableScale
@@ -32,7 +26,7 @@ export function QuestCard({ found, total, upcoming, onSettled }: QuestCardProps)
       onPress={open}
       style={styles.card}
     >
-      <ProgressRing size={34} value={found} max={total} onSettled={onSettled} />
+      <ProgressRing size={34} value={found} max={total} />
       <View style={styles.text}>
         <Text variant="caption" style={styles.chromeInk} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
           {t('quest.stage', { stage: found + 1 })}

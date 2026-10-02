@@ -9,7 +9,6 @@ import { useFocusEffect, useNavigation, useRouter, type Href } from 'expo-router
 import { useTranslation } from 'react-i18next'
 import logo from '../../../assets/logo.png'
 import { announce } from '../../lib/announce'
-import { haptic } from '../../lib/haptics'
 import { markWelcomeSeen, useBoot } from '../../providers'
 import { Button, ForwardIcon, KeyIcon, PageDots, colors, iconSize, readable, space, useTabBarHeight } from '../../ui'
 import { GuideTrail } from './GuideTrail'
@@ -39,6 +38,10 @@ export type OnboardingPagerProps = {
    over its page; the photo, the notes and the ways to begin. */
 const PAGE_KEYS = ['lore', 'questions', 'guide', 'begin'] as const
 const PAGE_COUNT = PAGE_KEYS.length
+/* How close to a page boundary (in pages) the offset must rest to count as
+   landed. Android pages in whole pixels while the width is rounded dp, so
+   page k rests a dp or two off k * width; the tolerance is ~20 dp. */
+const SETTLE_TOLERANCE = 0.05
 export function OnboardingPager({ mode, code }: OnboardingPagerProps) {
   const { t } = useTranslation()
   const router = useRouter()
@@ -50,8 +53,15 @@ export function OnboardingPager({ mode, code }: OnboardingPagerProps) {
   const [width, setWidth] = useState(window.width)
   const [page, setPage] = useState(0)
   const pageRef = useRef(0)
+  /* The page a programmatic scroll is heading for (the landed page
+     otherwise), so a quick second tap on Next counts from it. */
+  const targetRef = useRef(0)
   const listRef = useRef<FlatList>(null)
   const scrollX = useSharedValue(0)
+  const dragging = useSharedValue(false)
+  /* The page a programmatic scroll is flying to, -1 when none: a second
+     tap on Next mid-flight sweeps through a page that must not report. */
+  const flyingTo = useSharedValue(-1)
   const first = mode === 'first'
 
   /* ---------- Leaving ---------- */
@@ -88,12 +98,29 @@ export function OnboardingPager({ mode, code }: OnboardingPagerProps) {
 
   /* ---------- Paging ---------- */
 
-  const scrollHandler = useAnimatedScrollHandler((event) => {
-    scrollX.value = event.contentOffset.x
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollX.value = event.contentOffset.x
+    },
+    onBeginDrag: () => {
+      dragging.value = true
+      /* The finger takes over from any programmatic scroll. */
+      flyingTo.value = -1
+    },
+    onEndDrag: () => {
+      dragging.value = false
+    },
+    /* A safety net for a drag whose end was never reported (a cancelled
+       touch): the snap that follows always ends with momentum. */
+    onMomentumEnd: () => {
+      dragging.value = false
+    },
   })
 
   const goTo = useCallback(
     (index: number) => {
+      targetRef.current = index
+      flyingTo.value = index
       listRef.current?.scrollToOffset({ offset: index * width, animated: true })
     },
     [width],
@@ -101,21 +128,36 @@ export function OnboardingPager({ mode, code }: OnboardingPagerProps) {
 
   const onPageChange = useCallback(
     (index: number) => {
+      targetRef.current = index
       if (index === pageRef.current) return
       pageRef.current = index
       setPage(index)
-      haptic('select')
       announce(t('mobile:welcome.pageAria', { index: index + 1, total: PAGE_COUNT }))
     },
     [t],
   )
 
   /* The page follows the scroll offset, so swipes, the Next button and the
-     back key all report through one path. */
+     back key all report through one path, and only once the offset has
+     landed on a page with the finger lifted: nothing is announced while the
+     pages slide, and a swipe pulled back to where it started reports
+     nothing new. -1 is "between pages". */
   useAnimatedReaction(
-    () => (width > 0 ? Math.round(scrollX.value / width) : 0),
+    () => {
+      if (width <= 0 || dragging.value) return -1
+      const exact = scrollX.value / width
+      const nearest = Math.round(exact)
+      if (Math.abs(exact - nearest) >= SETTLE_TOLERANCE) return -1
+      const landed = Math.min(PAGE_COUNT - 1, Math.max(0, nearest))
+      /* A programmatic scroll may pass through a page on the way; only its
+         destination counts. */
+      if (flyingTo.value >= 0 && landed !== flyingTo.value) return -1
+      return landed
+    },
     (next, previous) => {
-      if (next !== previous) scheduleOnRN(onPageChange, Math.min(PAGE_COUNT - 1, Math.max(0, next)))
+      if (next < 0 || next === previous) return
+      if (next === flyingTo.value) flyingTo.value = -1
+      scheduleOnRN(onPageChange, next)
     },
     [width, onPageChange],
   )
@@ -125,8 +167,8 @@ export function OnboardingPager({ mode, code }: OnboardingPagerProps) {
   useFocusEffect(
     useCallback(() => {
       const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-        if (pageRef.current > 0) {
-          goTo(pageRef.current - 1)
+        if (targetRef.current > 0) {
+          goTo(targetRef.current - 1)
           return true
         }
         return first
@@ -226,7 +268,7 @@ export function OnboardingPager({ mode, code }: OnboardingPagerProps) {
               {t('mobile:welcome.skip')}
             </Button>
           ) : null}
-          <Button variant="primary" onPress={() => goTo(Math.min(PAGE_COUNT - 1, pageRef.current + 1))}>
+          <Button variant="primary" onPress={() => goTo(Math.min(PAGE_COUNT - 1, targetRef.current + 1))}>
             {t('mobile:common.next')}
           </Button>
         </View>

@@ -3,7 +3,6 @@ import { FlatList, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { formatDay, type Cottage, type StoredState } from '@chatynkowo/core'
-import { haptic } from '../../lib/haptics'
 import { Button, CloseIcon, CottageIcon, FoundIcon, IconButton, PressableScale, Text, TextField, colors, iconSize, radius, space } from '../../ui'
 
 /* Every cottage of the land in one list, reached from the Atlas's search
@@ -63,13 +62,12 @@ export function CottageDirectory({ cottages, found, searching = false, onSelect,
 
   const choose = (next: DirectoryFilter) => {
     if (next === filter) return
-    haptic('select')
     setFilter(next)
   }
 
   const renderItem = useCallback(
     ({ item: { cottage, foundAt } }: { item: Entry }) => (
-      <PressableScale haptic="select" onPress={() => onSelect(cottage)} style={styles.row}>
+      <PressableScale onPress={() => onSelect(cottage)} style={styles.row}>
         {foundAt ? <FoundIcon size={iconSize.md} weight="fill" color={colors.accentStrong} /> : <CottageIcon size={iconSize.md} color={colors.inkSoft} />}
         <View style={styles.rowText}>
           <Text weight="semibold" numberOfLines={1}>

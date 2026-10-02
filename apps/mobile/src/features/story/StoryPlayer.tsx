@@ -3,7 +3,6 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import type { Cottage } from '@chatynkowo/core'
 import { useStoryPlayer, type StoryTrack } from '../../lib/audio'
-import { haptic } from '../../lib/haptics'
 import { content, storyAudio } from '../../lib/content'
 import { downloadRecording, localRecording } from '../../lib/recordings'
 import { useContent, useToast } from '../../providers'
@@ -59,7 +58,6 @@ export function StoryPlayer({ cottage }: { cottage: Cottage }) {
   }
 
   function toggle() {
-    haptic('light')
     void player.toggle()
   }
 

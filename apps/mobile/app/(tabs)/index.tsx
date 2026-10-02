@@ -13,7 +13,6 @@ import { QuestCard } from '../../src/features/atlas/QuestCard'
 import { useAtlasFocus, type FocusReason } from '../../src/features/atlas/useAtlasFocus'
 import { useLocate } from '../../src/features/atlas/useLocate'
 import { announce } from '../../src/lib/announce'
-import { haptic } from '../../src/lib/haptics'
 import { useContent, useOnline, useProgress, useToast } from '../../src/providers'
 import {
   AtlasIcon,
@@ -120,7 +119,6 @@ export default function AtlasScreen() {
 
   const choose = useCallback(
     (cottage: Cottage) => {
-      haptic('medium')
       if (selectedRef.current) {
         setSelected(cottage)
         selectedRef.current = cottage
@@ -177,14 +175,10 @@ export default function AtlasScreen() {
     }, [selected]),
   )
 
-  /* The level rung: a select haptic on every change after the first report. */
+  /* The level rung, kept in state only when it changes. */
   const levelRef = useRef<MapLevel>('kraj')
-  const levelReported = useRef(false)
   const onLevelChange = useCallback((next: MapLevel) => {
-    const changed = levelRef.current !== next
-    if (changed && levelReported.current) haptic('select')
-    levelReported.current = true
-    if (!changed) return
+    if (levelRef.current === next) return
     levelRef.current = next
     setLevel(next)
   }, [])
@@ -275,8 +269,6 @@ export default function AtlasScreen() {
 
   const openSearch = useCallback(() => router.push({ pathname: '/cottages', params: { search: '1' } }), [router])
 
-  const onRingSettled = useCallback(() => haptic('light'), [])
-
   const searchControls = useMemo(
     () => [{ key: 'search', label: t('map.searchLabel'), icon: <SearchIcon size={iconSize.md} color={mapPalette.chromeIcon} />, onPress: openSearch }],
     [t, openSearch],
@@ -362,7 +354,7 @@ export default function AtlasScreen() {
 
         <View style={[styles.top, { top: insets.top + space.md }]} pointerEvents="box-none" onLayout={onTopChromeLayout}>
           <View style={styles.topRow} pointerEvents="box-none">
-            <QuestCard found={foundCount} total={total} upcoming={upcoming} onSettled={onRingSettled} />
+            <QuestCard found={foundCount} total={total} upcoming={upcoming} />
             <View style={styles.topRight} pointerEvents="box-none">
               <LevelCard label={t('map.levelLabel')} level={t(LEVEL_KEYS[level])} />
               <ControlBar controls={searchControls} />

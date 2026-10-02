@@ -4,7 +4,6 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
 import { useTranslation } from 'react-i18next'
-import { haptic } from '../../lib/haptics'
 import { EASING, ReduceMotion, SPRINGS, Text, colors, radius, space } from '../../ui'
 
 /* The recording's position as a bar with a thumb. Between two status
@@ -68,14 +67,12 @@ export function ScrubBar({ position, duration, onSeek, label }: ScrubBarProps) {
       grabbed.value = true
       thumbScale.value = withSpring(GRAB_SCALE, SPRINGS.snappy)
       if (width.value > 0) progress.value = clamp01(event.x / width.value)
-      scheduleOnRN(haptic, 'select')
     })
     .onUpdate((event) => {
       if (width.value > 0) progress.value = clamp01(event.x / width.value)
     })
     .onEnd(() => {
       scheduleOnRN(seekToRatio, progress.value)
-      scheduleOnRN(haptic, 'select')
     })
     .onFinalize(() => {
       grabbed.value = false

@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { Platform, Pressable, StyleSheet, type GestureResponderEvent, type PressableProps, type StyleProp, type ViewStyle } from 'react-native'
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming } from 'react-native-reanimated'
-import { haptic, type HapticKind } from '../lib/haptics'
 import { DURATIONS, ReduceMotion, SPRINGS } from './motion'
 import { colors } from './tokens'
 
@@ -9,7 +8,8 @@ import { colors } from './tokens'
    rows, cards, map controls) is built on it so the press feel is decided
    once. A finger down shrinks the control on a quick spring and, on iOS,
    raises a tinted fill behind the content; Android draws its ripple over the
-   content instead. Reduced motion keeps the fill and drops the scale. */
+   content instead. Reduced motion keeps the fill and drops the scale. No
+   haptic: the phone only stirs for a discovery (src/lib/haptics.ts). */
 
 export type PressableScaleProps = Omit<PressableProps, 'style' | 'children'> & {
   /* How far the control shrinks while pressed. */
@@ -18,8 +18,6 @@ export type PressableScaleProps = Omit<PressableProps, 'style' | 'children'> & {
   pressedFill?: string
   /* Android ripple in the accent wash, drawn over the content. */
   ripple?: boolean
-  /* Fired on press in; nothing by default. */
-  haptic?: HapticKind | null
   style?: StyleProp<ViewStyle>
   children: ReactNode
 }
@@ -47,7 +45,6 @@ export function PressableScale({
   scaleTo = 0.97,
   pressedFill = colors.accentWash,
   ripple = true,
-  haptic: hapticKind = null,
   style,
   children,
   disabled,
@@ -66,7 +63,6 @@ export function PressableScale({
 
   const pressIn = (event: GestureResponderEvent) => {
     if (!disabled) {
-      if (hapticKind) haptic(hapticKind)
       if (!reduceMotion) scale.value = withSpring(scaleTo, SPRINGS.snappy)
       fill.value = withTiming(1, { duration: DURATIONS.fast, reduceMotion: ReduceMotion.System })
     }

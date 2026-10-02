@@ -68,7 +68,6 @@ export const RewardCard = memo(function RewardCard({ level, earned, found, requi
   return (
     <Animated.View entering={enterIndex === null ? undefined : enterUp(enterIndex * GRID_STAGGER_MS).springify()} style={styles.cell}>
       <PressableScale
-        haptic="light"
         accessibilityLabel={accessibilityLabel}
         onPress={onPress}
         style={[styles.card, earned && styles.cardEarned, unseen && styles.cardUnseen]}

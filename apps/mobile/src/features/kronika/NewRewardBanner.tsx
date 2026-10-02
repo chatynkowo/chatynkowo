@@ -8,7 +8,7 @@ import { ChronicleIcon, NextIcon, PressableScale, Text, colors, iconSize, radius
 export function NewRewardBanner({ name, onPress }: { name: string; onPress: () => void }) {
   const { t } = useTranslation()
   return (
-    <PressableScale onPress={onPress} haptic="light" pressedFill={colors.accentBorder} accessibilityLabel={t('mobile:story.newSealAria')} style={styles.pill}>
+    <PressableScale onPress={onPress} pressedFill={colors.accentBorder} accessibilityLabel={t('mobile:story.newSealAria')} style={styles.pill}>
       <ChronicleIcon size={iconSize.md} weight="fill" color={colors.accentInk} />
       <Text tone="accentInk" weight="bold" numberOfLines={2} style={styles.text}>
         {t('achievement.newReward', { name })}

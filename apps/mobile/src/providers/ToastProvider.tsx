@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { announce } from '../lib/announce'
-import { haptic } from '../lib/haptics'
 
 /* One toast at a time for the whole app: profile saved, sign-in failed,
    download failed, locate errors, a badge backfilled by a content update.
@@ -80,7 +79,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       const toast: ActiveToast = { ...options, id: nextId.current }
       remaining.current = null
       setCurrent(toast)
-      haptic(options.tone === 'info' ? 'select' : options.tone)
       announce(options.text)
       arm(toast.id, options.durationMs ?? DEFAULT_DURATION_MS)
     },

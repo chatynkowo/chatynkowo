@@ -5,7 +5,7 @@ import { FullWindowOverlay } from 'react-native-screens'
 import { StatusBar } from 'expo-status-bar'
 import * as SplashScreen from 'expo-splash-screen'
 import * as SystemUI from 'expo-system-ui'
-import { DarkTheme, Stack, ThemeProvider, useRootNavigationState, useRouter, type NativeStackNavigationOptions } from 'expo-router'
+import { DarkTheme, Stack, ThemeProvider, useRouter, type NativeStackNavigationOptions } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import '../src/i18n'
 import { bootstrap, type BootResult } from '../src/lib/bootstrap'
@@ -155,7 +155,6 @@ function AppShell() {
             <ToastProvider>
               <StatusBar style="light" />
               <RootStack />
-              <PendingHref />
               <BackfillToast />
               <Toasts />
             </ToastProvider>
@@ -241,25 +240,6 @@ function RootStack() {
       <Stack.Screen name="rules" options={sheetRoute} />
     </Stack>
   )
-}
-
-/* The onboarding leaves a route behind ("Wpisz kod", a plaque link on a
-   fresh install). It is pushed once the guard has flipped and the tabs are
-   in the navigation state, one frame later so the Protected swap settles. */
-function PendingHref() {
-  const router = useRouter()
-  const { welcomeSeen, pendingHref, setPendingHref } = useBoot()
-  const rootState = useRootNavigationState()
-  const tabsMounted = Boolean(rootState?.routes?.some((route) => route.name === '(tabs)'))
-
-  useEffect(() => {
-    if (!welcomeSeen || !pendingHref || !tabsMounted) return
-    const href = pendingHref
-    setPendingHref(null)
-    requestAnimationFrame(() => router.push(href))
-  }, [welcomeSeen, pendingHref, tabsMounted, router, setPendingHref])
-
-  return null
 }
 
 /* A level awarded by a content update (never by a live find) joins the

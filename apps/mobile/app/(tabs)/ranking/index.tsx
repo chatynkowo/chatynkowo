@@ -9,7 +9,6 @@ import { AccountRow } from '../../../src/features/ranking/AccountRow'
 import { LEADERBOARD_ROW_HEIGHT, LeaderboardRow } from '../../../src/features/ranking/LeaderboardRow'
 import { Podium } from '../../../src/features/ranking/Podium'
 import { useLeaderboard } from '../../../src/features/ranking/useLeaderboard'
-import { haptic } from '../../../src/lib/haptics'
 import { useContent, useOnline, useProgress, useSession } from '../../../src/providers'
 import { Button, EmptyState, RewardIcon, ShieldIcon, SkeletonRow, Text, colors, headerRightItems, layoutLinear, readable, space, useTabBarClearance, type HeaderItemSpec } from '../../../src/ui'
 
@@ -46,7 +45,6 @@ export default function RankingScreen() {
   const shareResult = useCallback(async () => {
     if (!myId) return
     const url = rankingShareUrl(myId)
-    haptic('light')
     try {
       await Share.share(Platform.OS === 'ios' ? { message: t('ranking.shareText'), url } : { message: `${t('ranking.shareText')} ${url}` })
     } catch {

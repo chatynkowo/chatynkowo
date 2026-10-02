@@ -120,7 +120,6 @@ function ToastPill({ toast }: { toast: ActiveToast }) {
             </Text>
             {toast.action ? (
               <PressableScale
-                haptic="select"
                 pressedFill="transparent"
                 ripple={false}
                 onPress={() => {

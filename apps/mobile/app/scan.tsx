@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next'
 import { codeFromScan } from '@chatynkowo/core'
 import { ScannerViewfinder, type ViewfinderState } from '../src/features/code/ScannerViewfinder'
 import { useCodeEntry, type ResolveOutcome } from '../src/features/code/useCodeEntry'
-import { haptic } from '../src/lib/haptics'
 import { useCloseModal, useContent } from '../src/providers'
 import { Button, CameraIcon, CrossfadeText, KeyIcon, NATIVE_HEADER_HEIGHT, Text, colors, headerRightItems, iconSize, mapPalette, radius, sizes, space } from '../src/ui'
 
@@ -108,7 +107,6 @@ export default function ScanScreen() {
     const now = Date.now()
     if (now - lastMissWarningAt.current >= MISS_NOTICE_MS) {
       lastMissWarningAt.current = now
-      haptic('warning')
       setViewfinder('miss')
     }
     setNotice('miss')
@@ -133,7 +131,6 @@ export default function ScanScreen() {
       }
       lock(true)
       if (missTimer.current) clearTimeout(missTimer.current)
-      haptic('success')
       setViewfinder('success')
       setNotice('read')
       setHeldCode(code)
@@ -144,10 +141,7 @@ export default function ScanScreen() {
 
   const close = useCloseModal()
 
-  const toggleTorch = useCallback(() => {
-    haptic('select')
-    setTorch((current) => !current)
-  }, [])
+  const toggleTorch = useCallback(() => setTorch((current) => !current), [])
 
   const enterCode = useCallback(() => {
     if (heldCode) router.replace({ pathname: '/code', params: { code: heldCode } })

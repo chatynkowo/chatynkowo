@@ -14,8 +14,8 @@ import { colors, mapPalette, radius, sizes, space, typeScale, type ButtonVariant
    button, IconButton for icon-only controls (the accessible name is
    mandatory). On the parchment surface (the map's cottage panel) the ghost
    button takes the panel's brown border and ink, as on the site. All three
-   press through PressableScale: the primary action answers with a light
-   tap, icon controls with a selection tick, the quieter variants silently. */
+   press through PressableScale, silently: no button vibrates, only a
+   discovery does (src/lib/haptics.ts). */
 
 export type { ButtonVariant }
 
@@ -52,7 +52,6 @@ export function Button({ variant = 'ghost', surface = 'dark', children, icon, ic
       accessibilityRole="button"
       accessibilityState={{ disabled: inactive, busy: Boolean(busy) }}
       disabled={inactive}
-      haptic={primary ? 'light' : null}
       /* The accent wash is invisible on the gold face; the lighter border
          gold reads as a pressed shade there. */
       pressedFill={primary ? colors.accentBorder : colors.accentWash}
@@ -100,7 +99,6 @@ export function IconButton({ label, children, active, disabled, style, ...rest }
       accessibilityLabel={label}
       accessibilityState={{ disabled: Boolean(disabled), selected: Boolean(active) }}
       disabled={disabled}
-      haptic="select"
       hitSlop={6}
       style={[styles.icon, active && styles.iconActive, disabled && styles.disabled, style]}
       {...rest}

@@ -66,7 +66,6 @@ export function ControlBar({ controls }: { controls: MapControl[] }) {
           accessibilityState={{ disabled: Boolean(control.disabled), busy: Boolean(control.busy) }}
           disabled={control.disabled}
           onPress={control.onPress}
-          haptic="select"
           scaleTo={0.94}
           style={[styles.control, index > 0 && styles.controlDivider, control.disabled && !control.busy && styles.controlDisabled]}
         >
@@ -107,7 +106,7 @@ export function StatusPill({ icon: Glyph, label, onPress }: { icon: Icon; label:
     )
   }
   return (
-    <PressableScale accessibilityLabel={label} onPress={onPress} haptic="select" style={[styles.card, styles.pill]}>
+    <PressableScale accessibilityLabel={label} onPress={onPress} style={[styles.card, styles.pill]}>
       {content}
     </PressableScale>
   )
@@ -201,7 +200,6 @@ export function NearestBeacon({ target, exclude, onPress }: NearestBeaconProps) 
             accessibilityLabel={t('mobile:atlas.nearestAria', { title: target.cottage.title, distance })}
             accessibilityHint={t('mobile:atlas.nearestHint')}
             hitSlop={BEACON_SLOP}
-            haptic="light"
             onPress={onPress}
             style={[styles.card, styles.pill, styles.beaconPill]}
           >

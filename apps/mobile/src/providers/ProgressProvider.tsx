@@ -52,12 +52,9 @@ export type ProgressValue = {
   markRewardsSeen: () => void
   /* The latest new discovery, for the Atlas to frame the cottage. */
   lastFound: { slug: string; at: number } | null
-  /* The story modal marks itself open so the celebration presenter never
-     fires over it. Refs, not state: nothing re-renders. */
-  setStoryOpen: (open: boolean) => void
-  isStoryOpen: () => boolean
   /* The story's reward banner asks for the celebration right away; the
-     presenter reads the flag once (it clears on read) and skips its wait. */
+     presenter reads the flag once (it clears on read) and skips its settle.
+     A ref, not state: the story's pop re-renders the presenter anyway. */
   requestCelebration: () => void
   wantsCelebrateNow: () => boolean
   /* Levels awarded by a content update (never a live find); the root shows
@@ -119,7 +116,6 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
 
   const syncing = useRef(false)
   const inFlight = useRef(new Map<string, Promise<DiscoveryResult>>())
-  const storyOpen = useRef(false)
   const celebrateNow = useRef(false)
   const backfillListeners = useRef(new Set<BackfillListener>())
 
@@ -306,10 +302,6 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
     void writeJson(STORAGE_KEYS.rewardsSeen, ids)
   }, [])
 
-  const setStoryOpen = useCallback((open: boolean) => {
-    storyOpen.current = open
-  }, [])
-  const isStoryOpen = useCallback(() => storyOpen.current, [])
   const requestCelebration = useCallback(() => {
     celebrateNow.current = true
   }, [])
@@ -347,8 +339,6 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
       unseenRewards,
       markRewardsSeen,
       lastFound,
-      setStoryOpen,
-      isStoryOpen,
       requestCelebration,
       wantsCelebrateNow,
       onBackfill,
@@ -365,8 +355,6 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
       unseenRewards,
       markRewardsSeen,
       lastFound,
-      setStoryOpen,
-      isStoryOpen,
       requestCelebration,
       wantsCelebrateNow,
       onBackfill,

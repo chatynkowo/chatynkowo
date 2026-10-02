@@ -32,7 +32,7 @@ export default function StoryScreen() {
   const router = useRouter()
   const { slug, unlocked } = useLocalSearchParams<{ slug: string; unlocked?: string }>()
   const { cottageBySlug } = useContent()
-  const { foundSlugs, setStoryOpen } = useProgress()
+  const { foundSlugs } = useProgress()
   const cottage = cottageBySlug(slug)
   const found = foundSlugs.has(slug)
 
@@ -42,12 +42,6 @@ export default function StoryScreen() {
   useEffect(() => {
     if (cottage && !found) router.dismissTo({ pathname: '/', params: { focus: slug } })
   }, [cottage, found, slug, router])
-
-  /* The Atlas's celebration presenter waits while a story is on top. */
-  useEffect(() => {
-    setStoryOpen(true)
-    return () => setStoryOpen(false)
-  }, [setStoryOpen])
 
   if (!cottage) {
     return (

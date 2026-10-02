@@ -87,7 +87,6 @@ export function SettingsRow({ icon, label, value, trailing, onPress, tone = 'ink
   return (
     <PressableScale
       onPress={onPress}
-      haptic="select"
       style={styles.row}
       accessibilityLabel={value ? `${label}, ${value}` : label}
       accessibilityHint={accessibilityHint}
