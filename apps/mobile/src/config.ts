@@ -20,6 +20,17 @@ export const GOOGLE_WEB_CLIENT_ID: string = process.env.EXPO_PUBLIC_GOOGLE_WEB_C
 export const GOOGLE_IOS_CLIENT_ID: string = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || ''
 export const APPLE_SIGN_IN: boolean = process.env.EXPO_PUBLIC_APPLE_SIGN_IN !== '0'
 
+/* Supporting Chatynkowo (src/features/support), both ways voluntary and
+   unlocking nothing. The coffee is a store purchase and needs nothing
+   here: the product ids are in src/features/support/tips.ts, the prices
+   in the stores. The ad is a rewarded ad from AdMob: the app ids go to
+   the native manifests through app.config.ts (Google's sample ids
+   without them), the rewarded units are read here per platform; without
+   one the development build uses Google's test unit and a release build
+   offers no ad. */
+export const ADMOB_REWARDED_ANDROID_UNIT_ID: string = process.env.EXPO_PUBLIC_ADMOB_REWARDED_ANDROID_UNIT_ID || ''
+export const ADMOB_REWARDED_IOS_UNIT_ID: string = process.env.EXPO_PUBLIC_ADMOB_REWARDED_IOS_UNIT_ID || ''
+
 /* Storage keys, all in one place so a schema bump is a one-line change. */
 export const STORAGE_KEYS = {
   progress: 'chatynkowo:progress:v1',
@@ -35,4 +46,7 @@ export const STORAGE_KEYS = {
   rewardsSeen: 'chatynkowo:rewards-seen:v1',
   /* The maps app the seeker chose for "Navigate"; a device preference. */
   mapsApp: 'chatynkowo:maps-app',
+  /* The support ledger (src/lib/support-store.ts): how many coffees and
+     ads the player has given, on this device only. */
+  support: 'chatynkowo:support:v1',
 } as const

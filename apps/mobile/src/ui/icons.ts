@@ -30,6 +30,7 @@ import { CheckCircleIcon } from 'phosphor-react-native/src/icons/CheckCircle'
 import { CheckIcon as PhosphorCheck } from 'phosphor-react-native/src/icons/Check'
 import { CircleNotchIcon } from 'phosphor-react-native/src/icons/CircleNotch'
 import { CloudArrowUpIcon } from 'phosphor-react-native/src/icons/CloudArrowUp'
+import { CoffeeIcon as PhosphorCoffee } from 'phosphor-react-native/src/icons/Coffee'
 import { CrownIcon } from 'phosphor-react-native/src/icons/Crown'
 import { DownloadSimpleIcon } from 'phosphor-react-native/src/icons/DownloadSimple'
 import { FacebookLogoIcon } from 'phosphor-react-native/src/icons/FacebookLogo'
@@ -47,6 +48,7 @@ import { MagnifyingGlassIcon } from 'phosphor-react-native/src/icons/MagnifyingG
 import { MapPinIcon } from 'phosphor-react-native/src/icons/MapPin'
 import { MapTrifoldIcon } from 'phosphor-react-native/src/icons/MapTrifold'
 import { MinusIcon } from 'phosphor-react-native/src/icons/Minus'
+import { MonitorPlayIcon } from 'phosphor-react-native/src/icons/MonitorPlay'
 import { MoonStarsIcon } from 'phosphor-react-native/src/icons/MoonStars'
 import { NavigationArrowIcon } from 'phosphor-react-native/src/icons/NavigationArrow'
 import { PauseIcon as PhosphorPause } from 'phosphor-react-native/src/icons/Pause'
@@ -139,6 +141,12 @@ export const TorchIcon = FlashlightIcon
 export const TorchOffIcon = LightningSlashIcon
 export const InfoIcon = PhosphorInfo
 
+/* ---------- App-only roles: supporting Chatynkowo (src/features/support) ---------- */
+/* The coffee for the elf (also the way in, from the profile), the
+   rewarded ad watched instead of paying. */
+export const CoffeeIcon = PhosphorCoffee
+export const WatchAdIcon = MonitorPlayIcon
+
 /* The vocabulary as one object, checked against the shared and app-only
    roles: a missing role is a compile error. */
 export const ICON_VOCABULARY = {
@@ -149,6 +157,7 @@ export const ICON_VOCABULARY = {
   InstagramIcon, FacebookIcon,
   CameraIcon, ProfileIcon, SignOutIcon, OfflineIcon, SyncIcon, DownloadIcon, WarningIcon, LanguageIcon,
   ShareIcon, TorchIcon, TorchOffIcon, InfoIcon,
+  CoffeeIcon, WatchAdIcon,
 } satisfies Record<SharedIconRole | MobileIconRole, Icon>
 
 /* ---------- The tab bar and the native headers ---------- */

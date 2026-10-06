@@ -65,6 +65,10 @@ export const MOBILE_ICON_ROLES = [
   'InfoIcon',
   /* The arrow of the nearest-cottage beacon, turned to the heading. */
   'BearingIcon',
+  /* Supporting Chatynkowo (apps/mobile/src/features/support): a coffee
+     for the elf, a rewarded ad watched instead. */
+  'CoffeeIcon',
+  'WatchAdIcon',
 ] as const
 
 export type SharedIconRole = (typeof SHARED_ICON_ROLES)[number]

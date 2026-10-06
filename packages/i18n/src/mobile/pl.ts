@@ -1,5 +1,6 @@
 /* Polish copy that exists only in the mobile app: tab names, the QR scanner,
-   offline notices, native sign-in, recordings kept on the device. Everything
+   offline notices, native sign-in, recordings kept on the device, the
+   support sheet. Everything
    the app shares with the site (the code gate, the story, the Kronika, the
    ranking) comes from the shared dictionary in ../shared/pl.ts. */
 export const mobilePl = {
@@ -110,5 +111,54 @@ export const mobilePl = {
     chooseApp: 'Nawiguj w',
     appleMaps: 'Apple Maps',
     googleMaps: 'Google Maps',
+  },
+  /* Supporting Chatynkowo (src/features/support): the sheet with the two
+     voluntary ways, a coffee for the elf (a purchase through the store)
+     and a rewarded ad watched instead, and the entry in the profile.
+     Neither way unlocks anything. */
+  support: {
+    eyebrow: 'Wsparcie',
+    title: 'Postaw elfowi kawę',
+    lead: 'Chatynkowo jest darmowe i takie zostanie. Jeśli chcesz wesprzeć wyprawę, masz dwie drogi: kawę dla elfa albo chwilę na reklamę. Żadna z nich niczego nie odblokowuje. Elfy po prostu dziękują.',
+    /* The coffee */
+    coffeeTitle: 'Kawa dla elfa',
+    coffeeLead: 'Wybierz kawę. Płatność przechodzi przez {{store}}, jak każdy zakup w aplikacji.',
+    coffeeConnecting: 'Łączę ze sklepem',
+    coffeeUnavailable: 'Sklep nie odpowiada na tym urządzeniu, więc kawy nie da się teraz postawić.',
+    coffeeOffline: 'Kawa potrzebuje połączenia z siecią.',
+    coffeePending: 'Sklep czeka na potwierdzenie płatności. Podziękujemy, gdy dojdzie.',
+    coffeeFailedNetwork: 'Sklep nie odpowiedział. Nic nie zostało pobrane, spróbuj za chwilę.',
+    coffeeFailed: 'Płatność się nie udała. Nic nie zostało pobrane.',
+    tipSmall: 'Mała kawa',
+    tipRegular: 'Kawa',
+    tipLarge: 'Kawa i ciastko',
+    tipPot: 'Dzbanek na wieczór',
+    tipAction: 'Postaw kawę',
+    tipChoiceAria: '{{label}}, {{amount}}',
+    /* The ad */
+    adTitle: 'Bez wydawania pieniędzy',
+    adLead: 'Obejrzyj krótką reklamę do końca. Nic nie odblokowuje, ale wspiera Chatynkowo.',
+    adAction: 'Obejrzyj reklamę',
+    adLoading: 'Szukam reklamy...',
+    adOffline: 'Reklama potrzebuje połączenia z siecią.',
+    adUnavailable: 'Chwilowo nie ma reklamy do pokazania. Spróbuj później.',
+    adRefused: 'Bez zgody na reklamy nie możemy ich pokazywać.',
+    adDismissed: 'Reklama przerwana. Wsparcie liczy się po obejrzeniu do końca.',
+    adNotInBuild: 'Ta wersja aplikacji nie pokazuje reklam.',
+    /* The receipt */
+    thanksToast: 'Dziękujemy za wsparcie!',
+    ledgerTitle: 'Twoje wsparcie do tej pory',
+    ledgerCoffees_one: '{{count}} kawa',
+    ledgerCoffees_few: '{{count}} kawy',
+    ledgerCoffees_many: '{{count}} kaw',
+    ledgerCoffees_other: '{{count}} kaw',
+    ledgerAds_one: '{{count}} reklama',
+    ledgerAds_few: '{{count}} reklamy',
+    ledgerAds_many: '{{count}} reklam',
+    ledgerAds_other: '{{count}} reklam',
+    note: 'Wsparcie nie daje przewagi w grze ani nie odblokowuje treści. Dziękujemy, że jesteś.',
+    /* The way in, from the profile */
+    profileRow: 'Postaw elfowi kawę',
+    profileFooter: 'Dobrowolnie: kawą albo chwilą na reklamę. Niczego nie odblokowuje.',
   },
 }

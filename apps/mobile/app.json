@@ -112,6 +112,7 @@
       ],
       "expo-image",
       "expo-web-browser",
+      "expo-iap",
       [
         "expo-build-properties",
         {

@@ -2,7 +2,9 @@
 
 The expedition loop of the site as a native app, offline-first: the Atlas
 (map of cottages), plaque-code entry (four digits or a QR scan), the story
-with its recording, the Kronika (rewards), the leaderboard and a profile.
+with its recording, the Kronika (rewards), the leaderboard and a profile,
+plus a sheet to support Chatynkowo with a coffee for the elf (a store
+purchase) or a rewarded ad (see "Supporting Chatynkowo" at the end).
 Expo SDK 57, TypeScript, expo-router, a development client (native modules
 are used, so Expo Go cannot run it).
 
@@ -137,6 +139,8 @@ app/                     expo-router routes
   celebrate.tsx          the reward reveal, a transparent modal the Atlas presents after a story
   reward/[id].tsx        one reward card, a sheet that opens at three fifths and can be pulled to the top
   rules.tsx              the ranking rules, a sheet sized to its content
+  support.tsx            supporting Chatynkowo, a sheet from the profile: a coffee for the elf (a purchase through the
+                         store) or a rewarded ad watched instead
   +native-intent.tsx     where a URL handed to the app goes (plaque links with a code, story and reward links)
   +not-found.tsx         redirects to the Atlas
 src/
@@ -148,11 +152,15 @@ src/
                          SettingsList, Sheet (the base of every sheet route), TabStack, headerItems, TextField, MarkdownView
   lib/                   adapters: bootstrap (what the splash reads), cached content client, progress + sync-queue
                          storage, Supabase and native sign-in, audio (expo-audio), recordings (file system), maps
-                         hand-off, position, reachability store, haptics, accessibility announcements
+                         hand-off, position, reachability store, store billing (the coffee), the support ledger, haptics, accessibility announcements
   providers/             BootProvider, NetworkProvider, SessionProvider, ContentProvider, ProgressProvider, ToastProvider,
+                         SupportProvider (the store connection, the coffee menu and the receipt of support),
                          useCloseModal (the one way a modal route closes)
   features/              screen-level components per area: atlas/, code/, cottages/ (the directory both tabs open), story/, kronika/, ranking/, profile/, welcome/
-app.config.ts            the configuration that depends on the environment: Sign in with Apple (the capability and its
+  features/support/      supporting Chatynkowo: the sheet, the coffee menu with the store product ids (tips.ts), the
+                         rewarded ad with the consent flow (useRewardedSupportAd.ts), the ledger hook
+app.config.ts            the configuration that depends on the environment: the AdMob app ids of the support sheet's rewarded
+                         ad (Google's sample ids until EXPO_PUBLIC_ADMOB_*_APP_ID are set), Sign in with Apple (the capability and its
                          plugin, unless EXPO_PUBLIC_APPLE_SIGN_IN is 0), the Google sign-in plugin with the iOS URL scheme
                          derived from EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID, the app's Apple team (signing, and the Sign in
                          with Apple key the backend script reads from here)
@@ -169,7 +177,8 @@ lives in a sheet reachable from the tab bar's centre button, the cottage sheet, 
 onboarding, the empty states and plaque links, so every `/code` href still
 works. A discovery runs in place (the sheet or the scanner shows the
 outcome), the story replaces that screen, and the Atlas presents the reward
-reveal once the story has closed. Motion goes through the tokens in
+reveal once the story has closed. Supporting Chatynkowo is an action too,
+a sheet (`/support`) reached from the profile's list. Motion goes through the tokens in
 `src/ui/motion` (reanimated 4, system reduce-motion respected) and haptics
 through `src/lib/haptics.ts`.
 
@@ -210,6 +219,15 @@ through `src/lib/haptics.ts`.
   the device either way; the sync queue ends with the session, the Kronika
   stays.
 
+- **Support** (`SupportProvider`, `src/lib/billing.ts`,
+  `src/features/support`, `src/lib/support-store.ts`): the two voluntary
+  ways to support Chatynkowo, a coffee for the elf (a consumable product
+  bought through the store) and a rewarded ad, neither of which unlocks
+  anything (see "Supporting Chatynkowo" below). The store connection
+  opens with the app and stays, so a purchase settled outside the sheet
+  is still finished and thanked for. The ledger of what was given lives in
+  AsyncStorage under `STORAGE_KEYS.support`, on the device only.
+
 ## Native pieces
 
 | Area | Library | Notes |
@@ -226,6 +244,8 @@ through `src/lib/haptics.ts`.
 | Haptics | `expo-haptics` | one module (`src/lib/haptics.ts`) and only three moments: medium on the seal of a fresh find, success on an accepted code and a revealed reward, error on a refused code; no control, tab, pager or toast vibrates; iOS uses the UIKit generators, Android the system `HapticFeedbackConstants` through `performAndroidHapticsAsync` (the OEM's short click, under the system touch-feedback setting and intensity), with the Vibrator notification patterns kept only for success and error below API 30 |
 | Images | `expo-image` | `ContentImage`: memory and disk cache, cross-dissolve, retries with a backoff and on reconnect, a quiet fallback after the last failure, prefetch of the reward art and the found cottages' photos |
 | Legal pages | `expo-web-browser` | the terms and privacy pages open in an in-app browser sheet |
+| Store billing | `expo-iap` | the coffee for the elf as consumable products through Google Play Billing and StoreKit 2 (`src/lib/billing.ts`, driven by `SupportProvider`): listeners registered before the connection opens and kept for the life of the app, every paid purchase finished at once (consumed on Android), the leftovers settled at launch and on every return to the foreground, pending purchases (cash, Ask to Buy) reported and left alone until paid; prices come from the store's product records, the app carries only the product ids (`src/features/support/tips.ts`) |
+| Ads | `react-native-google-mobile-ads` | one rewarded ad, only in the support sheet and only when asked for (`src/features/support/useRewardedSupportAd.ts`); Google's consent flow (UMP) runs before the first request and decides between personalised and non-personalised requests, the SDK initialises after it (`delayAppMeasurementInit`); the AdMob app ids reach the native manifests through the plugin in `app.config.ts`, the rewarded units come from `EXPO_PUBLIC_ADMOB_REWARDED_*_UNIT_ID`, and without one a development build shows Google's test ad while a release build offers no ad |
 | Fonts | `expo-font` + `@expo-google-fonts/*` | Cormorant Garamond and Cinzel Decorative, imported per weight; the repository's woff2 files cannot be used natively |
 | Locale | `expo-localization` | the device language picks the dictionary and, through `detectCountry`, the map's home country (never geolocation) |
 | Country names | `@formatjs/intl-displaynames` | Hermes has no `Intl.DisplayNames`; the polyfill with Polish and English data names a cottage's country in the map panel, as the site does |
@@ -285,3 +305,90 @@ TODO universal links: the plaque QR carries `https://www.chatynkowo.pl/?kod=NNNN
 
 Not in this iteration, deliberately: analytics, notifications and
 geofencing.
+
+## Supporting Chatynkowo
+
+The app is free and stays free; the support sheet (`app/support.tsx`,
+`src/features/support/`) offers two voluntary ways to help, side by side
+and equal, and says plainly that neither unlocks anything:
+
+- **A coffee for the elf.** A consumable in-app product per size (the
+  product ids in `TIP_MENU`, `tips.ts`: `coffee_small`, `coffee_regular`,
+  `coffee_large`, `coffee_pot`), bought through the store the app came
+  from, so the payment never leaves the app and the stores' billing rules
+  are met on both platforms. The sheet shows the names from the dictionary
+  with the prices the store reports, in the player's currency; the store's
+  own payment sheet takes the payment. `src/lib/billing.ts` is the only
+  module that talks to the store (expo-iap over Play Billing and StoreKit
+  2) and `SupportProvider` drives it from the app's start: the purchase
+  listeners are in place before the connection opens and stay for the
+  life of the app; a purchase the store reports as paid is finished at
+  once (consumed on Android, finished on iOS) and only then counted;
+  purchases left unfinished by a crash are settled at launch and on
+  every return to the foreground (Google refunds a purchase not
+  acknowledged within three days, Apple keeps re-sending an unfinished
+  one); a pending purchase (a cash payment, Ask to Buy) is reported in the
+  sheet and left alone until the store says it is paid; a cancelled
+  payment is silent, a failed one is reported with nothing charged. There
+  is no receipt verification on a server: a coffee grants nothing, so
+  there is no entitlement to protect; should one ever be attached to it,
+  the purchase goes through an Edge Function (Google Play Developer API,
+  App Store Server API) before it is finished. A device without a working
+  store (an emulator without Play, a build whose products are not yet
+  published) shows the coffee as unavailable.
+- **A rewarded ad.** The only ad in the app, shown only here and only when
+  the player asks (`useRewardedSupportAd.ts`): the consent flow first
+  (Google's User Messaging Platform; in the EEA the message configured in
+  the AdMob account, once), then the SDK, then one ad loaded and shown;
+  the ad network's word that it was watched to the end is the support. A
+  consent flow that fails (no message configured yet, no network) falls
+  back to non-personalised requests; consent required and not given means
+  no ad. The sheet reports where a request stands (looking, no ad right
+  now, offline, interrupted, refused).
+
+Either way the receipt is the provider's and the same: the ledger on the
+device counts it (`src/lib/support-store.ts`, shown in the sheet as "your
+support so far"), a toast says thanks and the sheet closes. The entry
+point is the "Support" section of the profile. No haptic: the phone stirs
+only for a discovery (`src/lib/haptics.ts`).
+
+### Setting the stores up
+
+The code is complete; what remains is configuration in the consoles, none
+of it in the repository:
+
+1. **Google Play Console**, the app `pl.chatynkowo.app` (it must exist,
+   with a signed build uploaded to at least an internal testing track;
+   Play Billing refuses an app it does not know): under Monetize, In-app
+   products, create the four products with exactly the ids above, type
+   one-time (consumable is the app's choice at purchase time), a name, a
+   description and a price each (the sheet suggests small, regular, large
+   and a pot: for instance 4.99, 9.99, 19.99 and 49.99 PLN), then
+   activate them. To test without being charged, add the testers' Google
+   accounts under Setup, License testing, and install the build from the
+   testing track or sign the local build with the upload key.
+2. **App Store Connect**, the app with the bundle id `pl.chatynkowo.app`:
+   under In-App Purchases, create the four products as Consumable with
+   the same product ids, a reference name, a price tier each and the
+   localized display names; submit them with the first build that offers
+   them (the review needs a screenshot of the sheet). The In-App Purchase
+   capability is on the App ID automatically once products exist. To test
+   on a device, create a Sandbox tester under Users and Access and sign
+   in to it in Settings, App Store; in Xcode a StoreKit configuration file
+   with the same ids lets the simulator sell them.
+3. **AdMob**: an app per platform with the ids put into `.env`
+   (`EXPO_PUBLIC_ADMOB_ANDROID_APP_ID`, `EXPO_PUBLIC_ADMOB_IOS_APP_ID`,
+   followed by a native rebuild), one rewarded ad unit per platform in
+   `EXPO_PUBLIC_ADMOB_REWARDED_ANDROID_UNIT_ID` /
+   `EXPO_PUBLIC_ADMOB_REWARDED_IOS_UNIT_ID`, and a GDPR message under
+   Privacy & messaging, which the consent form shows in the EEA. The app
+   asks for no App Tracking Transparency permission on iOS (the plugin
+   gets no `userTrackingUsageDescription`), so iOS serves ads without the
+   advertising identifier. If the iOS build ever complains about the
+   Google Mobile Ads pod and frameworks, the library's answer is
+   `ios.useFrameworks: "static"` in the `expo-build-properties` plugin;
+   the Android build needs nothing beyond the plugin.
+4. **Store listings**: both stores ask that the app's privacy policy
+   mentions the ads (AdMob) and the purchases; the Data safety form on
+   Play and the App Privacy answers on the App Store list the advertising
+   identifier and the purchase history accordingly.

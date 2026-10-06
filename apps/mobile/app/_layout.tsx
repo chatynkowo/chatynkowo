@@ -15,6 +15,7 @@ import {
   NetworkProvider,
   ProgressProvider,
   SessionProvider,
+  SupportProvider,
   ToastProvider,
   useBoot,
   useCloseModal,
@@ -28,7 +29,7 @@ import { TabBarHeightProvider, ToastHost, colors, fonts, headerRightItems, useAp
    content, flags) load behind the native splash, which then fades into a
    fully formed first frame: the onboarding pager on a fresh install, the
    Atlas with cached pins later. The providers (boot, network, account,
-   content, progress, toasts) wrap a native stack whose gated first screens
+   content, progress, toasts, support) wrap a native stack whose gated first screens
    are the welcome pager and the tab bar, and whose other screens are
    sheets and modals presented on top. New top-level surfaces are added
    here as further Stack.Screen entries, new tabs in (tabs)/_layout.tsx. */
@@ -153,10 +154,12 @@ function AppShell() {
         <ContentProvider initial={initial}>
           <ProgressProvider initial={initial}>
             <ToastProvider>
-              <StatusBar style="light" />
-              <RootStack />
-              <BackfillToast />
-              <Toasts />
+              <SupportProvider>
+                <StatusBar style="light" />
+                <RootStack />
+                <BackfillToast />
+                <Toasts />
+              </SupportProvider>
             </ToastProvider>
           </ProgressProvider>
         </ContentProvider>
@@ -238,6 +241,8 @@ function RootStack() {
       />
       <Stack.Screen name="reward/[id]" options={sheetRoute} />
       <Stack.Screen name="rules" options={sheetRoute} />
+      {/* Supporting Chatynkowo (src/features/support): a sheet from the profile. */}
+      <Stack.Screen name="support" options={sheetRoute} />
     </Stack>
   )
 }

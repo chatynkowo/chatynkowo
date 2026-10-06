@@ -7,12 +7,13 @@ import { SITE_ORIGIN, SOCIAL_LINKS } from '@chatynkowo/core'
 import { AccountSection } from '../../../src/features/profile/AccountSection'
 import { LANGUAGES, setLanguage, toLanguage } from '../../../src/i18n'
 import { useSession, useToast } from '../../../src/providers'
-import { FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, SignOutIcon, colors, iconSize, readable, space, useTabBarClearance } from '../../../src/ui'
+import { CoffeeIcon, FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, SignOutIcon, colors, iconSize, readable, space, useTabBarClearance } from '../../../src/ui'
 
 /* The Profile tab: grouped settings in the system idiom. The account block
    (nickname, avatar, sign-in), the language, the lore (how to play, about),
-   the legal pages in an in-app browser, the social profiles and, for a
-   signed-in account, a confirmed sign-out. */
+   the way to support Chatynkowo (the support sheet), the legal pages in an
+   in-app browser, the social profiles and, for a signed-in account, a
+   confirmed sign-out. */
 
 type Block = { key: string; node: ReactElement }
 
@@ -79,6 +80,14 @@ export default function ProfileScreen() {
             trailing="chevron"
             onPress={() => router.push('/profile/about')}
           />
+        </SettingsSection>
+      ),
+    },
+    {
+      key: 'support',
+      node: (
+        <SettingsSection title={t('mobile:support.eyebrow')} footer={t('mobile:support.profileFooter')}>
+          <SettingsRow icon={<CoffeeIcon size={iconSize.md} color={colors.accentStrong} />} label={t('mobile:support.profileRow')} trailing="chevron" onPress={() => router.push('/support')} />
         </SettingsSection>
       ),
     },

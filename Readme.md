@@ -48,7 +48,9 @@ pnpm codes:check  # fail when the committed hashes do not match the codes
 
 The mobile app runs from its own directory (`cd apps/mobile && npx expo
 run:android`); see `apps/mobile/README.md` for the device setup, the JS
-bundle check and the structure.
+bundle check, the structure and the support sheet (a coffee for the elf
+bought through the store, or a rewarded ad watched instead; neither
+unlocks anything).
 
 The site's configuration (Supabase URL, publishable key, content origin) is
 in `apps/web/src/config.ts` and is overridden by `apps/web/.env` (template:
