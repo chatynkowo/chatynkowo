@@ -54,7 +54,7 @@ pnpm --filter @chatynkowo/web dev                   # serves packages/content/pu
 adb reverse tcp:5173 tcp:5173                       # the emulator's localhost:5173 -> the host
 echo 'EXPO_PUBLIC_CONTENT_BASE_URL=http://localhost:5173' > apps/mobile/.env
 npx expo start --dev-client --clear                 # the variable is inlined at bundle time
-adb shell pm clear pl.chatynkowo.app                # the content cache keeps files for up to a day
+adb shell pm clear com.blockchainwares.app.mysterious.cottages   # the content cache keeps files for up to a day
 ```
 
 Remove the `.env` line afterwards; with it, the app needs that server.
@@ -82,6 +82,71 @@ Checks, run from the repository root:
 pnpm check                                          # type-checks every package, incl. the app, plus the conventions script
 pnpm --filter @chatynkowo/mobile export:android     # bundles the JS for Android through Metro (no SDK needed)
 ```
+
+### Store builds (EAS Build)
+
+The release variant above is signed with the generated project's debug
+keystore, which Google Play does not accept: a store build is a signed
+app bundle (AAB) built with EAS Build, on this machine (`--local`, no
+queue, nothing uploaded) or in Expo's cloud. `eas.json` holds the
+profiles and `.easignore` at the repository root keeps the site, the
+backend notes, the authored content and the private plaque codes out of
+a cloud upload (EAS uploads the whole monorepo otherwise; the app reads
+content from the published site, so it needs none of it). The CLI runs
+through `pnpm dlx` at a pinned version, so nothing is installed
+globally.
+
+The upload keystore is the one registered with Google Play for
+`com.blockchainwares.app.mysterious.cottages` (Setup, App signing,
+"Upload key certificate"; its SHA-1 begins with `DD:F2:E9`). The
+production profile takes it from a local `credentials.json`
+(`credentialsSource: local`; the file is ignored by git and points at
+the keystore kept outside the repository, with its passwords), so a
+store build never depends on the keystore EAS generated for itself:
+
+```json
+{ "android": { "keystore": { "keystorePath": "/home/<you>/keys/chatynkowo/upload.jks",
+  "keystorePassword": "...", "keyAlias": "...", "keyPassword": "..." } } }
+```
+
+A bundle signed with any other key is refused by the Play Console. The
+keystore and its passwords are backed up outside the repository (the
+backup downloaded from expo.dev, under the project's credentials, is the
+same file); losing them means an upload key reset request in the Play
+Console.
+
+```bash
+cd apps/mobile
+pnpm eas login                  # once per machine, the Expo account that owns the project
+pnpm eas init                   # once per project: writes extra.eas.projectId into app.json (commit it)
+pnpm build:android:local        # production: AAB built here, signed with credentials.json (the usual way)
+pnpm build:android              # the same in Expo's cloud (queued on the free plan)
+pnpm build:android:preview      # an installable APK of the same code, for a phone without the store
+pnpm submit:android             # the latest AAB to the Play internal testing track as a draft release
+                                # (needs a Google service account JSON, see below; uploading by hand works too)
+```
+
+The `EXPO_PUBLIC_*` variables are inlined into the JS bundle at build time
+and `.env` never reaches EAS (`.easignore`), so a store build takes them
+from the project's EAS environment variables, one set per profile
+environment (`production`, `preview`, `development`): the Google web
+client id for sign-in and the AdMob ids for the rewarded ad.
+
+```bash
+pnpm eas env:set --scope project --environment production --visibility plaintext --name EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID --value <id>
+pnpm eas env:set --scope project --environment production --visibility plaintext --name EXPO_PUBLIC_ADMOB_ANDROID_APP_ID --value <id>
+pnpm eas env:set --scope project --environment production --visibility plaintext --name EXPO_PUBLIC_ADMOB_REWARDED_ANDROID_UNIT_ID --value <id>
+pnpm eas env:list --environment production
+```
+
+A build without the AdMob variables still works: the support sheet says
+this version shows no ads. `pnpm eas credentials --platform android`
+shows the upload key's SHA-1, which the Google sign-in client needs next
+to the SHA-1 of Play's app signing key (supabase/README.md, "Sign-in
+providers"). `eas submit` needs a Google Play service account with
+access to the app; its JSON key is referenced from `eas.json` as
+`serviceAccountKeyPath` or kept in the EAS environment as
+`GOOGLE_SERVICE_ACCOUNT_KEY`, never committed.
 
 ### Android SDK without Android Studio (Linux)
 
@@ -165,7 +230,8 @@ app.config.ts            the configuration that depends on the environment: the 
                          derived from EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID, the app's Apple team (signing, and the Sign in
                          with Apple key the backend script reads from here)
 plugins/                 config plugins: with-scene-delegate.js (UIScene life cycle for the iOS 27 SDK),
-                         with-locale-filters.js (only the app's languages in the Android resources)
+                         with-locale-filters.js (only the app's languages in the Android resources),
+                         with-gradle-heap.js (the Gradle daemon's heap, which R8 needs for a release build)
 locales/                 native permission strings per language (iOS Info.plist)
 assets/                  app icon, adaptive icon layers, the splash emblem and the logo, generated from the brand logo in
                          packages/content/private/img
@@ -264,7 +330,7 @@ plugin, is in every build unless `EXPO_PUBLIC_APPLE_SIGN_IN=0`, which a free
 Personal Team sets because it cannot sign the capability; `APPLE_TEAM_ID`
 names the team that signs device builds.
 
-TODO universal links: the plaque QR carries `https://www.chatynkowo.pl/?kod=NNNN`. The Android half is in place (`android.intentFilters` for `https://www.chatynkowo.pl/`, `/index.html` and `https://chatynkowo.pl/` with `autoVerify`; it stays a plain browser choice until the site serves `/.well-known/assetlinks.json` with `delegate_permission/common.handle_all_urls` for `pl.chatynkowo.app` and the release signing SHA-256). The iOS half is not: add `ios.associatedDomains: ["applinks:www.chatynkowo.pl", "applinks:chatynkowo.pl"]` to `app.json` only once the site serves `/.well-known/apple-app-site-association` (applinks for `<TEAMID>.pl.chatynkowo.app` with components for `/` and `/index.html` carrying a `kod` or `code` query, so `ranking.html` share links keep opening the website), because the Associated Domains capability changes device code signing. `app/+native-intent.tsx` already maps both URL forms to the code sheet.
+TODO universal links: the plaque QR carries `https://www.chatynkowo.pl/?kod=NNNN`. The Android half is in place (`android.intentFilters` for `https://www.chatynkowo.pl/`, `/index.html` and `https://chatynkowo.pl/` with `autoVerify`; it stays a plain browser choice until the site serves `/.well-known/assetlinks.json` with `delegate_permission/common.handle_all_urls` for `com.blockchainwares.app.mysterious.cottages` and the release signing SHA-256). The iOS half is not: add `ios.associatedDomains: ["applinks:www.chatynkowo.pl", "applinks:chatynkowo.pl"]` to `app.json` only once the site serves `/.well-known/apple-app-site-association` (applinks for `<TEAMID>.com.blockchainwares.app.mysterious.cottages` with components for `/` and `/index.html` carrying a `kod` or `code` query, so `ranking.html` share links keep opening the website), because the Associated Domains capability changes device code signing. `app/+native-intent.tsx` already maps both URL forms to the code sheet.
 
 ## Conventions
 
@@ -357,7 +423,7 @@ only for a discovery (`src/lib/haptics.ts`).
 The code is complete; what remains is configuration in the consoles, none
 of it in the repository:
 
-1. **Google Play Console**, the app `pl.chatynkowo.app` (it must exist,
+1. **Google Play Console**, the app `com.blockchainwares.app.mysterious.cottages` (it must exist,
    with a signed build uploaded to at least an internal testing track;
    Play Billing refuses an app it does not know): under Monetize, In-app
    products, create the four products with exactly the ids above, type
@@ -367,7 +433,7 @@ of it in the repository:
    activate them. To test without being charged, add the testers' Google
    accounts under Setup, License testing, and install the build from the
    testing track or sign the local build with the upload key.
-2. **App Store Connect**, the app with the bundle id `pl.chatynkowo.app`:
+2. **App Store Connect**, the app with the bundle id `com.blockchainwares.app.mysterious.cottages`:
    under In-App Purchases, create the four products as Consumable with
    the same product ids, a reference name, a price tier each and the
    localized display names; submit them with the first build that offers

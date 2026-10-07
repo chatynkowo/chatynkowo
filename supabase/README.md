@@ -89,10 +89,10 @@ applied by a script in this directory from the facts in `supabase/.env`.
      Google provider's credentials. The app needs the same id as
      `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`: native Google sign-in asks for a
      token minted for this web client.
-   - **iOS**: bundle id `pl.chatynkowo.app`. Its client id
+   - **iOS**: bundle id `com.blockchainwares.app.mysterious.cottages`. Its client id
      (`<id>.apps.googleusercontent.com`) is `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`;
      `app.config.ts` reverses it into the URL scheme the sign-in plugin needs.
-   - **Android**: package `pl.chatynkowo.app` plus the SHA-1 of every signing
+   - **Android**: package `com.blockchainwares.app.mysterious.cottages` plus the SHA-1 of every signing
      key the app ships with (the debug key, the upload key, and Google Play's
      app signing key from the Play console).
 2. Supabase, Authentication, Providers, Google: the web client's id and
@@ -109,7 +109,7 @@ applied by a script in this directory from the facts in `supabase/.env`.
 Sign in with Apple needs the paid Apple Developer Program: a free Personal
 Team can create neither a Services ID nor a key.
 
-1. Apple Developer, three records: the App ID `pl.chatynkowo.app` with the
+1. Apple Developer, three records: the App ID `com.blockchainwares.app.mysterious.cottages` with the
    Sign in with Apple capability (`app.config.ts` requests it in every build
    through `ios.usesAppleSignIn`, unless `EXPO_PUBLIC_APPLE_SIGN_IN=0`); a
    Services ID for the site, with Sign in with Apple configured for the

@@ -39,3 +39,10 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Local EAS builds (pnpm eas build --local)
+*.aab
+*.apk
+
+# The upload keystore's passwords for local store builds (eas.json: credentialsSource local)
+credentials.json

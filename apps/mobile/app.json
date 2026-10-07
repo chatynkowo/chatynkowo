@@ -8,13 +8,12 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0d1c18",
-    "newArchEnabled": true,
     "locales": {
       "pl": "./locales/pl.json",
       "en": "./locales/en.json"
     },
     "ios": {
-      "bundleIdentifier": "pl.chatynkowo.app",
+      "bundleIdentifier": "com.blockchainwares.app.mysterious.cottages",
       "supportsTablet": true,
       "infoPlist": {
         "UIBackgroundModes": [
@@ -32,7 +31,7 @@
       }
     },
     "android": {
-      "package": "pl.chatynkowo.app",
+      "package": "com.blockchainwares.app.mysterious.cottages",
       "adaptiveIcon": {
         "backgroundColor": "#0d1c18",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -75,6 +74,7 @@
       "expo-dev-client",
       "./plugins/with-scene-delegate",
       "./plugins/with-locale-filters",
+      "./plugins/with-gradle-heap",
       "@maplibre/maplibre-react-native",
       [
         "expo-camera",
@@ -125,6 +125,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2ca81da6-f54e-40ac-b761-2a0759e2f5dc"
+      }
+    },
+    "owner": "blockchainwares-software"
   }
 }

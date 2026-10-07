@@ -1,0 +1,16 @@
+# What EAS Build does not need from the monorepo: the site, the backend
+# notes, the authored content (the app reads it from the published site)
+# and, above all, the private plaque codes and image originals, which must
+# never leave the repository. node_modules and .git are skipped by EAS
+# itself. Dotfiles and generated native projects are not needed either:
+# EAS runs prebuild on the worker.
+apps/web
+supabase
+scripts
+packages/content/public
+packages/content/private
+apps/mobile/art
+apps/mobile/android
+apps/mobile/ios
+apps/mobile/.expo
+apps/mobile/.env*
