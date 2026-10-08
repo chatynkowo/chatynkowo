@@ -163,6 +163,23 @@ export const sharedPl = {
     signOutBody: 'Odkrycia zostaną na tym urządzeniu.',
     signOutCancel: 'Anuluj',
     signOutFailed: 'Nie udało się wylogować. Spróbuj ponownie.',
+    /* The account screen (the app) and the profile page (the site): who the
+       seeker is signed in as, the nickname editor and the way to delete
+       the account for good. */
+    signedInWith: 'Zalogowano przez {{provider}}',
+    providerGoogle: 'Google',
+    providerApple: 'Apple',
+    nicknameHint: 'Pod tym pseudonimem widzą Cię pozostali tropiciele w rankingu.',
+    nicknameEmpty: 'Puste pole zostawia obecny pseudonim.',
+    save: 'Zapisz',
+    deleteAccount: 'Usuń konto',
+    deleteAccountLead:
+      'Usunięcie konta jest nieodwracalne: znikną profil, pseudonim, zdjęcie i odkrycia zapisane w koncie, a Twoje miejsce w rankingu zostanie zwolnione. Kronika zapisana na tym urządzeniu zostaje.',
+    deleteAccountConfirm: 'Usunąć konto na zawsze?',
+    deleteAccountBody: 'Tej operacji nie da się cofnąć. Konto, wpis w rankingu i odkrycia zapisane w koncie znikną. Odkrycia zapisane na tym urządzeniu zostaną.',
+    deleteAccountCancel: 'Anuluj',
+    deleteAccountDone: 'Konto zostało usunięte.',
+    deleteAccountFailed: 'Nie udało się usunąć konta. Sprawdź połączenie i spróbuj ponownie.',
   },
   audio: {
     pause: 'Wstrzymaj: {{title}}',

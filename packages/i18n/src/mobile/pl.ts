@@ -102,6 +102,25 @@ export const mobilePl = {
     signedOut: 'Nie jesteś zalogowany.',
     howToPlay: 'Jak grać',
     openExternal: 'Otwiera stronę w przeglądarce',
+    /* The account screen (app/(tabs)/profile/account.tsx): who is signed
+       in, the leaderboard entry (nickname, the account photo), the finds
+       held by the account, the way out and the way to delete the account.
+       The nickname is edited in its own sheet (app/nickname.tsx). */
+    accountTitle: 'Konto',
+    openAccount: 'Otwiera ustawienia konta',
+    entryTitle: 'Twój wpis w rankingu',
+    entryFooter: 'Tak widzą Cię pozostali tropiciele.',
+    changeNickname: 'Zmień pseudonim',
+    nicknameTitle: 'Twój pseudonim',
+    avatarRow: 'Zdjęcie z konta w rankingu',
+    avatarOn: 'Obok pseudonimu widać Twoje zdjęcie z konta {{provider}}.',
+    avatarOff: 'W rankingu widać tylko inicjały pseudonimu.',
+    avatarNone: 'Konto {{provider}} nie udostępnia zdjęcia, więc w rankingu widać inicjały.',
+    findsTitle: 'Odkrycia',
+    findsRow: 'Zapisane w koncie',
+    openRanking: 'Zobacz swoje miejsce w rankingu',
+    signOutFooter: 'Odkrycia zostaną na tym urządzeniu i wrócą do konta po ponownym zalogowaniu.',
+    deleteTitle: 'Usuwanie konta',
   },
   welcome: {
     skip: 'Pomiń',
@@ -157,8 +176,20 @@ export const mobilePl = {
     ledgerAds_many: '{{count}} reklam',
     ledgerAds_other: '{{count}} reklam',
     note: 'Wsparcie nie daje przewagi w grze ani nie odblokowuje treści. Dziękujemy, że jesteś.',
-    /* The way in, from the profile */
-    profileRow: 'Postaw elfowi kawę',
-    profileFooter: 'Dobrowolnie: kawą albo chwilą na reklamę. Niczego nie odblokowuje.',
+    /* The invitations around the app (src/features/support/SupportCard):
+       at the end of a tale, under the Kronika, on the celebration card and
+       in the profile. After the first support the card says thank you
+       instead and keeps a quieter way back to the sheet. */
+    action: 'Postaw kawę',
+    openSheet: 'Wesprzyj Chatynkowo',
+    storyTitle: 'Podobała Ci się opowieść?',
+    storyLead: 'Chatynkowo jest darmowe, a elfy piszą dalej. Jeśli chcesz, postaw im kawę albo poświęć chwilę na reklamę.',
+    kronikaTitle: 'Wesprzyj wyprawę',
+    kronikaLead: 'Kawa dla elfa albo chwila na reklamę. Niczego nie odblokowuje, ale pomaga Chatynkowu rosnąć.',
+    profileTitle: 'Postaw elfowi kawę',
+    profileLead: 'Chatynkowo jest i będzie darmowe. Kawa dla elfa albo chwila na reklamę to Twój wybór, nie warunek.',
+    celebrateRow: 'Uciesz elfa kawą',
+    thanksTitle: 'Dziękujemy za wsparcie',
+    thanksLead: 'Elfy pamiętają każdą kawę. Jeśli masz ochotę na kolejną, wiesz, gdzie nas znaleźć.',
   },
 }
