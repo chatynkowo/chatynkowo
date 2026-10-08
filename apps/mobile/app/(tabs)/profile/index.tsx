@@ -1,27 +1,26 @@
 import type { ReactElement } from 'react'
-import { Alert, Linking, Platform, SectionList, StyleSheet } from 'react-native'
+import { Linking, Platform, SectionList, StyleSheet } from 'react-native'
 import * as WebBrowser from 'expo-web-browser'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { SITE_ORIGIN, SOCIAL_LINKS } from '@chatynkowo/core'
 import { AccountSection } from '../../../src/features/profile/AccountSection'
+import { SupportCard } from '../../../src/features/support/SupportCard'
 import { LANGUAGES, setLanguage, toLanguage } from '../../../src/i18n'
-import { useSession, useToast } from '../../../src/providers'
-import { CoffeeIcon, FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, SignOutIcon, colors, iconSize, readable, space, useTabBarClearance } from '../../../src/ui'
+import { FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, colors, iconSize, readable, space, useTabBarClearance } from '../../../src/ui'
 
 /* The Profile tab: grouped settings in the system idiom. The account block
-   (nickname, avatar, sign-in), the language, the lore (how to play, about),
-   the way to support Chatynkowo (the support sheet), the legal pages in an
-   in-app browser, the social profiles and, for a signed-in account, a
-   confirmed sign-out. */
+   (who is signed in, the way to the account screen, or the sign-in), the
+   support card (a coffee for the elf, right under the account so it is
+   seen), the language, the lore (how to play, about), the legal pages in
+   an in-app browser and the social profiles. Sign-out and account deletion
+   live on the account screen. */
 
 type Block = { key: string; node: ReactElement }
 
 export default function ProfileScreen() {
   const { t, i18n } = useTranslation()
   const router = useRouter()
-  const account = useSession()
-  const toast = useToast()
   const tabBarClearance = useTabBarClearance()
   const language = toLanguage(i18n.resolvedLanguage ?? i18n.language)
 
@@ -32,23 +31,11 @@ export default function ProfileScreen() {
       presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
     })
 
-  const confirmSignOut = () =>
-    Alert.alert(t('profile.signOutConfirm'), t('profile.signOutBody'), [
-      { text: t('profile.signOutCancel'), style: 'cancel' },
-      {
-        text: t('profile.signOut'),
-        style: 'destructive',
-        onPress: () =>
-          void account.signOut().then((outcome) => {
-            if (outcome === 'failed') toast.show({ tone: 'error', text: t('profile.signOutFailed') })
-          }),
-      },
-    ])
-
   const external = t('mobile:profile.openExternal')
 
   const blocks: Block[] = [
     { key: 'account', node: <AccountSection /> },
+    { key: 'support', node: <SupportCard placement="profile" /> },
     {
       key: 'language',
       node: (
@@ -84,14 +71,6 @@ export default function ProfileScreen() {
       ),
     },
     {
-      key: 'support',
-      node: (
-        <SettingsSection title={t('mobile:support.eyebrow')} footer={t('mobile:support.profileFooter')}>
-          <SettingsRow icon={<CoffeeIcon size={iconSize.md} color={colors.accentStrong} />} label={t('mobile:support.profileRow')} trailing="chevron" onPress={() => router.push('/support')} />
-        </SettingsSection>
-      ),
-    },
-    {
       key: 'legal',
       node: (
         <SettingsSection title={t('footer.docsAria')}>
@@ -122,17 +101,6 @@ export default function ProfileScreen() {
       ),
     },
   ]
-
-  if (account.session) {
-    blocks.push({
-      key: 'signOut',
-      node: (
-        <SettingsSection>
-          <SettingsRow tone="danger" icon={<SignOutIcon size={iconSize.md} color={colors.danger} />} label={t('profile.signOut')} onPress={confirmSignOut} />
-        </SettingsSection>
-      ),
-    })
-  }
 
   return (
     <SectionList

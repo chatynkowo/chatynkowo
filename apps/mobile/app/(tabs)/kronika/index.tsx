@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { finalLevelId, kronikaLevels, nextLevel, requiredFinds, type RewardLevel } from '@chatynkowo/core'
 import { CollectionHeader } from '../../../src/features/kronika/CollectionHeader'
 import { RewardCard } from '../../../src/features/kronika/RewardCard'
+import { SupportCard } from '../../../src/features/support/SupportCard'
 import { useContent, useProgress } from '../../../src/providers'
 import { ChronicleIcon, EmptyState, LinkButton, SkeletonCard, colors, readable, space, useTabBarClearance } from '../../../src/ui'
 
@@ -13,8 +14,10 @@ import { ChronicleIcon, EmptyState, LinkButton, SkeletonCard, colors, readable, 
    (which opens the cottage directory) and the published intro above it.
    Seals earned since the last visit are marked "new" for this visit and
    then counted as seen, which clears the tab badge. The full set unlocks
-   the ranking invite at the bottom. The tab bar floats over the grid, so
-   the list pads its end by the bar's height. */
+   the ranking invite at the bottom, and under whatever the foot shows (the
+   invite, the empty state) sits the card that opens the support sheet; the
+   skeleton has no foot. The tab bar floats over the grid, so the list pads
+   its end by the bar's height. */
 
 const SKELETON_CELLS = 4
 
@@ -128,15 +131,18 @@ export default function KronikaScreen() {
     />
   )
 
-  const footer = completed ? (
+  const footer = loading ? null : (
     <View style={styles.footer}>
-      <LinkButton variant="primary" block href="/ranking">
-        {t('treasury.seeRanking')}
-      </LinkButton>
+      {completed ? (
+        <LinkButton variant="primary" block href="/ranking">
+          {t('treasury.seeRanking')}
+        </LinkButton>
+      ) : foundCount === 0 ? (
+        <EmptyState icon={ChronicleIcon} title={t('quest.chronicle')} body={t('treasury.fallbackEmpty')} action={{ label: t('map.haveCode'), onPress: () => router.push('/code') }} />
+      ) : null}
+      <SupportCard placement="kronika" />
     </View>
-  ) : foundCount === 0 && !loading ? (
-    <EmptyState icon={ChronicleIcon} title={t('quest.chronicle')} body={t('treasury.fallbackEmpty')} action={{ label: t('map.haveCode'), onPress: () => router.push('/code') }} />
-  ) : null
+  )
 
   return (
     <>
@@ -184,5 +190,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingTop: space.sm,
+    gap: space.lg,
   },
 })

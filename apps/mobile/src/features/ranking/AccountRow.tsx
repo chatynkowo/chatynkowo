@@ -2,13 +2,17 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { useProgress, useSession } from '../../providers'
-import { Button, CrossfadeText, ProfileIcon, SettingsRow, SettingsSection, SyncIcon, Text, colors, iconSize, radius, space } from '../../ui'
+import { Avatar, Button, CrossfadeText, ProfileIcon, SettingsRow, SettingsSection, SyncIcon, Text, colors, iconSize, radius, space } from '../../ui'
 import { SignInButtons } from './SignInButtons'
 
 /* The account block at the top of the Ranking: a one-line notice while
    sign-in is not offered in this build; the invitation and the sign-in
-   buttons when signed out; the name, the seeker's place, the state of the
-   exchange with the account and the way to the profile when signed in. */
+   buttons when signed out; signed in, the entry as the board shows it
+   (the picture or the initials, the nickname), the seeker's place, the
+   state of the exchange with the account, and two ways on: the nickname
+   sheet and the account screen. */
+
+const AVATAR = 40
 
 type AccountRowProps = {
   /* The seeker's 1-based place on the board, or null when not listed. */
@@ -55,11 +59,15 @@ export function AccountRow({ place, onSignedIn }: AccountRowProps) {
   const name = account.profile?.display_name || t('profile.defaultName')
   return (
     <View style={styles.card} accessibilityLiveRegion="polite">
-      <Text>
-        {t('profile.signedInPrefix')}{' '}
-        <Text weight="bold">{name}</Text>
-      </Text>
-      <CrossfadeText tone="soft" variant="small" value={place ? t('ranking.yourPlace', { place }) : t('ranking.notRanked')} />
+      <View style={styles.entry}>
+        <Avatar name={name} uri={account.profile?.avatar_url ?? null} size={AVATAR} />
+        <View style={styles.entryText}>
+          <Text weight="bold" numberOfLines={1}>
+            {name}
+          </Text>
+          <CrossfadeText tone="soft" variant="small" value={place ? t('ranking.yourPlace', { place }) : t('ranking.notRanked')} />
+        </View>
+      </View>
       {exchanging ? (
         <View style={styles.line}>
           <ActivityIndicator size="small" color={colors.accentStrong} />
@@ -69,9 +77,15 @@ export function AccountRow({ place, onSignedIn }: AccountRowProps) {
         </View>
       ) : null}
       {pending}
-      <Button onPress={() => router.navigate('/profile')} style={styles.edit}>
-        {t('ranking.edit')}
-      </Button>
+      <View style={styles.actions}>
+        {/* The sheet needs the profile row; until it is read the button waits. */}
+        <Button disabled={!account.profile} onPress={() => router.push('/nickname')}>
+          {t('mobile:profile.changeNickname')}
+        </Button>
+        <Button variant="subtle" onPress={() => router.navigate('/profile/account', { withAnchor: true })}>
+          {t('mobile:profile.accountTitle')}
+        </Button>
+      </View>
     </View>
   )
 }
@@ -96,7 +110,19 @@ const styles = StyleSheet.create({
   lineText: {
     flex: 1,
   },
-  edit: {
+  entry: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+  },
+  entryText: {
+    flex: 1,
+    gap: space.xs,
+  },
+  actions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: space.sm,
     marginTop: space.xs,
   },
 })

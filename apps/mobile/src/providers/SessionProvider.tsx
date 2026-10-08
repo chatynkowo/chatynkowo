@@ -3,6 +3,7 @@ import type { OAuthProvider, Profile, Session } from '@chatynkowo/api'
 import {
   availableProviders,
   bindAutoRefresh,
+  deleteAccount as removeAccount,
   ensureProfile,
   getSession,
   onSessionChange,
@@ -31,6 +32,9 @@ type SessionValue = {
   busy: boolean
   signIn: (provider: OAuthProvider) => Promise<SignInOutcome>
   signOut: () => Promise<SignOutOutcome>
+  /* Deletes the account for good (the backend's function removes the
+     profile, the finds and the user); the device keeps its finds. */
+  deleteAccount: () => Promise<SignOutOutcome>
   /* Throws when the backend refused or is unreachable. */
   saveProfile: (patch: Pick<Profile, 'display_name' | 'avatar_url'>) => Promise<void>
 }
@@ -127,6 +131,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const deleteAccount = useCallback(async (): Promise<SignOutOutcome> => {
+    setBusy(true)
+    try {
+      await removeAccount()
+      setSession(null)
+      return 'ok'
+    } catch (error) {
+      console.error('[account] delete', error)
+      return 'failed'
+    } finally {
+      setBusy(false)
+    }
+  }, [])
+
   const saveProfile = useCallback(
     async (patch: Pick<Profile, 'display_name' | 'avatar_url'>) => {
       if (!session) return
@@ -137,8 +155,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   )
 
   const value = useMemo<SessionValue>(
-    () => ({ providers, enabled: providers.length > 0, session, profile, busy, signIn, signOut, saveProfile }),
-    [session, profile, busy, signIn, signOut, saveProfile],
+    () => ({ providers, enabled: providers.length > 0, session, profile, busy, signIn, signOut, deleteAccount, saveProfile }),
+    [session, profile, busy, signIn, signOut, deleteAccount, saveProfile],
   )
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>

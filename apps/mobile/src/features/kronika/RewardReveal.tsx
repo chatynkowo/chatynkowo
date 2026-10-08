@@ -9,13 +9,16 @@ import { announce } from '../../lib/announce'
 import { contentUrl } from '../../lib/content'
 import { haptic } from '../../lib/haptics'
 import { useContent, useProgress } from '../../providers'
-import { Button, ContentImage, DURATIONS, GlowPulse, MarkdownView, ReduceMotion, RewardIcon, SPRINGS, Text, colors, fade, iconSize, radius, space, useReducedMotion } from '../../ui'
+import { useSupportLedger } from '../support/useSupportLedger'
+import { Button, CoffeeIcon, ContentImage, DURATIONS, GlowPulse, MarkdownView, ReduceMotion, RewardIcon, SPRINGS, Text, colors, fade, iconSize, radius, space, useReducedMotion } from '../../ui'
 
 /* The celebration of a level earned by a live find: a card over the Atlas
    with the reward's art glowing, its name and first lines, presented once
    the story has closed. Several levels earned at once are turned page by
-   page. Nothing but the two buttons (or the next card) dismisses it, so a
-   reward is always acknowledged. */
+   page. Nothing but the buttons (or the next card) dismisses it, so a
+   reward is always acknowledged: the Kronika, the Atlas, or the support
+   sheet in the card's place for a seeker who wants to thank the elf for
+   the level with a coffee. */
 
 const CARD_MAX_WIDTH = 420
 const ART_MAX = 200
@@ -35,19 +38,27 @@ export function RewardReveal() {
   const reduceMotion = useReducedMotion()
   const { celebration, shiftCelebration, clearCelebration } = useProgress()
   const { rewards } = useContent()
+  /* The coffee line is for a seeker who has not supported yet; a payer
+     gets the two buttons only (the cards elsewhere say thank you). */
+  const ledger = useSupportLedger()
+  const supported = ledger.coffees + ledger.ads > 0
 
-  /* Every way out passes this flag, so a double back can never happen. */
+  /* Every way out passes this flag before it clears the queue, so a
+     double tap cannot navigate twice, and the effect below that leaves
+     on an emptied queue (which the clear itself triggers) finds the flag
+     already set and does nothing: one navigation per card, whichever
+     way out was taken. */
   const leaving = useRef(false)
-  const leave = useCallback(
-    (then?: () => void) => {
+  const depart = useCallback(
+    (go: () => void) => {
       if (leaving.current) return
       leaving.current = true
       clearCelebration()
-      router.back()
-      then?.()
+      go()
     },
-    [clearCelebration, router],
+    [clearCelebration],
   )
+  const leave = useCallback(() => depart(() => router.back()), [depart, router])
 
   /* Presented with nothing to show (a stale push): gone at once. */
   const initialCount = useRef(celebration.length)
@@ -99,12 +110,12 @@ export function RewardReveal() {
 
   /* Navigating to the tab beneath brings the stack back to the tabs, which
      takes this card with it: one step, no back of its own. */
-  const openKronika = () => {
-    if (leaving.current) return
-    leaving.current = true
-    clearCelebration()
-    router.navigate('/kronika')
-  }
+  const openKronika = () => depart(() => router.navigate('/kronika'))
+
+  /* The support sheet takes this card's place over the tabs (a replace,
+     not a push: nothing of the celebration stays beneath the sheet), so
+     closing the sheet lands on the Atlas as the other ways out do. */
+  const openSupport = () => depart(() => router.replace('/support'))
 
   return (
     <View style={styles.screen} accessibilityViewIsModal>
@@ -146,9 +157,14 @@ export function RewardReveal() {
               <Button variant="primary" block onPress={openKronika}>
                 {t('quest.chronicleOpen')}
               </Button>
-              <Button block onPress={() => leave()}>
+              <Button block onPress={leave}>
                 {t('ranking.continueTitle')}
               </Button>
+              {supported ? null : (
+                <Button variant="subtle" block icon={<CoffeeIcon size={iconSize.md} color={colors.accentStrong} />} onPress={openSupport}>
+                  {t('mobile:support.celebrateRow')}
+                </Button>
+              )}
             </View>
           )}
         </Animated.View>

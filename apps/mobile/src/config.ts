@@ -20,6 +20,11 @@ export const GOOGLE_WEB_CLIENT_ID: string = process.env.EXPO_PUBLIC_GOOGLE_WEB_C
 export const GOOGLE_IOS_CLIENT_ID: string = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || ''
 export const APPLE_SIGN_IN: boolean = process.env.EXPO_PUBLIC_APPLE_SIGN_IN !== '0'
 
+/* A development build only (src/lib/account-preview.ts): "1" shows the
+   account screens as if a Google account were signed in, on an emulator
+   that has no sign-in configured; no account call reaches the backend. */
+export const ACCOUNT_PREVIEW: boolean = process.env.EXPO_PUBLIC_ACCOUNT_PREVIEW === '1'
+
 /* Supporting Chatynkowo (src/features/support), both ways voluntary and
    unlocking nothing. The coffee is a store purchase and needs nothing
    here: the product ids are in src/features/support/tips.ts, the prices

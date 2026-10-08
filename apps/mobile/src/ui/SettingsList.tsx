@@ -6,11 +6,13 @@ import { PressableScale } from './PressableScale'
 import { Text } from './Text'
 import { colors, iconSize, radius, space } from './tokens'
 
-/* Grouped rows in the system settings idiom, for the Profile tab: a surface
-   card with hairline separators, an eyebrow title above and a faint footer
-   below. Rows carry a leading icon, a label, an optional value and a
-   trailing mark (chevron for navigation, check for the selected option,
-   external for links that leave the app). */
+/* Grouped rows in the system settings idiom, for the Profile tab and the
+   account screen: a surface card with hairline separators, an eyebrow
+   title above and a faint footer below. Rows carry a leading icon (or any
+   leading node, e.g. an avatar), a label with an optional second line, an
+   optional value and a trailing mark (chevron for navigation, check for
+   the selected option, external for links that leave the app) or any
+   trailing node, e.g. a switch. */
 
 export function SettingsSection({ title, footer, children }: { title?: string; footer?: string; children: ReactNode }) {
   const rows = Children.toArray(children).filter(isValidElement)
@@ -39,8 +41,13 @@ export function SettingsSection({ title, footer, children }: { title?: string; f
 }
 
 export type SettingsRowProps = {
+  /* An icon from the vocabulary, centred in the icon column. */
   icon?: ReactNode
+  /* Any other leading node (an avatar), drawn at its own size. */
+  leading?: ReactNode
   label: string
+  /* A second, smaller line under the label (who the account is). */
+  subtitle?: string
   value?: string
   trailing?: 'chevron' | 'check' | 'external' | ReactNode
   onPress?: () => void
@@ -61,13 +68,23 @@ function Trailing({ trailing }: { trailing: SettingsRowProps['trailing'] }) {
   }
 }
 
-export function SettingsRow({ icon, label, value, trailing, onPress, tone = 'ink', accessibilityHint }: SettingsRowProps) {
+export function SettingsRow({ icon, leading, label, subtitle, value, trailing, onPress, tone = 'ink', accessibilityHint }: SettingsRowProps) {
+  const name = [label, value, subtitle].filter(Boolean).join(', ')
   const body = (
     <>
-      {icon ? <View style={styles.icon}>{icon}</View> : null}
-      <Text tone={tone === 'danger' ? 'danger' : 'ink'} style={styles.label} numberOfLines={2}>
-        {label}
-      </Text>
+      {icon ? <View style={styles.icon}>{icon}</View> : leading}
+      <View style={styles.label}>
+        {/* With a second line the row reads like a contact card: the name
+            in semibold over the detail in soft. */}
+        <Text tone={tone === 'danger' ? 'danger' : 'ink'} weight={subtitle ? 'semibold' : 'regular'} numberOfLines={2}>
+          {label}
+        </Text>
+        {subtitle ? (
+          <Text variant="small" tone="soft" numberOfLines={2}>
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
       {value ? (
         <Text tone="soft" numberOfLines={1} style={styles.value}>
           {value}
@@ -79,7 +96,7 @@ export function SettingsRow({ icon, label, value, trailing, onPress, tone = 'ink
 
   if (!onPress) {
     return (
-      <View style={styles.row} accessibilityLabel={value ? `${label}, ${value}` : undefined}>
+      <View style={styles.row} accessibilityLabel={value || subtitle ? name : undefined}>
         {body}
       </View>
     )
@@ -88,7 +105,7 @@ export function SettingsRow({ icon, label, value, trailing, onPress, tone = 'ink
     <PressableScale
       onPress={onPress}
       style={styles.row}
-      accessibilityLabel={value ? `${label}, ${value}` : label}
+      accessibilityLabel={name}
       accessibilityHint={accessibilityHint}
       accessibilityState={trailing === 'check' ? { selected: true } : undefined}
     >

@@ -194,8 +194,9 @@ app/                     expo-router routes
                          and the parchment cottage sheet (a gesture sheet with three snaps)
   (tabs)/kronika/        its own native stack: the collection grid with the progress card
   (tabs)/ranking/        its own native stack: the leaderboard list, the rules and share header items
-  (tabs)/profile/        its own native stack: grouped settings (account, language, lore, legal, social),
-                         about.tsx (the lore sections) and guide.tsx (the onboarding pager replayed)
+  (tabs)/profile/        its own native stack: grouped settings (account, language, lore, legal, social) with the
+                         support invitation, account.tsx (the signed-in account: identity, leaderboard entry, finds,
+                         sign-out, deletion), about.tsx (the lore sections) and guide.tsx (the onboarding pager replayed)
   code.tsx               the code entry as a sheet (auto-submits at the fourth digit)
   scan.tsx               the QR scanner, full screen under a transparent bar with torch and close items
   cottages.tsx           every cottage, found first, with a search box and an undiscovered-only filter: one page
@@ -204,26 +205,31 @@ app/                     expo-router routes
   celebrate.tsx          the reward reveal, a transparent modal the Atlas presents after a story
   reward/[id].tsx        one reward card, a sheet that opens at three fifths and can be pulled to the top
   rules.tsx              the ranking rules, a sheet sized to its content
-  support.tsx            supporting Chatynkowo, a sheet from the profile: a coffee for the elf (a purchase through the
-                         store) or a rewarded ad watched instead
+  support.tsx            supporting Chatynkowo, a sheet opened by the support invitations: a coffee for the elf (a purchase
+                         through the store) or a rewarded ad watched instead
+  nickname.tsx           the nickname editor, a sheet from the account screen and the Ranking's "Change nickname" item
   +native-intent.tsx     where a URL handed to the app goes (plaque links with a code, story and reward links)
   +not-found.tsx         redirects to the Atlas
 src/
-  config.ts              EXPO_PUBLIC_* with production defaults, storage keys
+  config.ts              EXPO_PUBLIC_* with production defaults (including the account preview flag), storage keys
   i18n/                  the i18next instance: "translation" + "mobile" namespaces, device locale, remembered choice
   ui/                    the interface layer: tokens, fonts, icons (plus the tab glyphs and the native header symbols), motion
                          tokens, Text, Button/LinkButton/IconButton on PressableScale, Screen, ContentImage (expo-image),
                          Skeleton, ProgressRing, CrossfadeText, PageDots, GlowPulse, EmptyState, Toast,
                          SettingsList, Sheet (the base of every sheet route), TabStack, headerItems, TextField, MarkdownView
   lib/                   adapters: bootstrap (what the splash reads), cached content client, progress + sync-queue
-                         storage, Supabase and native sign-in, audio (expo-audio), recordings (file system), maps
-                         hand-off, position, reachability store, store billing (the coffee), the support ledger, haptics, accessibility announcements
+                         storage, Supabase and native sign-in, the account preview stand-in (development builds only),
+                         audio (expo-audio), recordings (file system), maps hand-off, position, reachability store,
+                         store billing (the coffee), the support ledger, haptics, accessibility announcements
   providers/             BootProvider, NetworkProvider, SessionProvider, ContentProvider, ProgressProvider, ToastProvider,
                          SupportProvider (the store connection, the coffee menu and the receipt of support),
                          useCloseModal (the one way a modal route closes)
   features/              screen-level components per area: atlas/, code/, cottages/ (the directory both tabs open), story/, kronika/, ranking/, profile/, welcome/
+  features/profile/      the settings list, the account screen (the identity header, the leaderboard entry with the
+                         photo switch, the finds, sign-out and the delete-account confirm) and the nickname editor
   features/support/      supporting Chatynkowo: the sheet, the coffee menu with the store product ids (tips.ts), the
-                         rewarded ad with the consent flow (useRewardedSupportAd.ts), the ledger hook
+                         rewarded ad with the consent flow (useRewardedSupportAd.ts), the ledger hook, and the
+                         invitation card (SupportCard.tsx) the other screens mount
 app.config.ts            the configuration that depends on the environment: the AdMob app ids of the support sheet's rewarded
                          ad (Google's sample ids until EXPO_PUBLIC_ADMOB_*_APP_ID are set), Sign in with Apple (the capability and its
                          plugin, unless EXPO_PUBLIC_APPLE_SIGN_IN is 0), the Google sign-in plugin with the iOS URL scheme
@@ -244,7 +250,9 @@ onboarding, the empty states and plaque links, so every `/code` href still
 works. A discovery runs in place (the sheet or the scanner shows the
 outcome), the story replaces that screen, and the Atlas presents the reward
 reveal once the story has closed. Supporting Chatynkowo is an action too,
-a sheet (`/support`) reached from the profile's list. Motion goes through the tokens in
+a sheet (`/support`) opened by the invitation card wherever it is mounted
+(see "Supporting Chatynkowo"); so is changing the nickname, a sheet
+(`/nickname`) opened from the account screen and from the Ranking. Motion goes through the tokens in
 `src/ui/motion` (reanimated 4, system reduce-motion respected) and haptics
 through `src/lib/haptics.ts`.
 
@@ -284,6 +292,32 @@ through `src/lib/haptics.ts`.
   out revokes the session when the backend can be reached and forgets it on
   the device either way; the sync queue ends with the session, the Kronika
   stays.
+- **Account screen** (`app/(tabs)/profile/account.tsx`, `app/nickname.tsx`,
+  `src/features/profile`): the signed-in seeker's own page, pushed from the
+  Profile tab. An identity header shows the provider's picture, the
+  nickname and the e-mail of the Google or Apple account signed in with;
+  the leaderboard entry section shows the nickname with a row that opens
+  the nickname editor as a sheet (the same sheet the Ranking's "Change
+  nickname" item opens) and a switch for showing the account photo next to
+  it; a finds section says how many discoveries the account holds; then
+  sign-out, and at the end "Delete account" behind a confirm. Deleting
+  calls `deleteAccount` in `src/lib/sync.ts` (the api's `deleteAccount`:
+  the backend's `delete-account` Edge Function removes the finds, the
+  profile and the auth user, then the local session is forgotten; see
+  `supabase/README.md`, "Deleting an account"); the Kronika on the device
+  stays, like after a sign-out. A refusal is a toast and the session is
+  kept for another try.
+- **Account preview** (`src/lib/account-preview.ts`): with
+  `EXPO_PUBLIC_ACCOUNT_PREVIEW=1` in `apps/mobile/.env` a development
+  build behaves as if a Google account were signed in, so the account
+  screen, the nickname sheet and the signed-in Ranking can be looked at on
+  an emulator that has no Google sign-in configured. `sync.ts` answers
+  every account call from a stand-in account (sign-in, profile, nickname
+  changes, sign-out, deletion) and nothing reaches the backend; the finds
+  stay on the device. The flag is read under `__DEV__` only, so a release
+  build cannot carry it. The variable is inlined by Metro: after setting it
+  restart the dev server (`npx expo start --dev-client --clear`) and reload
+  the app; no native rebuild is needed.
 
 - **Support** (`SupportProvider`, `src/lib/billing.ts`,
   `src/features/support`, `src/lib/support-store.ts`): the two voluntary
@@ -292,7 +326,9 @@ through `src/lib/haptics.ts`.
   anything (see "Supporting Chatynkowo" below). The store connection
   opens with the app and stays, so a purchase settled outside the sheet
   is still finished and thanked for. The ledger of what was given lives in
-  AsyncStorage under `STORAGE_KEYS.support`, on the device only.
+  AsyncStorage under `STORAGE_KEYS.support`, on the device only; the
+  invitation card reads it to turn into a thank-you after the first
+  support.
 
 ## Native pieces
 
@@ -414,9 +450,20 @@ and equal, and says plainly that neither unlocks anything:
 
 Either way the receipt is the provider's and the same: the ledger on the
 device counts it (`src/lib/support-store.ts`, shown in the sheet as "your
-support so far"), a toast says thanks and the sheet closes. The entry
-point is the "Support" section of the profile. No haptic: the phone stirs
-only for a discovery (`src/lib/haptics.ts`).
+support so far"), a toast says thanks and the sheet closes. No haptic: the
+phone stirs only for a discovery (`src/lib/haptics.ts`).
+
+The sheet is never pushed on anyone; it is opened by the support
+invitations, one component (`src/features/support/SupportCard.tsx`)
+mounted where a player has just received something: a card at the end of
+every tale, under the story; a card under the collection in the Kronika; a
+line on the celebration card after a reward; and a card in the profile,
+right under the account block. Each says in its own words that Chatynkowo
+is free and that a coffee or a moment for an ad is a choice, not a
+condition, and opens `/support`. Once the device's ledger records the
+first support, every card turns into a thank-you that still opens the
+sheet and the celebration's line disappears, so a player who has given is
+not asked again, only reminded where the sheet is.
 
 ### Setting the stores up
 

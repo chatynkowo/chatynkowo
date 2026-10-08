@@ -2,9 +2,8 @@ import { memo } from 'react'
 import { StyleSheet, View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
-import { initials } from '@chatynkowo/core'
 import type { LeaderboardRow } from '@chatynkowo/api'
-import { ContentImage, GlowPulse, Text, colors, enterUp, radius, space } from '../../ui'
+import { Avatar, GlowPulse, Text, colors, enterUp, radius, space } from '../../ui'
 
 /* The top three, second and third flanking the winner, the site's podium.
    The cards rise in third, second, first order the first time they appear
@@ -29,15 +28,7 @@ export const Podium = memo(function Podium({ rows, total, isMine }: PodiumProps)
   return (
     <View style={styles.podium}>
       {order.map(({ row, place }) => {
-        const avatar = row.avatar_url ? (
-          <ContentImage uri={row.avatar_url} radius={radius.pill} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarInitials]}>
-            <Text weight="bold" tone="accent">
-              {initials(row.display_name)}
-            </Text>
-          </View>
-        )
+        const avatar = <Avatar name={row.display_name} uri={row.avatar_url} size={AVATAR} />
         return (
           <Animated.View
             key={row.public_id}
@@ -90,17 +81,5 @@ const styles = StyleSheet.create({
   },
   cardMine: {
     borderColor: colors.accentStrong,
-  },
-  avatar: {
-    width: AVATAR,
-    height: AVATAR,
-    borderRadius: radius.pill,
-    backgroundColor: colors.pageRaised,
-  },
-  avatarInitials: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
   },
 })

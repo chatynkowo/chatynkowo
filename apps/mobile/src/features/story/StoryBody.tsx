@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { formatDay, type Cottage } from '@chatynkowo/core'
 import { NewRewardBanner } from '../kronika/NewRewardBanner'
+import { SupportCard } from '../support/SupportCard'
 import { FoundIcon, MarkdownView, Text, colors, iconSize, space } from '../../ui'
 import { SealStamp } from './SealStamp'
 import { StoryPlayer } from './StoryPlayer'
@@ -9,8 +10,10 @@ import { StoryUnlockReveal } from './StoryUnlockReveal'
 
 /* Everything below the hero, the same for a fresh unlock and a revisit so
    the two can never drift: the unlock or found-before line, the reward
-   banner, the title, the virtue, the recording and the tale. The ceremony
-   adds the seal and staggers the lines in; a revisit fades them. */
+   banner, the title, the virtue, the recording, the tale and, under its
+   last line, the invitation to buy the elf a coffee (the tip jar at the
+   moment a tale has just been given). The ceremony adds the seal and
+   staggers the lines in; a revisit fades them. */
 
 export type StoryBodyProps = {
   cottage: Cottage
@@ -69,6 +72,9 @@ export function StoryBody({ cottage, ceremony, foundAt, newReward, onOpenReward,
       <StoryUnlockReveal mode={mode} order={next()} kind="fade">
         <MarkdownView>{cottage.storyMarkdown}</MarkdownView>
       </StoryUnlockReveal>
+      <StoryUnlockReveal mode={mode} order={next()} kind="fade" style={styles.support}>
+        <SupportCard placement="story" />
+      </StoryUnlockReveal>
     </View>
   )
 }
@@ -85,5 +91,9 @@ const styles = StyleSheet.create({
   },
   foundOn: {
     marginTop: space.xs,
+  },
+  /* A breath between the tale's last line and the card. */
+  support: {
+    marginTop: space.lg,
   },
 })

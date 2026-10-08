@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "frameWidth": 130,
+  "frameHeight": 208,
+  "anchor": {
+    "x": 53.5,
+    "y": 198.69
+  },
+  "fps": 24,
+  "sheets": [
+    {
+      "file": "body-1.webp",
+      "columns": 12,
+      "rows": 1,
+      "frames": 12
+    }
+  ],
+  "clips": {
+    "bob": {
+      "from": 0,
+      "to": 11,
+      "loop": true
+    }
+  },
+  "layers": {
+    "hat": {
+      "sheets": [
+        {
+          "file": "hat-1.webp",
+          "columns": 12,
+          "rows": 1,
+          "frames": 12
+        }
+      ]
+    }
+  }
+}

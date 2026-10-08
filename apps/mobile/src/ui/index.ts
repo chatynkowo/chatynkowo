@@ -1,7 +1,7 @@
 /* The shared interface layer of the app: design tokens, fonts, the icon
    vocabulary (with the tab glyphs and the native header symbols), motion
-   tokens, text, buttons, the pressable, screens, images, skeletons,
-   progress, toasts, the settings list and the tab bar. Screens and feature
+   tokens, text, buttons, the pressable, screens, images, avatars,
+   skeletons, progress, toasts, the settings list and the tab bar. Screens and feature
    components build on these and never restyle them locally. */
 export * from './tokens'
 export * from './icons'
@@ -13,8 +13,9 @@ export { PressableScale, type PressableScaleProps } from './PressableScale'
 export { Screen, type ScreenProps } from './Screen'
 export { readable } from './layout'
 export { MarkdownView } from './Markdown'
-export { TextField, type TextFieldProps } from './TextField'
+export { TextField, type TextFieldHandle, type TextFieldProps } from './TextField'
 export { ContentImage, prefetchContent, type ContentImageProps } from './ContentImage'
+export { Avatar, type AvatarProps } from './Avatar'
 export { Skeleton, SkeletonRow, SkeletonCard, SkeletonMap } from './Skeleton'
 export { ProgressRing, type ProgressRingProps } from './ProgressRing'
 export { CrossfadeText } from './CrossfadeText'

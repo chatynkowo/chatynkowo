@@ -6,8 +6,8 @@ import { ReduceMotion, enterUp, fade, useReducedMotion } from '../../ui'
 /* The ceremony's stagger: below the hero, each piece of the story (the
    unlock line, the reward banner, the title, the virtue, the player) rises
    into place 90 ms after the one before, once the seal has stamped; the tale
-   itself fades in last. A revisit, and every reduced-motion open, is one
-   short fade. */
+   itself fades in, and the support card closes the stagger after it. A
+   revisit, and every reduced-motion open, is one short fade. */
 
 export type StoryRevealMode = 'ceremony' | 'revisit'
 

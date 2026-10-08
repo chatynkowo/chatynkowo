@@ -241,8 +241,12 @@ function RootStack() {
       />
       <Stack.Screen name="reward/[id]" options={sheetRoute} />
       <Stack.Screen name="rules" options={sheetRoute} />
-      {/* Supporting Chatynkowo (src/features/support): a sheet from the profile. */}
+      {/* Supporting Chatynkowo (src/features/support): a sheet from the
+          profile, the Kronika, a tale's end and the celebration card. */}
       <Stack.Screen name="support" options={sheetRoute} />
+      {/* The nickname editor (src/features/profile): a sheet from the
+          account screen and the Ranking. */}
+      <Stack.Screen name="nickname" options={sheetRoute} />
     </Stack>
   )
 }

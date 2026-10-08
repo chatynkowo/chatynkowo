@@ -8,8 +8,10 @@ import { DEFAULT_TIP, tipLabelKey } from './tips'
 import { useRewardedSupportAd, type RewardedAdStatus } from './useRewardedSupportAd'
 import { useSupportLedger } from './useSupportLedger'
 
-/* The support sheet (the route /support), opened from the profile: the
-   two voluntary ways to support Chatynkowo, side by side and equal. A coffee for the elf is a purchase through the store
+/* The support sheet (the route /support), opened by the support card
+   (SupportCard.tsx: a tale's end, the Kronika, the profile) and the
+   celebration card: the two voluntary ways to support Chatynkowo, side
+   by side and equal. A coffee for the elf is a purchase through the store
    the app came from (SupportProvider holds the connection and the menu
    with the store's prices; the store's own payment sheet takes the
    payment). An ad is a rewarded ad the player asks for and watches to
