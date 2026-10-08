@@ -13,6 +13,7 @@ versioned in the repository: changes are made in the project, and a local
 | `profiles` — nickname, avatar, `public_id`, `completed_at` | Postgres | leaderboard, profile |
 | `finds` — discovered cottages per account | Postgres | Kronika sync |
 | `leaderboard(p_total)` — the ranking | SQL function | `/ranking.html` |
+| `delete-account` — removes the caller's finds, profile and auth user | Edge Function (`functions/delete-account/`) | the app's account screen, `/delete-account.html`, `/profile.html` |
 
 What the backend does **not** do, and should not do without a reason: it does
 not hold content. Stories, recordings, reward cards and the cottage list are
@@ -66,11 +67,68 @@ schema. Put the local project's URL and key into `apps/web/.env`.
 - **Logic that cannot trust the client** (code verification, purchase
   entitlements, physical product codes): `supabase/functions/<name>/` as an
   Edge Function; the client calls it through `client.functions.invoke`.
+  `functions/delete-account/` is the example to copy: it verifies the
+  caller from the bearer token itself, does the privileged work under the
+  service role, and answers with a plain JSON the api wraps (see "Deleting
+  an account" below for the deployment steps).
 - **Sign-in in the app**: Google through the native flow plus Sign in with
   Apple (an App Store requirement whenever Google is offered); the client
   code stays in `packages/api`. The setup is below.
 - **Content** stays in the repository and the `/admin/` editor; the app
   fetches it from `https://www.chatynkowo.pl`.
+
+## Deleting an account
+
+A seeker deletes their account from the app's account screen (Profile,
+Account, Delete account, confirm) or from the site, signed in on
+`/delete-account.html` or `/profile.html`. Both call the `delete-account`
+Edge Function (`functions/delete-account/index.ts`) through
+`deleteAccount` in `packages/api`: the function reads the caller from the
+bearer token the client attaches, then, under the service role, deletes
+the `finds` rows, the `profiles` row and finally the auth user, and the
+client forgets its local session. Nothing on a device is touched: the
+Kronika kept in the app or the browser stays, as the pages say, because it
+lives there and not on the server.
+
+The service role is the reason this is a function and not a client query:
+a client may remove its own rows under RLS, but only the administrator can
+delete an auth user, and that key never leaves the backend. The rows are
+deleted explicitly rather than left to a cascade, because the schema is not
+versioned here and whether `finds.user_id` and `profiles.id` cascade from
+`auth.users` is a fact of the project; the explicit order works either way.
+The function verifies the token itself with `auth.getUser`, so it does not
+depend on the gateway's JWT verification, which is a deploy option
+(`--no-verify-jwt`) rather than a guarantee; deploying with the default
+verification on is fine and changes nothing in the function.
+
+Deploying, from the repository root (the link step is the one from
+"Working with the schema"):
+
+```bash
+pnpm dlx supabase login
+pnpm dlx supabase link --project-ref wqlodfnukdjrulcvzvtk
+pnpm dlx supabase functions deploy delete-account
+```
+
+There is nothing to configure: the Edge runtime injects `SUPABASE_URL`,
+`SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` into every function.
+To try it by hand, take a signed-in seeker's access token (the site:
+`JSON.parse(localStorage.getItem('sb-wqlodfnukdjrulcvzvtk-auth-token')).access_token`
+in the console) and call the function; the account behind the token is
+deleted for real, so use a test account:
+
+```bash
+curl -X POST https://wqlodfnukdjrulcvzvtk.supabase.co/functions/v1/delete-account \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+# {"deleted":true}; 401 without a valid token, 500 with the reason in the function's logs
+```
+
+The stores ask for this: Google Play's Data safety form wants a "Delete
+account URL", which is `https://www.chatynkowo.pl/delete-account.html`
+(a page that explains what is deleted and lets the seeker do it after
+signing in), and App Store review asks for deletion inside the app, which
+the account screen provides.
 
 ## Sign-in providers
 
@@ -101,7 +159,10 @@ applied by a script in this directory from the facts in `supabase/.env`.
 3. Supabase, Authentication, URL configuration: the profile page, where
    the browser flow starts and returns
    (`https://www.chatynkowo.pl/profile.html`, `https://chatynkowo.pl/profile.html`,
-   and the dev server's `/profile.html` for local work), among the
+   and the dev server's `/profile.html` for local work) and the account
+   deletion page (`/delete-account.html` on the same three origins: it
+   signs in and must come back to itself, or the browser lands on the
+   site URL and the deletion never shows), among the
    redirect URLs.
 
 ### Apple

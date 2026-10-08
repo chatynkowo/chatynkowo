@@ -19,7 +19,8 @@ packages/
     public/    the tree the site publishes as is: cottages/ (stories), data/ (manifests), assets/ (recordings, images)
     private/   the secret plaque codes and image originals; never published
     scripts/   the public code-hash lookup builder
-supabase/      backend description (README) and the Sign in with Apple script; the schema itself is not versioned here
+supabase/      backend description (README), the Sign in with Apple script and functions/ (the Edge Functions,
+               today delete-account); the schema itself is not versioned here
 scripts/       repository-wide checks (conventions)
 ```
 
@@ -64,6 +65,9 @@ Supabase project.
 - `/profile.html` — the seeker's account: the way in, the nickname and
   picture of the leaderboard entry, the finds the account holds, the way
   out (`src/profile-main.tsx`),
+- `/delete-account.html` — deleting the account: what is deleted, what
+  stays, and the way to do it after signing in; the URL the stores point
+  to (`src/delete-account-main.tsx`),
 - `/admin/` — the content and location editor (`admin/editor.ts`).
 
 Vite builds all entry points in one process. In development the plugin in

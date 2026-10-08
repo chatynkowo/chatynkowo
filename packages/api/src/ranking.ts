@@ -98,6 +98,34 @@ export function providerAvatarUrl(session: Session): string | null {
   return String(metadata.avatar_url || metadata.picture || '') || null
 }
 
+/* The provider the account signed in through, for "signed in with Google";
+   null for a session from a provider neither client offers. */
+export function sessionProvider(session: Session): OAuthProvider | null {
+  const provider = session.user.app_metadata.provider
+  return OAUTH_PROVIDERS.find((candidate) => candidate === provider) ?? null
+}
+
+/* The address the provider shared, to name the account the seeker is
+   signed in with; null when the provider hid it (Apple's relay is still an
+   address and is shown as one). */
+export function sessionEmail(session: Session): string | null {
+  return session.user.email || String(session.user.user_metadata.email || '') || null
+}
+
+/* Deletes the account for good: the `delete-account` Edge Function
+   (supabase/functions/delete-account) removes the finds, the profile and
+   the auth user under the service role, since a client may never delete
+   its own auth row. The function reads the caller from the bearer token
+   the client attaches. Once it answers, the local session is forgotten
+   (the server one is gone with the user); the finds kept on the device
+   are the caller's to keep. Throws when the function refused or could
+   not be reached, with the session left in place for another try. */
+export async function deleteAccount(client: ChatynkowoClient): Promise<void> {
+  const { error } = await client.functions.invoke('delete-account', { method: 'POST' })
+  if (error) throw error
+  await client.auth.signOut({ scope: 'local' })
+}
+
 export type ProfileNames = {
   /* A name the sign-in itself handed over (Apple gives it once, on the
      first sign-in, and never in the token). */
