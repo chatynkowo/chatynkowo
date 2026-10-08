@@ -9,9 +9,10 @@ import './Account.css'
    from its settings when the panel mounts (unreadable settings offer
    every provider; the backend answers on the way). Nothing while the
    list is unknown; a note instead of buttons when there is no backend or
-   no provider. */
+   no provider. The lead above the buttons says what signing in is for on
+   this page; the profile page's reason is the default. */
 
-export function SignInPanel() {
+export function SignInPanel({ lead }: { lead?: string }) {
   const { t } = useTranslation()
   const account = useAccount()
   const [providers, setProviders] = useState<OAuthProvider[] | null>(null)
@@ -38,7 +39,7 @@ export function SignInPanel() {
 
   return (
     <div className="signin-panel">
-      <p className="account-lead">{t('profile.signInLead')}</p>
+      <p className="account-lead">{lead ?? t('profile.signInLead')}</p>
       {providers && (
         <div className="signin-buttons">
           {providers.includes('google') && (

@@ -1,16 +1,17 @@
 import type { ComponentPropsWithRef } from 'react'
 import { cx } from './classes'
 
-/* The site's buttons. Three visual variants, one markup contract:
+/* The site's buttons. Four visual variants, one markup contract:
    - primary: the single main action of a view,
    - ghost:   secondary actions on the raised surface (default),
-   - subtle:  tertiary actions, e.g. sign out.
+   - subtle:  tertiary actions, e.g. sign out,
+   - danger:  a destructive action, e.g. delete the account.
    Use Button for actions, LinkButton for navigation that looks like a button,
    IconButton for icon-only controls (the accessible name is mandatory).
    A disabled button is one that cannot act; one whose action is in flight
    says so with aria-busy and shows the wait cursor. */
 
-export type ButtonVariant = 'primary' | 'ghost' | 'subtle'
+export type ButtonVariant = 'primary' | 'ghost' | 'subtle' | 'danger'
 
 type ButtonProps = ComponentPropsWithRef<'button'> & { variant?: ButtonVariant }
 

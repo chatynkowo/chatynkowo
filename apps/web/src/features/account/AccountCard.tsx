@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { DISPLAY_NAME_MAX_LENGTH, profilePatch } from '@chatynkowo/core'
 import { localFinds, providerAvatarUrl } from '../../lib/sync'
 import { useAccount, type AccountExchange } from '../../providers/AccountProvider'
-import { Avatar, Button, Notice, SpinnerIcon, iconSize } from '../../ui'
+import { Button, Notice, SpinnerIcon, iconSize } from '../../ui'
+import { AccountIdentity } from './AccountIdentity'
 import { SignInPanel } from './SignInPanel'
 import './Account.css'
 
@@ -98,16 +99,10 @@ export function AccountCard({ exchange }: { exchange: AccountExchange }) {
     )
   }
 
-  const displayName = profile.display_name || t('profile.defaultName')
   return (
     <section className="account-card" aria-labelledby={ACCOUNT_TITLE_ID}>
       {title}
-      <p className="account-card__who">
-        <Avatar name={displayName} src={profile.avatar_url} />
-        <span>
-          {t('profile.signedInPrefix')} <strong>{displayName}</strong>
-        </span>
-      </p>
+      <AccountIdentity session={session} profile={profile} />
       <form className="account-form" onSubmit={(event) => void save(event)}>
         <div className="account-card__entry">
           <h3>{t('profilePage.entryTitle')}</h3>

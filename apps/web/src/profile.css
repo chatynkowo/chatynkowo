@@ -24,7 +24,13 @@
   font-size: clamp(1.02rem, 1.25vw, 1.16rem);
 }
 
-.profile-main .profile-signout {
+.profile-main .profile-signout,
+.profile-main .account-delete {
   padding-top: 24px;
   border-top: 1px solid var(--line);
 }
+
+/* The card with the receipt of a deletion under it: the receipt is on the
+   page all along (a live region) and takes room only once it has a say. */
+.profile-account { display: grid; }
+.profile-account .notice:not(:empty) { margin-top: 14px; }

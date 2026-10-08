@@ -1,14 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { OAuthProvider, Profile, Session } from '@chatynkowo/api'
 import { mergeAccountFinds } from '../lib/persistence'
-import { configured, ensureProfile, getSession, onSessionChange, signInWith, signOut as endSession, syncAccount, updateProfile, type MergeRemoteFinds } from '../lib/sync'
+import { configured, deleteAccount as removeAccount, ensureProfile, getSession, onSessionChange, signInWith, signOut as endSession, syncAccount, updateProfile, type MergeRemoteFinds } from '../lib/sync'
 
-/* The account on the site: the Supabase session, the profile row and the
-   way in and out, mirroring the app's SessionProvider. Mounted once per
-   page by its entry; the header, the profile page and the ranking read it.
-   A failure is a console line here and a notice on the screen. */
+/* The account on the site: the Supabase session, the profile row, the way
+   in and out and the way to delete it, mirroring the app's SessionProvider.
+   Mounted once per page by its entry; the header, the profile page and the
+   ranking read it. A failure is a console line here and a notice on the
+   screen. */
 
-export type SignOutOutcome = 'ok' | 'failed'
+/* How a sign-out or a deletion ended; the failure is already logged. */
+export type AccountOutcome = 'ok' | 'failed'
 
 export type AccountValue = {
   /* Whether the site has a backend to sign in to at all. */
@@ -20,12 +22,15 @@ export type AccountValue = {
   /* The session is restored and, when signed in, the row was read or its
      read failed: what the screen shows is the truth, not a blank. */
   ready: boolean
-  /* A save or a sign-out in flight. */
+  /* A save, a sign-out or a deletion in flight. */
   busy: boolean
   /* Leaves for the provider and comes back to this page, where the client
      reads the session from the URL. */
   signIn: (provider: OAuthProvider) => void
-  signOut: () => Promise<SignOutOutcome>
+  signOut: () => Promise<AccountOutcome>
+  /* Deletes the account with its profile and finds for good and forgets
+     the session; the finds kept in this browser stay. */
+  deleteAccount: () => Promise<AccountOutcome>
   /* Throws when the backend refused or is unreachable. */
   saveProfile: (patch: Pick<Profile, 'display_name' | 'avatar_url'>) => Promise<Profile>
 }
@@ -86,7 +91,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     void signInWith(provider, `${location.origin}${location.pathname}`).catch((reason: unknown) => console.error('[account] sign-in', reason))
   }, [])
 
-  const signOut = useCallback(async (): Promise<SignOutOutcome> => {
+  const signOut = useCallback(async (): Promise<AccountOutcome> => {
     setBusy(true)
     try {
       await endSession()
@@ -94,6 +99,20 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       return 'ok'
     } catch (reason) {
       console.error('[account] sign-out', reason)
+      return 'failed'
+    } finally {
+      setBusy(false)
+    }
+  }, [])
+
+  const deleteAccount = useCallback(async (): Promise<AccountOutcome> => {
+    setBusy(true)
+    try {
+      await removeAccount()
+      setSession(null)
+      return 'ok'
+    } catch (reason) {
+      console.error('[account] delete', reason)
       return 'failed'
     } finally {
       setBusy(false)
@@ -118,8 +137,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   const ready = restored && (userId === null || settledFor === userId)
   const value = useMemo<AccountValue>(
-    () => ({ configured, session, profile, ready, busy, signIn, signOut, saveProfile }),
-    [session, profile, ready, busy, signIn, signOut, saveProfile],
+    () => ({ configured, session, profile, ready, busy, signIn, signOut, deleteAccount, saveProfile }),
+    [session, profile, ready, busy, signIn, signOut, deleteAccount, saveProfile],
   )
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>

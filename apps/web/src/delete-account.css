@@ -1,0 +1,58 @@
+/* The tokens, the page base and the primitives come from ui/ui.css,
+   imported before this file; this one lays the delete-account page out
+   as a readable column, like profile.css. The account card, the identity
+   line and the deletion bring their own stylesheet
+   (features/account/Account.css). */
+
+.delete-main {
+  display: grid;
+  width: 100%;
+  max-width: calc(760px + 2 * var(--page-gutter));
+  margin: 0 auto;
+  padding: clamp(38px, 5vw, 66px) var(--page-gutter) 100px;
+  gap: 28px;
+}
+
+.delete-intro h1 {
+  margin: 0 0 14px;
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  line-height: 1.05;
+}
+
+.delete-intro__lede {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: clamp(1.02rem, 1.25vw, 1.16rem);
+}
+
+.delete-section h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.35rem, 3vw, 1.7rem);
+}
+
+.delete-section p,
+.delete-section ul {
+  max-width: 65ch;
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.delete-section ul {
+  display: grid;
+  gap: 6px;
+  padding-left: 1.2em;
+  list-style: disc;
+}
+
+.delete-main .account-card .account-delete {
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.delete-contact {
+  max-width: 65ch;
+  margin: 0;
+  color: var(--ink-faint);
+  font-size: 0.92rem;
+}

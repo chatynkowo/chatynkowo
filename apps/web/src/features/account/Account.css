@@ -1,5 +1,6 @@
 /* The account block (features/account): the card, the way in, the entry
-   form and its receipts, the way out. Tokens from ui/ui.css; the buttons,
+   form and its receipts, the identity line, the way out and the deletion
+   with the confirm dialog they share. Tokens from ui/ui.css; the buttons,
    the notices and the avatar are the primitives from there. */
 
 .account-card {
@@ -17,7 +18,9 @@
   font-size: clamp(1.55rem, 4vw, 2.1rem);
 }
 
-.account-card__who {
+/* Who is signed in, with the provider and the address (AccountIdentity),
+   on the profile page and the page that deletes the account. */
+.account-identity {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -25,8 +28,17 @@
   color: var(--ink-soft);
 }
 
-.account-card__who strong { color: var(--ink); }
-.account-card__who .avatar { width: 56px; height: 56px; }
+.account-identity .avatar { width: 56px; height: 56px; }
+
+.account-identity__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.account-identity__text strong { color: var(--ink); }
+.account-identity__text small { font-size: 0.9rem; }
 
 .account-card__entry h3 {
   margin: 0 0 6px;
@@ -122,13 +134,17 @@
   to { transform: rotate(360deg); }
 }
 
-.profile-signout {
+.profile-signout,
+.account-delete {
   display: grid;
   justify-items: start;
   gap: 10px;
 }
 
-.profile-confirm {
+.account-delete .account-lead { max-width: 60ch; }
+
+/* The confirm dialog of the sign-out and of the deletion. */
+.account-confirm {
   width: min(510px, 100%);
   padding: 34px;
   background: linear-gradient(155deg, var(--surface-soft), var(--page-raised));
@@ -136,17 +152,17 @@
   color: var(--ink);
 }
 
-.profile-confirm h2 {
+.account-confirm h2 {
   margin-bottom: 10px;
   font-size: clamp(1.55rem, 4vw, 2.1rem);
 }
 
-.profile-confirm p {
+.account-confirm p {
   margin-bottom: 25px;
   color: var(--ink-soft);
 }
 
-.profile-confirm__actions {
+.account-confirm__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -155,10 +171,10 @@
 @media (max-width: 560px) {
   .signin-buttons,
   .account-form__actions,
-  .profile-confirm__actions {
+  .account-confirm__actions {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .profile-confirm { padding: 24px; }
+  .account-confirm { padding: 24px; }
 }

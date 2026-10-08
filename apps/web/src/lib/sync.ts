@@ -14,7 +14,7 @@ import { localFinds, mergeAccountFinds } from './persistence'
 
 export type { LeaderboardRow, OAuthProvider, Profile, Session } from '@chatynkowo/api'
 export { localFinds, totalCottages }
-export { OAUTH_PROVIDERS } from '@chatynkowo/api'
+export { OAUTH_PROVIDERS, sessionEmail, sessionProvider } from '@chatynkowo/api'
 
 export const configured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
 export const supabase = configured ? api.createChatynkowoClient({ url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY }) : null
@@ -41,6 +41,13 @@ export function onSessionChange(listener: (session: Session | null) => void): ()
 
 export async function signOut() {
   if (supabase) await api.signOut(supabase)
+}
+
+/* The account, its profile and its finds, gone for good; the session is
+   forgotten with them. Throws when the backend refused or is unreachable. */
+export async function deleteAccount() {
+  if (!supabase) throw new Error('The backend is not configured.')
+  await api.deleteAccount(supabase)
 }
 
 /* The profile row, created on first contact with the provider's name or

@@ -26,10 +26,10 @@ export function SignOutSection() {
       </Button>
       {failed && <Notice tone="error">{t('profile.signOutFailed')}</Notice>}
       {confirming && (
-        <Modal className="profile-confirm" labelledBy="signout-title" closeLabel={t('profile.signOutCancel')} onClose={() => setConfirming(false)}>
+        <Modal className="account-confirm" labelledBy="signout-title" closeLabel={t('profile.signOutCancel')} onClose={() => setConfirming(false)}>
           <h2 id="signout-title">{t('profile.signOutConfirm')}</h2>
           <p>{t('profile.signOutBody')}</p>
-          <div className="profile-confirm__actions">
+          <div className="account-confirm__actions">
             <Button variant="primary" disabled={account.busy} aria-busy={account.busy} onClick={() => void signOut()}>
               {t('profile.signOut')}
             </Button>

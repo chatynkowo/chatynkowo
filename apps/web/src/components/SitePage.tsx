@@ -10,7 +10,7 @@ import { SiteHeader, type NavigationItem } from './SiteHeader'
    document title and description that follow the language. A page renders
    its content inside and nothing else. */
 
-export type SitePageId = 'home' | 'ranking' | 'profile'
+export type SitePageId = 'home' | 'ranking' | 'profile' | 'deleteAccount'
 
 /* The home page's sections, in its order; other pages link into them. */
 const SECTIONS = [
@@ -26,6 +26,7 @@ const PAGES: Record<SitePageId, { href: string; main: string; title: string; des
   home: { href: 'index.html', main: 'main', title: 'meta.homeTitle', description: 'meta.homeDescription' },
   ranking: { href: 'ranking.html', main: 'ranking-main', title: 'meta.rankingTitle', description: 'meta.rankingDescription' },
   profile: { href: 'profile.html', main: 'profile-main', title: 'meta.profileTitle', description: 'meta.profileDescription' },
+  deleteAccount: { href: 'delete-account.html', main: 'delete-account-main', title: 'meta.deleteAccountTitle', description: 'meta.deleteAccountDescription' },
 }
 
 type SitePageProps = {
