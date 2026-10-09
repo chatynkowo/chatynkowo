@@ -51,6 +51,8 @@ export type SettingsRowProps = {
   value?: string
   trailing?: 'chevron' | 'check' | 'external' | ReactNode
   onPress?: () => void
+  /* A row that cannot act right now: dimmed, and the press is ignored. */
+  disabled?: boolean
   tone?: 'ink' | 'danger'
   accessibilityHint?: string
 }
@@ -68,7 +70,7 @@ function Trailing({ trailing }: { trailing: SettingsRowProps['trailing'] }) {
   }
 }
 
-export function SettingsRow({ icon, leading, label, subtitle, value, trailing, onPress, tone = 'ink', accessibilityHint }: SettingsRowProps) {
+export function SettingsRow({ icon, leading, label, subtitle, value, trailing, onPress, disabled = false, tone = 'ink', accessibilityHint }: SettingsRowProps) {
   const name = [label, value, subtitle].filter(Boolean).join(', ')
   const body = (
     <>
@@ -104,10 +106,11 @@ export function SettingsRow({ icon, leading, label, subtitle, value, trailing, o
   return (
     <PressableScale
       onPress={onPress}
-      style={styles.row}
+      disabled={disabled}
+      style={[styles.row, disabled && styles.disabled]}
       accessibilityLabel={name}
       accessibilityHint={accessibilityHint}
-      accessibilityState={trailing === 'check' ? { selected: true } : undefined}
+      accessibilityState={{ selected: trailing === 'check' || undefined, disabled: disabled || undefined }}
     >
       {body}
     </PressableScale>
@@ -135,6 +138,9 @@ const styles = StyleSheet.create({
     height: StyleSheet.hairlineWidth,
     marginLeft: space.lg,
     backgroundColor: colors.line,
+  },
+  disabled: {
+    opacity: 0.5,
   },
   row: {
     minHeight: 48,

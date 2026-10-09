@@ -194,9 +194,11 @@ app/                     expo-router routes
                          and the parchment cottage sheet (a gesture sheet with three snaps)
   (tabs)/kronika/        its own native stack: the collection grid with the progress card
   (tabs)/ranking/        its own native stack: the leaderboard list, the rules and share header items
-  (tabs)/profile/        its own native stack: grouped settings (account, language, lore, legal, social) with the
-                         support invitation, account.tsx (the signed-in account: identity, leaderboard entry, finds,
-                         sign-out, deletion), about.tsx (the lore sections) and guide.tsx (the onboarding pager replayed)
+  (tabs)/profile/        its own native stack: grouped settings (account, language, preferences, lore, legal, social)
+                         with the support invitation, account.tsx (the signed-in account: identity, leaderboard entry,
+                         finds, preferences, sign-out, deletion), preferences.tsx (the consent to ads: its state and
+                         the form reopened, to change or withdraw it), about.tsx (the lore sections) and guide.tsx
+                         (the onboarding pager replayed)
   code.tsx               the code entry as a sheet (auto-submits at the fourth digit)
   scan.tsx               the QR scanner, full screen under a transparent bar with torch and close items
   cottages.tsx           every cottage, found first, with a search box and an undiscovered-only filter: one page
@@ -220,7 +222,8 @@ src/
   lib/                   adapters: bootstrap (what the splash reads), cached content client, progress + sync-queue
                          storage, Supabase and native sign-in, the account preview stand-in (development builds only),
                          audio (expo-audio), recordings (file system), maps hand-off, position, reachability store,
-                         store billing (the coffee), the support ledger, haptics, accessibility announcements
+                         store billing (the coffee), the support ledger, the ads SDK with Google's consent (ads.ts),
+                         haptics, accessibility announcements
   providers/             BootProvider, NetworkProvider, SessionProvider, ContentProvider, ProgressProvider, ToastProvider,
                          SupportProvider (the store connection, the coffee menu and the receipt of support),
                          useCloseModal (the one way a modal route closes)
@@ -228,8 +231,10 @@ src/
   features/profile/      the settings list, the account screen (the identity header, the leaderboard entry with the
                          photo switch, the finds, sign-out and the delete-account confirm) and the nickname editor
   features/support/      supporting Chatynkowo: the sheet, the coffee menu with the store product ids (tips.ts), the
-                         rewarded ad with the consent flow (useRewardedSupportAd.ts), the ledger hook, and the
-                         invitation card (SupportCard.tsx) the other screens mount
+                         rewarded ad (useRewardedSupportAd.ts), the ledger hook, and the invitation card
+                         (SupportCard.tsx) the other screens mount
+  features/preferences/  the preferences screen: where the consent to ads stands and the row that opens Google's
+                         form again (the privacy options in the EEA), with the consent hook on top of src/lib/ads.ts
 app.config.ts            the configuration that depends on the environment: the AdMob app ids of the support sheet's rewarded
                          ad (Google's sample ids until EXPO_PUBLIC_ADMOB_*_APP_ID are set), Sign in with Apple (the capability and its
                          plugin, unless EXPO_PUBLIC_APPLE_SIGN_IN is 0), the Google sign-in plugin with the iOS URL scheme
@@ -440,13 +445,20 @@ and equal, and says plainly that neither unlocks anything:
   published) shows the coffee as unavailable.
 - **A rewarded ad.** The only ad in the app, shown only here and only when
   the player asks (`useRewardedSupportAd.ts`): the consent flow first
-  (Google's User Messaging Platform; in the EEA the message configured in
-  the AdMob account, once), then the SDK, then one ad loaded and shown;
-  the ad network's word that it was watched to the end is the support. A
-  consent flow that fails (no message configured yet, no network) falls
-  back to non-personalised requests; consent required and not given means
-  no ad. The sheet reports where a request stands (looking, no ad right
-  now, offline, interrupted, refused).
+  (`src/lib/ads.ts`: Google's User Messaging Platform; in the EEA the
+  message configured in the AdMob account, once), then the SDK, then one
+  ad loaded and shown; the ad network's word that it was watched to the
+  end is the support. A consent flow that fails (no message configured
+  yet, no network) falls back to non-personalised requests; consent
+  required and not given means no ad. The sheet reports where a request
+  stands (looking, no ad right now, offline, interrupted, refused). The
+  consent is never buried: the preferences screen (Profile, Preferences,
+  also on the account screen) shows where it stands and reopens Google's
+  form, the privacy options in the EEA, so it can be changed or withdrawn
+  as easily as it was given, which Google requires of apps in the EEA and
+  the GDPR requires of any consent. A development build tells the SDK to
+  treat the device as in the EEA, so the form can be tried on an emulator
+  (the SDK does that only for test devices, which an emulator is).
 
 Either way the receipt is the provider's and the same: the ledger on the
 device counts it (`src/lib/support-store.ts`, shown in the sheet as "your

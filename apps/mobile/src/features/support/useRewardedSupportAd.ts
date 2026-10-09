@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Platform } from 'react-native'
-import { AdEventType, AdsConsent, MobileAds, RewardedAd, RewardedAdEventType, TestIds } from 'react-native-google-mobile-ads'
-import { ADMOB_REWARDED_ANDROID_UNIT_ID, ADMOB_REWARDED_IOS_UNIT_ID } from '../../config'
+import { AdEventType, RewardedAd, RewardedAdEventType } from 'react-native-google-mobile-ads'
+import { REWARDED_AD_UNIT_ID, adsOffered, prepareAds, type AdsPermission } from '../../lib/ads'
 
 /* The rewarded ad of the support sheet, the one place the app shows an
    ad: the player asks for it, watches it to the end and that is the
@@ -10,22 +9,15 @@ import { ADMOB_REWARDED_ANDROID_UNIT_ID, ADMOB_REWARDED_IOS_UNIT_ID } from '../.
    request stands so the sheet can say so, and calls back once the ad
    network says the ad was watched to the end.
 
-   Before the first request the SDK's consent flow runs (Google's User
-   Messaging Platform: in the EEA the form configured in the AdMob
-   account, once; elsewhere nothing), then the SDK is initialised. The
+   Before the first request the consent flow and the SDK are readied by
+   src/lib/ads.ts (Google's User Messaging Platform: in the EEA the form
+   configured in the AdMob account, once; elsewhere nothing), whose
    answer decides the request: personalised ads only where the player
    agreed to a profile, non-personalised otherwise, and no ad at all when
-   consent is required and was not given. A consent flow that fails (no
-   message configured yet, no network) falls back to non-personalised
-   requests, the one kind that needs no profile. The unit comes from the
+   consent is required and was not given. The consent can be changed or
+   withdrawn later on the preferences screen. The unit comes from the
    build's configuration per platform; a development build without one
    uses Google's test unit, a release build offers no ad. */
-
-export const REWARDED_AD_UNIT_ID: string | null = (() => {
-  const configured = Platform.select({ android: ADMOB_REWARDED_ANDROID_UNIT_ID, ios: ADMOB_REWARDED_IOS_UNIT_ID }) || ''
-  if (configured) return configured
-  return __DEV__ ? TestIds.REWARDED : null
-})()
 
 export type RewardedAdStatus =
   | 'idle'
@@ -39,38 +31,6 @@ export type RewardedAdStatus =
   /* Consent is required and was not given. */
   | 'refused'
   | 'error'
-
-type Permission = { allowed: true; personalised: boolean } | { allowed: false }
-
-let prepared: Promise<Permission> | null = null
-
-/* Consent, then the SDK, once per process; a later request reuses the
-   answer (the SDK remembers the consent itself across launches). */
-function prepareAds(): Promise<Permission> {
-  if (!prepared) {
-    prepared = (async () => {
-      let permission: Permission
-      try {
-        const info = await AdsConsent.gatherConsent()
-        if (!info.canRequestAds) return { allowed: false }
-        const gdprApplies = await AdsConsent.getGdprApplies()
-        const personalised = gdprApplies ? (await AdsConsent.getUserChoices()).createAPersonalisedAdsProfile : true
-        permission = { allowed: true, personalised }
-      } catch (error) {
-        if (__DEV__) console.warn('[support] consent', error)
-        permission = { allowed: true, personalised: false }
-      }
-      await MobileAds().initialize()
-      return permission
-    })()
-    /* A failed initialisation is reported to this request; the next one
-       tries again. */
-    prepared.catch(() => {
-      prepared = null
-    })
-  }
-  return prepared
-}
 
 const UNAVAILABLE_REASONS: ReadonlySet<string> = new Set(['no-fill', 'mediation-no-fill', 'network-error', 'timeout'])
 
@@ -113,7 +73,7 @@ export function useRewardedSupportAd(onRewarded: () => void): { offered: boolean
     const current = () => generation.current === mine
     setStatus('loading')
     void (async () => {
-      let permission: Permission
+      let permission: AdsPermission
       try {
         permission = await prepareAds()
       } catch (error) {
@@ -169,5 +129,5 @@ export function useRewardedSupportAd(onRewarded: () => void): { offered: boolean
     })()
   }, [release])
 
-  return { offered: REWARDED_AD_UNIT_ID !== null, status, watch }
+  return { offered: adsOffered, status, watch }
 }

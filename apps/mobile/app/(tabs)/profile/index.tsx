@@ -7,14 +7,16 @@ import { SITE_ORIGIN, SOCIAL_LINKS } from '@chatynkowo/core'
 import { AccountSection } from '../../../src/features/profile/AccountSection'
 import { SupportCard } from '../../../src/features/support/SupportCard'
 import { LANGUAGES, setLanguage, toLanguage } from '../../../src/i18n'
-import { FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, colors, iconSize, readable, space, useTabBarClearance } from '../../../src/ui'
+import { FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, ShieldIcon, colors, iconSize, readable, space, useTabBarClearance } from '../../../src/ui'
 
 /* The Profile tab: grouped settings in the system idiom. The account block
    (who is signed in, the way to the account screen, or the sign-in), the
    support card (a coffee for the elf, right under the account so it is
-   seen), the language, the lore (how to play, about), the legal pages in
-   an in-app browser and the social profiles. Sign-out and account deletion
-   live on the account screen. */
+   seen), the language, the preferences (the consent to ads, here for a
+   signed-out seeker too; the account screen repeats the row), the lore
+   (how to play, about), the legal pages in an in-app browser and the
+   social profiles. Sign-out and account deletion live on the account
+   screen. */
 
 type Block = { key: string; node: ReactElement }
 
@@ -48,6 +50,19 @@ export default function ProfileScreen() {
               onPress={() => void setLanguage(entry.code)}
             />
           ))}
+        </SettingsSection>
+      ),
+    },
+    {
+      key: 'preferences',
+      node: (
+        <SettingsSection title={t('mobile:preferences.title')} footer={t('mobile:preferences.rowFooter')}>
+          <SettingsRow
+            icon={<ShieldIcon size={iconSize.md} color={colors.accentStrong} />}
+            label={t('mobile:preferences.row')}
+            trailing="chevron"
+            onPress={() => router.push('/profile/preferences')}
+          />
         </SettingsSection>
       ),
     },

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { profilePatch } from '@chatynkowo/core'
 import { providerAvatarUrl, providerName, sessionEmail } from '../../lib/sync'
 import { useProgress, useSession, useToast } from '../../providers'
-import { Avatar, Screen, SettingsRow, SettingsSection, SignOutIcon, Text, WarningIcon, colors, iconSize, space, useTabBarClearance } from '../../ui'
+import { Avatar, Screen, SettingsRow, SettingsSection, ShieldIcon, SignOutIcon, Text, WarningIcon, colors, iconSize, space, useTabBarClearance } from '../../ui'
 import { SignInButtons } from '../ranking/SignInButtons'
 
 /* The account screen (the route /profile/account): who the seeker is
@@ -13,8 +13,10 @@ import { SignInButtons } from '../ranking/SignInButtons'
    provider and the address), the leaderboard entry (the nickname, edited
    in its own sheet, and whether the account photo shows on the board,
    saved the moment the switch moves), the finds held by the account with
-   the way to the Ranking, a confirmed sign-out and, apart from the rest,
-   the confirmed deletion of the account. Both ways out pop the screen
+   the way to the Ranking, the preferences (the consent to ads, which the
+   Profile list offers as well so a signed-out seeker reaches it), a
+   confirmed sign-out and, apart from the rest, the confirmed deletion of
+   the account. Both ways out pop the screen
    (only while it is still the focused one: a seeker who left during the
    call is not moved again); the Profile beneath then shows the sign-in.
    The identity, the sign-out and the deletion need only the session, so
@@ -191,6 +193,10 @@ export function AccountScreen() {
         {/* What the account holds: the device's finds less those still queued. */}
         <SettingsRow label={t('mobile:profile.findsRow')} value={String(Math.max(0, foundCount - pendingCount))} />
         <SettingsRow label={t('mobile:profile.openRanking')} trailing="chevron" onPress={unlessBusy(() => router.navigate('/ranking'))} />
+      </SettingsSection>
+
+      <SettingsSection title={t('mobile:preferences.title')} footer={t('mobile:preferences.rowFooter')}>
+        <SettingsRow icon={<ShieldIcon size={iconSize.md} color={colors.accentStrong} />} label={t('mobile:preferences.row')} trailing="chevron" onPress={unlessBusy(() => router.push('/profile/preferences'))} />
       </SettingsSection>
 
       <SettingsSection footer={t('mobile:profile.signOutFooter')}>
