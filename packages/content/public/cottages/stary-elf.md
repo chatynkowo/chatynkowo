@@ -9,7 +9,7 @@ virtue: mądrość
 
 > Stary Elf pamięta, jak pierwszy raz sypał śnieg na tej polanie. Ma tyle wiosen, że już przestał liczyć.
 
-Ma tylko jedno krzesło, ale zaprasza każdego. Mówi, że gość może siedzieć, a on może stać — bo przez tyle lat dosyć się już nasiedział.
+Janusz zmienił swoje miejsce zamieszkania. teraz ma blisko do jaskini na Januszówce.
 
 ## Mieszka tu
 
