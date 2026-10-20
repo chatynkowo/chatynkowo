@@ -101,6 +101,8 @@ export const mobileEn: typeof mobilePl = {
     signedOut: 'You are not signed in.',
     howToPlay: 'How to play',
     openExternal: 'Opens a web page',
+    version: 'Version {{version}} ({{commit}})',
+    versionAria: 'App version {{version}}, build {{build}}, commit {{commit}}',
     accountTitle: 'Account',
     openAccount: 'Opens the account settings',
     entryTitle: 'Your leaderboard entry',

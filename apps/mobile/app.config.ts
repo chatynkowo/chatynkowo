@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process'
 import type { ConfigContext, ExpoConfig } from 'expo/config'
 
 /* app.json holds the configuration that never changes; this adds what
@@ -19,7 +20,24 @@ import type { ConfigContext, ExpoConfig } from 'expo/config'
      consent check, the first time an ad is asked for. The Android backend
      is named (the classic SDK, written to gradle.properties) because the
      library's Gradle script (17.2.0) fails to evaluate when neither that
-     nor a key of its own in app.json says which SDK to build against. */
+     nor a key of its own in app.json says which SDK to build against.
+   - The commit the build was made from (extra.commitHash), shown next to
+     the version on the Profile tab: EAS Build names it in
+     EAS_BUILD_GIT_COMMIT_HASH (the upload carries no .git), a local build
+     asks git, and anything else is "dev". */
+
+/* The short hash of the commit being built, the way the site's
+   __COMMIT_HASH__ is computed (apps/web/vite.config.ts). */
+function commitHash(): string {
+  const fromEas = process.env.EAS_BUILD_GIT_COMMIT_HASH
+  if (fromEas) return fromEas.slice(0, 7)
+  try {
+    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
+  } catch {
+    return 'dev'
+  }
+}
+
 /* Google's sample AdMob app ids: they let the SDK start and serve its test
    ads to a build that has no AdMob account behind it yet. */
 const ADMOB_SAMPLE_APP_IDS = {
@@ -42,5 +60,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     ios: { ...config.ios, usesAppleSignIn: appleSignIn, ...(appleTeamId ? { appleTeamId } : {}) },
     plugins,
+    extra: { ...config.extra, commitHash: commitHash() },
   } as ExpoConfig
 }

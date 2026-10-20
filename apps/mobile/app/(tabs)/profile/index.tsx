@@ -7,16 +7,18 @@ import { SITE_ORIGIN, SOCIAL_LINKS } from '@chatynkowo/core'
 import { AccountSection } from '../../../src/features/profile/AccountSection'
 import { SupportCard } from '../../../src/features/support/SupportCard'
 import { LANGUAGES, setLanguage, toLanguage } from '../../../src/i18n'
-import { FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, ShieldIcon, colors, iconSize, readable, space, useTabBarClearance } from '../../../src/ui'
+import { appVersion } from '../../../src/lib/version'
+import { FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, ShieldIcon, Text, colors, iconSize, readable, space, useTabBarClearance } from '../../../src/ui'
 
 /* The Profile tab: grouped settings in the system idiom. The account block
    (who is signed in, the way to the account screen, or the sign-in), the
    support card (a coffee for the elf, right under the account so it is
    seen), the language, the preferences (the consent to ads, here for a
    signed-out seeker too; the account screen repeats the row), the lore
-   (how to play, about), the legal pages in an in-app browser and the
-   social profiles. Sign-out and account deletion live on the account
-   screen. */
+   (how to play, about), the legal pages in an in-app browser, the
+   social profiles and, last, the installed version with the commit it was
+   built from, for a bug report. Sign-out and account deletion live on the
+   account screen. */
 
 type Block = { key: string; node: ReactElement }
 
@@ -34,6 +36,7 @@ export default function ProfileScreen() {
     })
 
   const external = t('mobile:profile.openExternal')
+  const { version, build, commit } = appVersion()
 
   const blocks: Block[] = [
     { key: 'account', node: <AccountSection /> },
@@ -113,6 +116,20 @@ export default function ProfileScreen() {
             onPress={() => void Linking.openURL(SOCIAL_LINKS.facebook)}
           />
         </SettingsSection>
+      ),
+    },
+    {
+      key: 'version',
+      node: (
+        <Text
+          variant="small"
+          tone="faint"
+          align="center"
+          selectable
+          accessibilityLabel={t('mobile:profile.versionAria', { version, build: build ?? '?', commit })}
+        >
+          {t('mobile:profile.version', { version, commit })}
+        </Text>
       ),
     },
   ]

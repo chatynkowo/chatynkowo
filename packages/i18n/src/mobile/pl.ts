@@ -102,6 +102,8 @@ export const mobilePl = {
     signedOut: 'Nie jesteś zalogowany.',
     howToPlay: 'Jak grać',
     openExternal: 'Otwiera stronę w przeglądarce',
+    version: 'Wersja {{version}} ({{commit}})',
+    versionAria: 'Wersja aplikacji {{version}}, kompilacja {{build}}, commit {{commit}}',
     /* The account screen (app/(tabs)/profile/account.tsx): who is signed
        in, the leaderboard entry (nickname, the account photo), the finds
        held by the account, the way out and the way to delete the account.
