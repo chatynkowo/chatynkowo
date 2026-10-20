@@ -11,6 +11,7 @@ export const sharedPl = {
     enterCode: 'Wpisz kod',
     about: 'O Chatynkowie',
     notebook: 'Notatnik',
+    app: 'Aplikacja',
     ranking: 'Ranking',
     backToGame: 'Wróć do gry',
   },

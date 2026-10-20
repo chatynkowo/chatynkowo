@@ -16,7 +16,8 @@
    - Sizes come from `iconSize`, not from ad-hoc numbers.
 
    When a shared role is added, add it to SHARED_ICON_ROLES in the theme and
-   to both vocabularies; app-only roles go to MOBILE_ICON_ROLES. */
+   to both vocabularies; app-only roles go to MOBILE_ICON_ROLES, site-only
+   ones to WEB_ICON_ROLES. */
 import { ArrowCounterClockwiseIcon } from 'phosphor-react-native/src/icons/ArrowCounterClockwise'
 import { ArrowLeftIcon } from 'phosphor-react-native/src/icons/ArrowLeft'
 import { ArrowRightIcon } from 'phosphor-react-native/src/icons/ArrowRight'

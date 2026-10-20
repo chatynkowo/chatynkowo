@@ -6,7 +6,7 @@ export const webEn: typeof webPl = {
   meta: {
     homeTitle: 'Chatynkowo | A fairy-tale outdoor game in the Kraków-Częstochowa Jura',
     homeDescription:
-      'A fairy-tale outdoor game in the Kraków-Częstochowa Jura. Seek out the hidden Cottages — homes of real Elves — collect seals and unlock their tales.',
+      'A fairy-tale outdoor game in the Kraków-Częstochowa Jura. Seek out the hidden Cottages — homes of real Elves — collect seals and unlock their tales. The app is out on Google Play.',
     rankingTitle: "Explorers' Leaderboard | Chatynkowo",
     rankingDescription:
       "The Chatynkowo Explorers' Leaderboard: see who has discovered the most fairy-tale Cottages and who completed the set fastest.",
@@ -19,6 +19,29 @@ export const webEn: typeof webPl = {
   },
   common: {
     skipToContent: 'Skip to content',
+  },
+  app: {
+    ribbonAria: 'The Chatynkowo app is available',
+    ribbonTitle: 'The Chatynkowo app',
+    ribbonText: 'Now on Google Play',
+    ribbonMore: 'What does it do?',
+    ribbonDownload: 'Get it',
+    sectionAria: 'The Chatynkowo app',
+    eyebrow: 'New',
+    title: 'Chatynkowo now fits in your pocket',
+    lead:
+      'The Chatynkowo app is out on Google Play. Take it on the trail: it scans the codes on the plaques, points you to the nearest Cottage and works even where there is no signal.',
+    download: 'Get it on Google Play',
+    downloadAria: 'Get the Chatynkowo app on Google Play (opens in a new tab)',
+    appStoreSoon: 'App Store soon',
+    perk1Title: 'Compete with others',
+    perk1Body: 'The Explorers’ Leaderboard is at hand: see who has found the most Cottages and take your place in it.',
+    perk2Title: 'A map without signal',
+    perk2Body: 'After the first launch the Cottages stay on your phone. Codes are checked offline too.',
+    perk3Title: 'A trail to the nearest Cottage',
+    perk3Body: 'The expedition compass shows which way and how far to the nearest Elf.',
+    perk4Title: 'One Chronicle everywhere',
+    perk4Body: 'Sign in with the same account and your finds from the site and the app meet in one Chronicle.',
   },
   profilePage: {
     eyebrow: 'Explorer profile',

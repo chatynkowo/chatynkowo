@@ -1,12 +1,12 @@
 /* Polish copy that exists only on the site: page meta, the skip link, the
-   profile page's own words (the account block itself is shared), the
-   photo gallery. Merged with the shared set into the site's "translation"
-   namespace. */
+   invitation to install the app, the profile page's own words (the account
+   block itself is shared), the photo gallery. Merged with the shared set
+   into the site's "translation" namespace. */
 export const webPl = {
   meta: {
     homeTitle: 'Chatynkowo | Baśniowa gra terenowa w Jurze Krakowsko-Częstochowskiej',
     homeDescription:
-      'Baśniowa gra terenowa w Jurze Krakowsko-Częstochowskiej. Odszukuj ukryte Chatynki — domy prawdziwych Elfów — zdobywaj pieczęcie i otwieraj ich opowieści.',
+      'Baśniowa gra terenowa w Jurze Krakowsko-Częstochowskiej. Odszukuj ukryte Chatynki — domy prawdziwych Elfów — zdobywaj pieczęcie i otwieraj ich opowieści. Aplikacja już w Google Play.',
     rankingTitle: 'Ranking Zdobywców | Chatynkowo',
     rankingDescription:
       'Ranking Zdobywców Chatynkowa: zobacz, kto odkrył najwięcej baśniowych Chatynek i kto zebrał komplet najszybciej.',
@@ -19,6 +19,34 @@ export const webPl = {
   },
   common: {
     skipToContent: 'Przejdź do treści',
+  },
+  /* The invitation to install the app: what the app adds to the site's
+     game, and the store it is published in. Only Google Play for now. */
+  app: {
+    /* The ribbon under the header: the first thing a visitor sees. */
+    ribbonAria: 'Aplikacja Chatynkowo jest dostępna',
+    ribbonTitle: 'Aplikacja Chatynkowo',
+    ribbonText: 'Już dostępna w Google Play',
+    ribbonMore: 'Co potrafi?',
+    ribbonDownload: 'Pobierz',
+    sectionAria: 'Aplikacja Chatynkowo',
+    eyebrow: 'Nowość',
+    title: 'Chatynkowo masz teraz w kieszeni',
+    lead:
+      'Aplikacja Chatynkowo jest już w Google Play. Zabierz ją na szlak: wpisz kod z tabliczek, nawiguj do najbliższej Chatynki i ciesz się przygodą także tam, gdzie nie ma zasięgu.',
+    download: 'Pobierz z Google Play',
+    downloadAria: 'Pobierz aplikację Chatynkowo z Google Play (otwiera się w nowej karcie)',
+    appStoreSoon: 'App Store wkrótce',
+    /* Competition stands for the ranking today and for whatever the app
+       grows into later, so the title names the idea, not the feature. */
+    perk1Title: 'Rywalizuj z innymi',
+    perk1Body: 'Ranking Zdobywców masz pod ręką: sprawdź, kto odkrył najwięcej Chatynek, i zajmij w nim swoje miejsce.',
+    perk2Title: 'Mapa bez zasięgu',
+    perk2Body: 'Po pierwszym uruchomieniu Chatynki zostają w telefonie. Kody sprawdzamy także offline.',
+    perk3Title: 'Trop do najbliższej Chatynki',
+    perk3Body: 'Kompas wyprawy pokazuje, w którą stronę i jak daleko do najbliższego Elfa.',
+    perk4Title: 'Jedna Kronika wszędzie',
+    perk4Body: 'Zaloguj się tym samym kontem, a odkrycia ze strony i z aplikacji spotkają się w jednej Kronice.',
   },
   profilePage: {
     eyebrow: 'Profil zdobywcy',

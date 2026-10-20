@@ -71,8 +71,17 @@ export const MOBILE_ICON_ROLES = [
   'WatchAdIcon',
 ] as const
 
+/* Roles only the site has a surface for. */
+export const WEB_ICON_ROLES = [
+  /* The invitation to install the app (apps/web/src/App.tsx). */
+  'AppIcon',
+  'GooglePlayIcon',
+  'AppStoreIcon',
+] as const
+
 export type SharedIconRole = (typeof SHARED_ICON_ROLES)[number]
 export type MobileIconRole = (typeof MOBILE_ICON_ROLES)[number]
+export type WebIconRole = (typeof WEB_ICON_ROLES)[number]
 
 /* Type-checks a vocabulary against its role list without changing it:
    `const vocabulary = defineIcons<Icon, SharedIconRole>()({ ... })`. */

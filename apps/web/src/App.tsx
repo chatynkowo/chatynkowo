@@ -1,11 +1,11 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AtlasIcon, Button, ChronicleIcon, CottageIcon, CreedIcon, ElfIcon, ForestIcon, ForwardIcon, FoundIcon, KeyIcon, LinkButton, LoreIcon, Modal, NotebookIcon, QrIcon, RewardIcon, SealIcon, ShieldIcon, StoryAudioIcon, TrailIcon, iconSize } from './ui'
+import { AppIcon, AppStoreIcon, AtlasIcon, Button, ChronicleIcon, CottageIcon, CreedIcon, ElfIcon, ForestIcon, ForwardIcon, FoundIcon, GooglePlayIcon, KeyIcon, LinkButton, LoreIcon, Modal, NavigateIcon, NotebookIcon, QrIcon, RewardIcon, SealIcon, ShieldIcon, StoryAudioIcon, TrailIcon, iconSize } from './ui'
 import { marked } from './lib/markdown'
 import { useTranslation } from 'react-i18next'
 import { toLanguage } from './i18n'
 import { content, loadCottages, loadRewards, resolveCode, storyAudio } from './lib/content'
 import { backfillBadges, discoverCottage, loadStoredState, mergeAccountFinds } from './lib/persistence'
-import { fallbackRewards, finalLevelId, requiredFinds } from '@chatynkowo/core'
+import { STORE_LINKS, fallbackRewards, finalLevelId, requiredFinds } from '@chatynkowo/core'
 import { initializeAnalytics, track } from './lib/analytics'
 import { syncNewFind } from './lib/sync'
 import type { Cottage, RewardLevel, RewardsConfig, StoredState } from '@chatynkowo/core'
@@ -298,6 +298,27 @@ function App() {
 
   return (
     <SitePage page="home" onSection={openSection}>
+        {/* The first thing under the header: the app exists and where to get
+            it. The details are in the "aplikacja" section further down. */}
+        <aside className="app-ribbon" aria-label={t('app.ribbonAria')}>
+          <span className="app-ribbon-store" aria-hidden="true"><GooglePlayIcon size={iconSize.md} weight="fill" /></span>
+          <p><strong>{t('app.ribbonTitle')}</strong><span>{t('app.ribbonText')}</span></p>
+          <div className="app-ribbon-actions">
+            <button type="button" className="app-ribbon-more" onClick={() => navigateTo('aplikacja')}>{t('app.ribbonMore')}</button>
+            <LinkButton
+              variant="primary"
+              className="app-ribbon-download"
+              href={STORE_LINKS.googlePlay}
+              rel="noreferrer"
+              target="_blank"
+              aria-label={t('app.downloadAria')}
+              onClick={() => track('app-google-play', 'Aplikacja: Google Play')}
+            >
+              {t('app.ribbonDownload')} <ForwardIcon size={iconSize.sm} />
+            </LinkButton>
+          </div>
+        </aside>
+
         <section className="expedition-board" id="top" aria-label={t('atlas.boardAria')}>
           <div className="map-section" id="mapa">
             <div className="section-heading atlas-heading">
@@ -380,6 +401,59 @@ function App() {
               <p><ShieldIcon size={iconSize.md} weight="duotone" /> <span><strong>{t('quest.note2Title')}</strong>{t('quest.note2Body')}</span></p>
             </div>
           </aside>
+        </section>
+
+        {/* The invitation to install the app: what it adds to the game played
+            here (the scanner, the offline map, the compass, one account) and
+            the store it is in. The click is counted like a page view, under
+            its own path, so the store's own install figures can be compared
+            with how many seekers set off from here. */}
+        <section className="app-invite" id="aplikacja" aria-label={t('app.sectionAria')}>
+          <div className="app-invite-board">
+            <div className="app-invite-intro">
+              <p className="eyebrow"><AppIcon size={iconSize.sm} weight="fill" /> {t('app.eyebrow')}</p>
+              <h2>{t('app.title')}</h2>
+              <p>{t('app.lead')}</p>
+              <div className="app-invite-actions">
+                <LinkButton
+                  variant="primary"
+                  href={STORE_LINKS.googlePlay}
+                  rel="noreferrer"
+                  target="_blank"
+                  aria-label={t('app.downloadAria')}
+                  onClick={() => track('app-google-play', 'Aplikacja: Google Play')}
+                >
+                  <GooglePlayIcon size={iconSize.md} weight="fill" /> {t('app.download')}
+                </LinkButton>
+                {/* Not a link yet: the iOS build is not in the store. */}
+                <Button variant="ghost" disabled>
+                  <AppStoreIcon size={iconSize.md} weight="fill" /> {t('app.appStoreSoon')}
+                </Button>
+              </div>
+            </div>
+            <ul className="app-invite-perks">
+              <li>
+                <RewardIcon size={iconSize.xl} weight="duotone" />
+                <h3>{t('app.perk1Title')}</h3>
+                <p>{t('app.perk1Body')}</p>
+              </li>
+              <li>
+                <AtlasIcon size={iconSize.xl} weight="duotone" />
+                <h3>{t('app.perk2Title')}</h3>
+                <p>{t('app.perk2Body')}</p>
+              </li>
+              <li>
+                <NavigateIcon size={iconSize.xl} weight="duotone" />
+                <h3>{t('app.perk3Title')}</h3>
+                <p>{t('app.perk3Body')}</p>
+              </li>
+              <li>
+                <ChronicleIcon size={iconSize.xl} weight="duotone" />
+                <h3>{t('app.perk4Title')}</h3>
+                <p>{t('app.perk4Body')}</p>
+              </li>
+            </ul>
+          </div>
         </section>
 
         <section className="lore" id="o-chatynkowie" aria-label={t('lore.sectionAria')}>

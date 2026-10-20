@@ -8,6 +8,7 @@ export const sharedEn: typeof sharedPl = {
     enterCode: 'Enter a code',
     about: 'About Chatynkowo',
     notebook: 'Notebook',
+    app: 'The app',
     ranking: 'Leaderboard',
     backToGame: 'Back to the game',
   },

@@ -13,10 +13,12 @@
      glyphs through the SVG sprite generated from @phosphor-icons/core; the
      list of sprite icons lives in sprite-icons.json next to this file.
 
-   The role names are the shared list in @chatynkowo/theme (SHARED_ICON_ROLES);
-   the app's vocabulary exports the same names on phosphor-react-native, and
-   the `satisfies` check below fails the build when a role is missing. */
+   The role names are the shared list in @chatynkowo/theme (SHARED_ICON_ROLES)
+   plus the site-only ones (WEB_ICON_ROLES); the app's vocabulary exports the
+   shared names on phosphor-react-native, and the `satisfies` check below
+   fails the build when a role is missing. */
 import {
+  AppStoreLogo,
   ArrowCounterClockwise,
   ArrowLeft,
   ArrowRight,
@@ -28,8 +30,10 @@ import {
   CheckCircle,
   CircleNotch,
   Crown,
+  DeviceMobile,
   FacebookLogo,
   Footprints,
+  GooglePlayLogo,
   GpsFix,
   HandHeart,
   HouseLine,
@@ -58,7 +62,7 @@ import {
 } from '@phosphor-icons/react'
 
 import type { Icon } from '@phosphor-icons/react'
-import { iconSize, type SharedIconRole } from '@chatynkowo/theme'
+import { iconSize, type SharedIconRole, type WebIconRole } from '@chatynkowo/theme'
 
 export type { Icon, IconProps, IconWeight } from '@phosphor-icons/react'
 export { iconSize, type IconSize } from '@chatynkowo/theme'
@@ -112,6 +116,11 @@ export const SignOutIcon = SignOut
 export const InstagramIcon = InstagramLogo
 export const FacebookIcon = FacebookLogo
 
+/* ---------- Site-only roles (the invitation to install the app) ---------- */
+export const AppIcon = DeviceMobile
+export const GooglePlayIcon = GooglePlayLogo
+export const AppStoreIcon = AppStoreLogo
+
 /* The vocabulary as one object, checked against the shared roles: a
    missing role is a compile error. */
 export const ICON_VOCABULARY = {
@@ -121,4 +130,5 @@ export const ICON_VOCABULARY = {
   ChronicleIcon, RewardIcon, NotebookIcon, StoryAudioIcon, LoreIcon, CreedIcon, ElfIcon, ForestIcon,
   ProfileIcon, SignOutIcon,
   InstagramIcon, FacebookIcon,
-} satisfies Record<SharedIconRole, Icon>
+  AppIcon, GooglePlayIcon, AppStoreIcon,
+} satisfies Record<SharedIconRole | WebIconRole, Icon>

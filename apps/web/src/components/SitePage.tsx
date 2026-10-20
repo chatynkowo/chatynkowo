@@ -16,6 +16,7 @@ export type SitePageId = 'home' | 'ranking' | 'profile' | 'deleteAccount'
 const SECTIONS = [
   { id: 'mapa', key: 'nav.map' },
   { id: 'kod', key: 'nav.enterCode' },
+  { id: 'aplikacja', key: 'nav.app' },
   { id: 'o-chatynkowie', key: 'nav.about' },
   { id: 'magia', key: 'nav.notebook' },
 ] as const
