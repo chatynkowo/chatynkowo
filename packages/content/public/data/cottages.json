@@ -1,6 +1,6 @@
 [
   { "slug": "fredek",         "lat": 50.193972,  "lng": 19.7745,    "photos": ["DD5C1DFF-04E6-481D-A340-851B0D44BF80.png"] },
-  { "slug": "iwo",            "lat": 50.3000097, "lng": 19.592267 },
+  { "slug": "iwo",            "lat": 50.3000097, "lng": 19.592267,  "photos": ["E61B9031-D2F4-47B5-88C8-6A5A6FE8171D.png"] },
   { "slug": "zamczysko",      "lat": 50.330968,  "lng": 19.598763 },
   { "slug": "teodor",         "lat": 50.339095,  "lng": 19.593019 },
   { "slug": "tupak",          "lat": 50.307355,  "lng": 19.643231 },
