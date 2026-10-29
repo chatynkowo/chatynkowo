@@ -1,5 +1,5 @@
 [
-  { "slug": "fredek",         "lat": 50.193972,  "lng": 19.7745 },
+  { "slug": "fredek",         "lat": 50.193972,  "lng": 19.7745,    "photos": ["DD5C1DFF-04E6-481D-A340-851B0D44BF80.png"] },
   { "slug": "iwo",            "lat": 50.3000097, "lng": 19.592267 },
   { "slug": "zamczysko",      "lat": 50.330968,  "lng": 19.598763 },
   { "slug": "teodor",         "lat": 50.339095,  "lng": 19.593019 },
