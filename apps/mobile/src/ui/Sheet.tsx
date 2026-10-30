@@ -4,6 +4,7 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetVie
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect } from 'expo-router'
 import { useCloseModal } from '../providers'
+import { readable, useReadablePadding } from './layout'
 import { SPRINGS } from './motion'
 import { colors, radius, space } from './tokens'
 
@@ -14,7 +15,8 @@ import { colors, radius, space } from './tokens'
    the top; a scroll inside moves the content first and the sheet only at
    its top edge; a drag down past the first stop, a tap on the scrim or the
    back button closes it, and the route goes back. The route itself is a
-   transparent modal with no animation of its own. */
+   transparent modal with no animation of its own. The content keeps to the
+   readable column and clear of the side safe area. */
 
 export type SheetRouteProps = {
   /* Where the sheet may rest beyond its content: the top for every sheet,
@@ -65,7 +67,8 @@ export function SheetRoute({ snapPoints = ['100%'], fit = true, scroll = false, 
     }, []),
   )
 
-  const content = { paddingBottom: insets.bottom + space.lg }
+  const sides = useReadablePadding(space.lg)
+  const content = [readable, sides, { paddingBottom: insets.bottom + space.lg }]
   return (
     <View style={StyleSheet.absoluteFill}>
       <BottomSheet
@@ -87,11 +90,11 @@ export function SheetRoute({ snapPoints = ['100%'], fit = true, scroll = false, 
         onClose={close}
       >
         {scroll ? (
-          <BottomSheetScrollView contentContainerStyle={[styles.content, content]} showsVerticalScrollIndicator={false}>
+          <BottomSheetScrollView contentContainerStyle={content} showsVerticalScrollIndicator={false}>
             {children}
           </BottomSheetScrollView>
         ) : (
-          <BottomSheetView style={[styles.content, content]}>{children}</BottomSheetView>
+          <BottomSheetView style={content}>{children}</BottomSheetView>
         )}
       </BottomSheet>
     </View>
@@ -108,8 +111,5 @@ const styles = StyleSheet.create({
     width: 36,
     height: 4,
     backgroundColor: colors.lineStrong,
-  },
-  content: {
-    paddingHorizontal: space.lg,
   },
 })

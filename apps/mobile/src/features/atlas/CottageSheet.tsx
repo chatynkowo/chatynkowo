@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { countryName, type Cottage } from '@chatynkowo/core'
 import { openInMaps, type MapsApp } from '../../lib/navigate'
-import { Button, CloseIcon, colors, FoundIcon, IconButton, iconSize, mapPalette, MarkdownView, NavigateIcon, NotebookIcon, PinIcon, radius, readable, space, SPRINGS, TAB_BAR_OVERHANG, Text } from '../../ui'
+import { Button, CloseIcon, colors, FoundIcon, IconButton, iconSize, mapPalette, MarkdownView, NavigateIcon, NotebookIcon, PinIcon, radius, readable, space, SPRINGS, TAB_BAR_OVERHANG, Text, useReadablePadding } from '../../ui'
 
 /* The parchment sheet that rises over the map when a cottage is chosen,
    the site's cottage panel on a phone: the country, the name, who lives
@@ -53,6 +53,9 @@ export const CottageSheet = forwardRef<CottageSheetHandle, CottageSheetProps>(fu
   const { t, i18n } = useTranslation()
   const router = useRouter()
   const springs = useBottomSheetSpringConfigs(SPRINGS.settle)
+  /* Clear of the side safe area; the close button moves in with the text. */
+  const sides = useReadablePadding(space.xl)
+  const closeRight = space.lg + sides.paddingRight - space.xl
   const lastIndex = useRef<number>(initialIndex)
   const titleRef = useRef<View>(null)
 
@@ -126,7 +129,7 @@ export const CottageSheet = forwardRef<CottageSheetHandle, CottageSheetProps>(fu
       containerStyle={styles.container}
     >
       <View style={styles.body}>
-        <BottomSheetScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <BottomSheetScrollView contentContainerStyle={[styles.content, sides]} showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <Text variant="eyebrow" style={styles.country}>
               {countryName(cottage.country, i18n.resolvedLanguage ?? i18n.language)}
@@ -172,7 +175,7 @@ export const CottageSheet = forwardRef<CottageSheetHandle, CottageSheetProps>(fu
           </View>
           {cottage.arrivalMarkdown ? <MarkdownView tone="parchment">{cottage.arrivalMarkdown}</MarkdownView> : null}
         </BottomSheetScrollView>
-        <IconButton label={t('map.closePanel')} onPress={close} style={styles.close}>
+        <IconButton label={t('map.closePanel')} onPress={close} style={[styles.close, { right: closeRight }]}>
           <CloseIcon size={iconSize.md} color={mapPalette.panelInk} />
         </IconButton>
       </View>
@@ -203,7 +206,6 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: space.sm,
-    paddingHorizontal: space.xl,
     paddingTop: space.sm,
     /* The tab bar's raised button pokes above the sheet's bottom edge. */
     paddingBottom: space.xl + TAB_BAR_OVERHANG,
@@ -214,7 +216,6 @@ const styles = StyleSheet.create({
   close: {
     position: 'absolute',
     top: space.xs,
-    right: space.lg,
     backgroundColor: mapPalette.panelClose,
     borderColor: mapPalette.panelCloseBorder,
   },

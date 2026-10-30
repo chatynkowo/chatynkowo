@@ -7,7 +7,7 @@ import { CollectionHeader } from '../../../src/features/kronika/CollectionHeader
 import { RewardCard } from '../../../src/features/kronika/RewardCard'
 import { SupportCard } from '../../../src/features/support/SupportCard'
 import { useContent, useProgress } from '../../../src/providers'
-import { ChronicleIcon, EmptyState, LinkButton, SkeletonCard, colors, readable, space, useTabBarClearance } from '../../../src/ui'
+import { ChronicleIcon, EmptyState, LinkButton, SkeletonCard, colors, readable, space, useReadablePadding, useTabBarClearance } from '../../../src/ui'
 
 /* The Kronika tab: the collection of reward levels, earned and still locked,
    as a two-column grid under a standard native title, with the progress card
@@ -39,6 +39,7 @@ export default function KronikaScreen() {
   const { rewards, total, status, refresh } = useContent()
   const { state, foundCount, unseenRewards, celebration, markRewardsSeen } = useProgress()
   const tabBarClearance = useTabBarClearance()
+  const sides = useReadablePadding(space.lg)
   const [refreshing, setRefreshing] = useState(false)
 
   const levels = useMemo(() => kronikaLevels(rewards.levels, state.badges), [rewards.levels, state.badges])
@@ -156,7 +157,7 @@ export default function KronikaScreen() {
         /* Android clips off-screen rows by default and a picture clipped
            while loading can stay blank once it comes into view. */
         removeClippedSubviews={false}
-        contentContainerStyle={[styles.content, readable, { paddingBottom: space.xxl + tabBarClearance }]}
+        contentContainerStyle={[styles.content, readable, sides, { paddingBottom: space.xxl + tabBarClearance }]}
         contentInsetAdjustmentBehavior="automatic"
         scrollIndicatorInsets={{ bottom: tabBarClearance }}
         ListHeaderComponent={header}
@@ -179,7 +180,6 @@ export default function KronikaScreen() {
 const styles = StyleSheet.create({
   content: {
     paddingTop: space.lg,
-    paddingHorizontal: space.lg,
     gap: space.md,
   },
   row: {

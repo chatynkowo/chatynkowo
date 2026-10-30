@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import type { Cottage } from '@chatynkowo/core'
 import { CottageDirectory } from '../src/features/cottages/CottageDirectory'
 import { useCloseModal, useContent, useProgress } from '../src/providers'
-import { colors, readable, space } from '../src/ui'
+import { colors, readable, space, useReadablePadding } from '../src/ui'
 
 /* The cottage directory: a page sheet over the Atlas or the Kronika with
    every cottage, the found ones first, a search box and a filter. The
@@ -17,6 +17,7 @@ export default function CottagesScreen() {
   const { search } = useLocalSearchParams<{ search?: string }>()
   const router = useRouter()
   const insets = useSafeAreaInsets()
+  const sides = useReadablePadding(space.lg)
   const { cottages } = useContent()
   const { state } = useProgress()
 
@@ -34,7 +35,7 @@ export default function CottagesScreen() {
   const topInset = Platform.OS === 'android' ? insets.top : 0
 
   return (
-    <View style={[styles.screen, { paddingTop: topInset + space.lg }]}>
+    <View style={[styles.screen, sides, { paddingTop: topInset + space.lg }]}>
       <CottageDirectory cottages={cottages} found={state.found} searching={search === '1'} onSelect={select} onClose={close} />
     </View>
   )
@@ -44,7 +45,6 @@ const styles = StyleSheet.create({
   screen: {
     ...readable,
     flex: 1,
-    paddingHorizontal: space.lg,
     backgroundColor: colors.pageRaised,
   },
 })

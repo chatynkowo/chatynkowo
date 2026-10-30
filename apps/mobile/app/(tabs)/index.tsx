@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { nearestPlace, nextLevel, type Cottage, type LatLng } from '@chatynkowo/core'
-import { AtlasMap, LEVEL_KEYS, type AtlasMapHandle, type FrameMode, type MapLevel, type OutOfSight } from '../../src/features/atlas/AtlasMap'
+import { AtlasMap, LEVEL_KEYS, type AtlasMapHandle, type ChromeInsets, type FrameMode, type MapLevel, type OutOfSight } from '../../src/features/atlas/AtlasMap'
 import { CottageSheet, sheetHeightForIndex, type CottageSheetHandle, type SnapIndex } from '../../src/features/atlas/CottageSheet'
 import { ControlBar, LevelCard, MapTip, NearestBeacon, StatusPill, formatDistance } from '../../src/features/atlas/MapChrome'
 import { MapVignette } from '../../src/features/atlas/MapVignette'
@@ -222,6 +222,15 @@ export default function AtlasScreen() {
     const { height } = event.nativeEvent.layout
     setChrome((current) => (current.bottom === height ? current : { ...current, bottom: height }))
   }, [])
+  /* What the chrome and the side safe area cover from each edge of the map:
+     the beacon keeps clear of it and the map frames a whole land inside the
+     rest. The side insets are the status bar and camera standing along one
+     edge of a foldable's cover screen. */
+  const covered = useMemo<ChromeInsets>(
+    () => ({ top: insets.top + space.md + chrome.top, bottom: bottomInset + space.lg + chrome.bottom, left: insets.left, right: insets.right }),
+    [insets.top, insets.left, insets.right, bottomInset, chrome.top, chrome.bottom],
+  )
+  const sides = { left: space.lg + insets.left, right: space.lg + insets.right }
   /* The toasts of the locate control float above this chrome. */
   const toast = useToast()
   useFocusEffect(
@@ -298,7 +307,7 @@ export default function AtlasScreen() {
     body = (
       <View style={styles.fill}>
         <SkeletonMap />
-        <View style={[styles.firstDownload, { bottom: bottomInset + TAB_BAR_OVERHANG + space.lg }]} accessibilityRole="progressbar" accessibilityLabel={t('mobile:atlas.firstDownloadTitle')}>
+        <View style={[styles.firstDownload, sides, { bottom: bottomInset + TAB_BAR_OVERHANG + space.lg }]} accessibilityRole="progressbar" accessibilityLabel={t('mobile:atlas.firstDownloadTitle')}>
           <Text variant="heading" style={styles.chromeInk}>
             {t('mobile:atlas.firstDownloadTitle')}
           </Text>
@@ -336,6 +345,7 @@ export default function AtlasScreen() {
           justFoundSlug={justFoundSlug}
           userPosition={position}
           bottomInset={bottomInset}
+          chrome={covered}
           onSelect={choose}
           onMapPress={onMapPress}
           onLevelChange={onLevelChange}
@@ -347,12 +357,12 @@ export default function AtlasScreen() {
         {outOfSight && !selected ? (
           <NearestBeacon
             target={outOfSight}
-            exclude={{ top: insets.top + space.md + chrome.top, bottom: bottomInset + space.lg + chrome.bottom }}
+            exclude={covered}
             onPress={goToNearest}
           />
         ) : null}
 
-        <View style={[styles.top, { top: insets.top + space.md }]} pointerEvents="box-none" onLayout={onTopChromeLayout}>
+        <View style={[styles.top, sides, { top: insets.top + space.md }]} pointerEvents="box-none" onLayout={onTopChromeLayout}>
           <View style={styles.topRow} pointerEvents="box-none">
             <QuestCard found={foundCount} total={total} upcoming={upcoming} />
             <View style={styles.topRight} pointerEvents="box-none">
@@ -376,7 +386,7 @@ export default function AtlasScreen() {
             key="bottom"
             entering={firstRender.current ? undefined : enterDown()}
             exiting={leaveDown()}
-            style={[styles.bottom, { bottom: bottomInset + space.lg }]}
+            style={[styles.bottom, sides, { bottom: bottomInset + space.lg }]}
             pointerEvents="box-none"
             onLayout={onBottomChromeLayout}
           >
@@ -429,8 +439,6 @@ const styles = StyleSheet.create({
   },
   top: {
     position: 'absolute',
-    left: space.lg,
-    right: space.lg,
     gap: space.sm,
   },
   topRow: {
@@ -448,8 +456,6 @@ const styles = StyleSheet.create({
   },
   bottom: {
     position: 'absolute',
-    left: space.lg,
-    right: space.lg,
     gap: space.sm,
   },
   tipRow: {
@@ -460,8 +466,6 @@ const styles = StyleSheet.create({
   },
   firstDownload: {
     position: 'absolute',
-    left: space.lg,
-    right: space.lg,
     gap: space.xs,
     padding: space.lg,
     borderWidth: 1,

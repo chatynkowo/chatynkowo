@@ -1,4 +1,4 @@
-import { Text as NativeText, StyleSheet, type TextProps as NativeTextProps } from 'react-native'
+import { Text as NativeText, Platform, StyleSheet, type TextProps as NativeTextProps } from 'react-native'
 import { colors, fonts, typeScale } from './tokens'
 
 /* The one text component of the app. Screens choose a variant (role) and a
@@ -70,8 +70,30 @@ const variantStyles = StyleSheet.create({
   digit: { ...typeScale.digit, fontFamily: fonts.display },
 })
 
+/* The accents of Cinzel's capitals (Ś, Ż, Ó) rise above the tight line box
+   of the display roles, and iOS clips a text's first line to the view: the
+   box gets room above it, given back by a negative margin so the layout
+   does not move. Sized for the largest system text size the role allows. */
+const ACCENT_ROOM_EM = 0.3
+const accentRoom: Partial<Record<TextVariant, number>> =
+  Platform.OS === 'ios'
+    ? {
+        display: Math.ceil(typeScale.display.fontSize * maxMultiplier.display * ACCENT_ROOM_EM),
+        title: Math.ceil(typeScale.title.fontSize * maxMultiplier.title * ACCENT_ROOM_EM),
+      }
+    : {}
+
+function accentRoomStyle(room: number, style: TextProps['style']) {
+  const flat = StyleSheet.flatten(style) ?? {}
+  const paddingTop = flat.paddingTop ?? flat.paddingVertical ?? flat.padding ?? 0
+  const marginTop = flat.marginTop ?? flat.marginVertical ?? flat.margin ?? 0
+  if (typeof paddingTop !== 'number' || typeof marginTop !== 'number') return null
+  return { paddingTop: paddingTop + room, marginTop: marginTop - room }
+}
+
 export function Text({ variant = 'body', tone, weight, align, style, maxFontSizeMultiplier, ...rest }: TextProps) {
   const fixedFace = variant === 'title' || variant === 'display' || variant === 'eyebrow' || variant === 'heading' || variant === 'caption' || variant === 'digit'
+  const room = accentRoom[variant]
   return (
     <NativeText
       maxFontSizeMultiplier={maxFontSizeMultiplier ?? maxMultiplier[variant]}
@@ -82,6 +104,7 @@ export function Text({ variant = 'body', tone, weight, align, style, maxFontSize
         tone ? { color: toneColor[tone] } : null,
         align ? { textAlign: align } : null,
         style,
+        room ? accentRoomStyle(room, style) : null,
       ]}
       {...rest}
     />

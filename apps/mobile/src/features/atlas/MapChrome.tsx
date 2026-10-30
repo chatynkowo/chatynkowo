@@ -123,14 +123,15 @@ const BEACON_SLOP = { top: 7, bottom: 7, left: 7, right: 7 }
 
 /* Where the line from the middle of the view towards `heading` (degrees
    clockwise from north, the top of the screen) leaves the box the pill may
-   sit in: the map area inset by the chrome above and below and a margin at
-   the sides, shrunk by half the pill so the whole pill stays inside. */
-function edgePoint(heading: number, area: Size, pill: Size, exclude: { top: number; bottom: number }) {
+   sit in: the map area inset by the chrome above and below and by the side
+   safe area plus a margin, shrunk by half the pill so the whole pill stays
+   inside. */
+function edgePoint(heading: number, area: Size, pill: Size, exclude: BeaconExclude) {
   const radians = (heading * Math.PI) / 180
   const dx = Math.sin(radians)
   const dy = -Math.cos(radians)
-  const left = space.lg + pill.width / 2
-  const right = area.width - space.lg - pill.width / 2
+  const left = exclude.left + space.lg + pill.width / 2
+  const right = area.width - exclude.right - space.lg - pill.width / 2
   const top = exclude.top + space.md + pill.height / 2
   const bottom = area.height - exclude.bottom - space.md - pill.height / 2
   const cx = area.width / 2
@@ -153,11 +154,13 @@ export function formatDistance(km: number, locale: string, t: (key: string, valu
   return t('mobile:atlas.distanceKm', { value: km.toLocaleString(locale, { maximumFractionDigits: km < 10 ? 1 : 0 }) })
 }
 
+/* What the pill keeps clear of, in points: the chrome at the top and the
+   bottom edge of the map and the safe area at its sides. */
+type BeaconExclude = { top: number; bottom: number; left: number; right: number }
+
 type NearestBeaconProps = {
   target: OutOfSight
-  /* The chrome at the top and the bottom edge of the map the pill keeps
-     clear of, in points. */
-  exclude: { top: number; bottom: number }
+  exclude: BeaconExclude
   onPress: () => void
 }
 

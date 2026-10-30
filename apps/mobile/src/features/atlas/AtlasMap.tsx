@@ -39,6 +39,8 @@ export const LEVEL_KEYS: Record<MapLevel, string> = {
 
 export type FrameMode = 'ease' | 'fly'
 
+export type ChromeInsets = { top: number; bottom: number; left: number; right: number }
+
 /* The nearest cottage when none is in view: how far from the middle of
    the view and in which direction (degrees clockwise from north, which the
    map keeps at the top: it does not rotate). */
@@ -71,6 +73,10 @@ type AtlasMapProps = {
   userPosition: Position | null
   /* Room for the screen's bottom chrome; keeps the attribution above it. */
   bottomInset: number
+  /* How far in from each edge the screen's floating chrome and the side
+     safe area reach, in points; frames of a whole land keep inside the
+     rest. Pass a stable object: the map is memoised. */
+  chrome: ChromeInsets
   onSelect: (cottage: Cottage) => void
   /* A press on the map itself (not on a marker). */
   onMapPress: () => void
@@ -83,7 +89,9 @@ type AtlasMapProps = {
 }
 
 const OSM_TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-const FRAME_PADDING = { top: 48, right: 48, bottom: 48, left: 48 }
+/* The margin a frame of a whole land keeps inside the uncovered map. */
+const FRAME_MARGIN_X = 48
+const FRAME_MARGIN_Y = 24
 /* How far around the seeker the arrival frame reaches at least, in km. */
 const ARRIVAL_RADIUS_KM = 1
 /* The least radius drawn for the position's accuracy circle, in metres,
@@ -274,13 +282,19 @@ const ClusterMarker = memo(function ClusterMarker({ id, lng, lat, count, label, 
 
 export const AtlasMap = memo(
   forwardRef<AtlasMapHandle, AtlasMapProps>(function AtlasMap(
-    { cottages, foundSlugs, selectedSlug, justFoundSlug, userPosition, bottomInset, onSelect, onMapPress, onLevelChange, onOutOfSight, reality },
+    { cottages, foundSlugs, selectedSlug, justFoundSlug, userPosition, bottomInset, chrome, onSelect, onMapPress, onLevelChange, onOutOfSight, reality },
     ref,
   ) {
     const { t } = useTranslation()
     const camera = useRef<CameraRef>(null)
     /* The seeker has moved the map themselves: the arrival stays away. */
     const touched = useRef(false)
+    /* The arrival's frame once there was one; the land's before. */
+    const arrival = useRef<LngLatBounds | null>(null)
+    const framePadding = useMemo(
+      () => ({ top: chrome.top + FRAME_MARGIN_Y, bottom: chrome.bottom + FRAME_MARGIN_Y, left: chrome.left + FRAME_MARGIN_X, right: chrome.right + FRAME_MARGIN_X }),
+      [chrome],
+    )
 
     /* The device languages name the visitor's country (never geolocation),
        exactly as the browser languages do on the site. */
@@ -343,12 +357,13 @@ export const AtlasMap = memo(
       () => ({
         resetView: () => {
           touched.current = true
-          camera.current?.fitBounds(home, { padding: FRAME_PADDING, duration: FIT_MS })
+          camera.current?.fitBounds(home, { padding: framePadding, duration: FIT_MS })
         },
         showPosition: (position) => camera.current?.easeTo({ center: [position.lng, position.lat], zoom: toMapZoom(POSITION_ZOOM), duration: FIT_MS }),
         arriveAt: (seeker, nearest) => {
           if (touched.current) return
-          camera.current?.fitBounds(toLngLatBounds(boundsAround(seeker, nearest ? [nearest] : [], ARRIVAL_RADIUS_KM)), { padding: FRAME_PADDING, duration: FIT_MS })
+          arrival.current = toLngLatBounds(boundsAround(seeker, nearest ? [nearest] : [], ARRIVAL_RADIUS_KM))
+          camera.current?.fitBounds(arrival.current, { padding: framePadding, duration: FIT_MS })
         },
         frameCottage: (cottage, bottomPadding, mode = 'ease') => {
           touched.current = true
@@ -366,8 +381,16 @@ export const AtlasMap = memo(
           return lng >= west && lng <= east && lat >= south && lat <= north
         },
       }),
-      [home],
+      [home, framePadding],
     )
+
+    /* The frame the camera holds on its own follows the room it has: the
+       chrome measured after the first frame, a foldable folding or
+       unfolding, a rotation. Not once the seeker has moved the map. */
+    useEffect(() => {
+      if (touched.current) return
+      camera.current?.fitBounds(arrival.current ?? home, { padding: framePadding, duration: 0 })
+    }, [home, framePadding])
 
     /* The live handlers write the shared value and the live view only; the
        React view (clusters, level) follows once the map has been still for
@@ -440,14 +463,14 @@ export const AtlasMap = memo(
         mapStyle={MAP_STYLE}
         logo={false}
         attribution
-        attributionPosition={{ bottom: bottomInset + space.lg, right: 12 }}
+        attributionPosition={{ bottom: bottomInset + space.lg, right: 12 + chrome.right }}
         touchPitch={false}
         touchRotate={false}
         onPress={onPress}
         onRegionIsChanging={onRegionIsChanging}
         onRegionDidChange={onRegionDidChange}
       >
-        <Camera ref={camera} initialViewState={{ bounds: home, padding: FRAME_PADDING }} maxBounds={EUROPE} minZoom={toMapZoom(3)} maxZoom={toMapZoom(18)} />
+        <Camera ref={camera} initialViewState={{ bounds: home, padding: framePadding }} maxBounds={EUROPE} minZoom={toMapZoom(3)} maxZoom={toMapZoom(18)} />
 
         <GeoJSONSource id="tint" data={TINT}>
           <Layer id="tint" type="fill" paint={{ 'fill-color': mapPalette.parchmentTint, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], toMapZoom(REALITY_FROM), 0.16, toMapZoom(REALITY_TO), 0.06] }} />

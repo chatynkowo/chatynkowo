@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { formatDay, type Cottage } from '@chatynkowo/core'
 import { NewRewardBanner } from '../kronika/NewRewardBanner'
 import { SupportCard } from '../support/SupportCard'
-import { FoundIcon, MarkdownView, Text, colors, iconSize, space } from '../../ui'
+import { FoundIcon, MarkdownView, Text, colors, iconSize, readable, space, useReadablePadding } from '../../ui'
 import { SealStamp } from './SealStamp'
 import { StoryPlayer } from './StoryPlayer'
 import { StoryUnlockReveal } from './StoryUnlockReveal'
@@ -28,13 +28,14 @@ export type StoryBodyProps = {
 
 export function StoryBody({ cottage, ceremony, foundAt, newReward, onOpenReward, onSealSettled }: StoryBodyProps) {
   const { t, i18n } = useTranslation()
+  const sides = useReadablePadding(space.lg)
   const mode = ceremony ? 'ceremony' : 'revisit'
   const foundOn = foundAt ? formatDay(foundAt, i18n.resolvedLanguage ?? i18n.language) : null
   let order = 0
   const next = () => order++
 
   return (
-    <View style={styles.body}>
+    <View style={[styles.body, readable, sides]}>
       {ceremony ? <SealStamp onSettled={onSealSettled} /> : null}
       <StoryUnlockReveal mode={mode} order={next()}>
         <View style={styles.unlockRow}>
@@ -82,7 +83,6 @@ export function StoryBody({ cottage, ceremony, foundAt, newReward, onOpenReward,
 const styles = StyleSheet.create({
   body: {
     gap: space.md,
-    paddingHorizontal: space.lg,
   },
   unlockRow: {
     flexDirection: 'row',

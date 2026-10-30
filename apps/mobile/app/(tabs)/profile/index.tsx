@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import { Linking, Platform, SectionList, StyleSheet } from 'react-native'
+import { Linking, SectionList, StyleSheet } from 'react-native'
 import * as WebBrowser from 'expo-web-browser'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
@@ -8,7 +8,7 @@ import { AccountSection } from '../../../src/features/profile/AccountSection'
 import { SupportCard } from '../../../src/features/support/SupportCard'
 import { LANGUAGES, setLanguage, toLanguage } from '../../../src/i18n'
 import { appVersion } from '../../../src/lib/version'
-import { FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, ShieldIcon, Text, colors, iconSize, readable, space, useTabBarClearance } from '../../../src/ui'
+import { FacebookIcon, InstagramIcon, LoreIcon, NotebookIcon, SettingsRow, SettingsSection, ShieldIcon, Text, colors, iconSize, readable, space, useReadablePadding, useTabBarClearance } from '../../../src/ui'
 
 /* The Profile tab: grouped settings in the system idiom. The account block
    (who is signed in, the way to the account screen, or the sign-in), the
@@ -26,6 +26,7 @@ export default function ProfileScreen() {
   const { t, i18n } = useTranslation()
   const router = useRouter()
   const tabBarClearance = useTabBarClearance()
+  const sides = useReadablePadding(space.lg)
   const language = toLanguage(i18n.resolvedLanguage ?? i18n.language)
 
   const openLegal = (href: string) =>
@@ -141,11 +142,9 @@ export default function ProfileScreen() {
       renderItem={({ item }) => item.node}
       style={styles.list}
       /* The list runs under the floating tab bar; its last block stays clear of it. */
-      contentContainerStyle={[styles.content, readable, { paddingBottom: tabBarClearance + space.xxl }]}
+      contentContainerStyle={[styles.content, readable, sides, { paddingBottom: tabBarClearance + space.xxl }]}
       contentInsetAdjustmentBehavior="automatic"
       scrollIndicatorInsets={{ bottom: tabBarClearance }}
-      automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
-      keyboardDismissMode="interactive"
       keyboardShouldPersistTaps="handled"
       stickySectionHeadersEnabled={false}
     />
@@ -159,7 +158,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingTop: space.lg,
-    paddingHorizontal: space.lg,
     gap: space.xl,
   },
 })

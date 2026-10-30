@@ -12,7 +12,7 @@ import { HERO_ASPECT, HERO_UNDER_BAR, StoryHero } from '../../src/features/story
 import { announce } from '../../src/lib/announce'
 import { haptic } from '../../src/lib/haptics'
 import { useCloseModal, useContent, useProgress } from '../../src/providers'
-import { Button, NATIVE_HEADER_HEIGHT, Screen, Text, colors, sizes, space, withAlpha } from '../../src/ui'
+import { Button, NATIVE_HEADER_HEIGHT, Screen, Text, colors, readable, sizes, space, useReadablePadding, withAlpha } from '../../src/ui'
 
 /* A cottage's tale, presented as a modal: the first time straight from the
    code gate with the unlock ceremony (`unlocked=1`), later from the Atlas as
@@ -62,6 +62,7 @@ function StoryView({ cottage, ceremony }: { cottage: Cottage; ceremony: boolean 
   const { t } = useTranslation()
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
+  const sides = useReadablePadding(space.lg)
   const { width } = useWindowDimensions()
   const { state, celebration, requestCelebration } = useProgress()
   const { rewards } = useContent()
@@ -128,11 +129,13 @@ function StoryView({ cottage, ceremony }: { cottage: Cottage; ceremony: boolean 
         />
       </Animated.ScrollView>
       {ceremony ? (
-        <View style={[styles.sticky, { paddingBottom: insets.bottom + space.lg }]}>
+        <View style={[styles.sticky, sides, { paddingBottom: insets.bottom + space.lg }]}>
           <LinearGradient pointerEvents="none" colors={STICKY_GRADIENT} style={styles.stickyFade} />
-          <Button variant="primary" block onPress={close}>
-            {t('mobile:story.backToAtlas')}
-          </Button>
+          <View style={readable}>
+            <Button variant="primary" block onPress={close}>
+              {t('mobile:story.backToAtlas')}
+            </Button>
+          </View>
         </View>
       ) : null}
     </View>
@@ -149,7 +152,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: space.lg,
     paddingTop: space.md,
     backgroundColor: colors.page,
   },
