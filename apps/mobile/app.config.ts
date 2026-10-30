@@ -40,6 +40,11 @@ function commitHash(): string {
 
 /* Google's sample AdMob app ids: they let the SDK start and serve its test
    ads to a build that has no AdMob account behind it yet. */
+/* The SKAdNetwork ids iOS attributes an ad to without the advertising
+   identifier (the app asks for no tracking permission): Google's own, as
+   its AdMob guide asks of every app at the least. */
+const ADMOB_SKADNETWORK_IDS = ['cstr6suwn9.skadnetwork']
+
 const ADMOB_SAMPLE_APP_IDS = {
   android: 'ca-app-pub-3940256099942544~3347511713',
   ios: 'ca-app-pub-3940256099942544~1458002511',
@@ -54,7 +59,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const plugins = [...(config.plugins ?? [])]
   if (appleSignIn) plugins.push('expo-apple-authentication')
   if (googleIosClientId) plugins.push(['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosClientId.split('.').reverse().join('.') }])
-  plugins.push(['react-native-google-mobile-ads', { androidSdk: 'classic', androidAppId: admobAndroidAppId, iosAppId: admobIosAppId, delayAppMeasurementInit: true }])
+  plugins.push([
+    'react-native-google-mobile-ads',
+    { androidSdk: 'classic', androidAppId: admobAndroidAppId, iosAppId: admobIosAppId, delayAppMeasurementInit: true, skAdNetworkItems: ADMOB_SKADNETWORK_IDS },
+  ])
   /* app.json carries the name and the slug the type asks for. */
   return {
     ...config,

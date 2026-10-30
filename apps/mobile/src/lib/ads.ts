@@ -9,6 +9,7 @@ import {
   type AdsConsentInfo,
   type AdsConsentInfoOptions,
 } from 'react-native-google-mobile-ads'
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency'
 import { ADMOB_REWARDED_ANDROID_UNIT_ID, ADMOB_REWARDED_IOS_UNIT_ID } from '../config'
 
 /* The ads SDK and Google's consent (the User Messaging Platform), the
@@ -21,6 +22,12 @@ import { ADMOB_REWARDED_ANDROID_UNIT_ID, ADMOB_REWARDED_IOS_UNIT_ID } from '../c
    the consent as easily as it was given (Google asks for that entry
    point, the GDPR for the ease). The consent info is one snapshot
    subscribers re-render on, in the shape of the other device stores.
+
+   On iOS a personalised ad is also tracking in Apple's sense, so it takes
+   the seeker's answer to the system's App Tracking Transparency prompt
+   as well, asked once, after Google's form and only when that form
+   allows a profile; any other answer means a non-personalised ad. The
+   seeker changes it in the iOS Settings.
 
    A development build asks the SDK to behave as if the device were in
    the EEA, so the form and the privacy options can be looked at on an
@@ -100,10 +107,23 @@ export type AdsPermission = { allowed: true; personalised: boolean } | { allowed
 
 let prepared: Promise<AdsPermission> | null = null
 
+/* Whether iOS lets the app track for a personalised ad: the system's
+   prompt the first time, its stored answer after; true elsewhere, where
+   there is no such permission. A prompt that cannot be shown is a no. */
+async function trackingAllowed(): Promise<boolean> {
+  if (Platform.OS !== 'ios') return true
+  try {
+    return (await requestTrackingPermissionsAsync()).granted
+  } catch {
+    return false
+  }
+}
+
 /* Consent (the form, when the region requires one and it was not shown
-   yet), then the SDK, once per process; a later ad request reuses the
-   answer until the preferences screen changes it. The answer decides the
-   request: personalised ads only where the seeker agreed to a profile,
+   yet), then on iOS the tracking permission, then the SDK, once per
+   process; a later ad request reuses the answer until the preferences
+   screen changes it. The answer decides the request: personalised ads
+   only where the seeker agreed to a profile (and, on iOS, to tracking),
    non-personalised otherwise, none when consent is required and was not
    given. A consent flow that fails (no message configured yet, no
    network) falls back to non-personalised requests, the one kind that
@@ -117,7 +137,7 @@ export function prepareAds(): Promise<AdsPermission> {
         const personalised = await readChoice(info)
         publish({ info, personalised, failed: false })
         if (!info.canRequestAds) return { allowed: false }
-        permission = { allowed: true, personalised: personalised ?? false }
+        permission = { allowed: true, personalised: Boolean(personalised) && (await trackingAllowed()) }
       } catch (error) {
         if (__DEV__) console.warn('[ads] consent', error)
         publish({ ...snapshot, failed: true })

@@ -1,6 +1,7 @@
 {
   "ios": {
     "NSCameraUsageDescription": "Chatynkowo reads the QR code on a cottage plaque.",
-    "NSLocationWhenInUseUsageDescription": "Chatynkowo shows your position on the Atlas so you can find the nearest cottage."
+    "NSLocationWhenInUseUsageDescription": "Chatynkowo shows your position on the Atlas so you can find the nearest cottage.",
+    "NSUserTrackingUsageDescription": "Chatynkowo asks before the ad you request whether it may be matched to your interests. Your answer changes nothing else in the app."
   }
 }

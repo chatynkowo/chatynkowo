@@ -506,10 +506,15 @@ of it in the repository:
    followed by a native rebuild), one rewarded ad unit per platform in
    `EXPO_PUBLIC_ADMOB_REWARDED_ANDROID_UNIT_ID` /
    `EXPO_PUBLIC_ADMOB_REWARDED_IOS_UNIT_ID`, and a GDPR message under
-   Privacy & messaging, which the consent form shows in the EEA. The app
-   asks for no App Tracking Transparency permission on iOS (the plugin
-   gets no `userTrackingUsageDescription`), so iOS serves ads without the
-   advertising identifier. If the iOS build ever complains about the
+   Privacy & messaging, which the consent form shows in the EEA. On iOS a
+   personalised ad is tracking in Apple's sense, so after Google's form
+   (and only when it allows a profile) the app asks the App Tracking
+   Transparency question once (`expo-tracking-transparency`, its text in
+   `app.json` and `locales/`); any answer but yes means a non-personalised
+   ad, and App Privacy declares the AdMob data as used for tracking. The
+   build also lists Google's SKAdNetwork id (`app.config.ts`), which
+   attributes an ad without the advertising identifier. If the iOS build
+   ever complains about the
    Google Mobile Ads pod and frameworks, the library's answer is
    `ios.useFrameworks: "static"` in the `expo-build-properties` plugin;
    the Android build needs nothing beyond the plugin.
