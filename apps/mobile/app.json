@@ -15,6 +15,9 @@
     "ios": {
       "bundleIdentifier": "com.blockchainwares.app.mysterious.cottages",
       "supportsTablet": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "infoPlist": {
         "UIBackgroundModes": [
           "audio"
