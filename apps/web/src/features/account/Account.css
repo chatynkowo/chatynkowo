@@ -153,6 +153,8 @@
 }
 
 .account-confirm h2 {
+  /* Clear of the close control in the card's corner. */
+  padding-right: 40px;
   margin-bottom: 10px;
   font-size: clamp(1.55rem, 4vw, 2.1rem);
 }

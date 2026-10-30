@@ -6,7 +6,7 @@ import type { StoredFind } from '@chatynkowo/core'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import * as AppleAuthentication from 'expo-apple-authentication'
 import * as Crypto from 'expo-crypto'
-import i18n from '../i18n'
+import i18n, { LANGUAGES } from '../i18n'
 import { APPLE_SIGN_IN, GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID, SUPABASE_ANON_KEY, SUPABASE_URL } from '../config'
 import { previewEnabled, previewProfile, previewSession, updatePreviewProfile } from './account-preview'
 
@@ -152,6 +152,13 @@ export async function ensureProfile(session: Session, displayName: string | null
   return supabase ? api.ensureProfile(supabase, session, { hint: displayName, fallback: i18n.t('profile.defaultName') }) : null
 }
 
+/* Whether a nickname is the default a profile gets when no sign-in named
+   the seeker, in any of the app's languages: such an account is asked for
+   a nickname after signing in. */
+export function isDefaultName(name: string): boolean {
+  return LANGUAGES.some((language) => i18n.t('profile.defaultName', { lng: language.code }) === name.trim())
+}
+
 export function providerAvatarUrl(session: Session) {
   return api.providerAvatarUrl(session)
 }
@@ -172,18 +179,44 @@ export async function updateProfile(session: Session, patch: Pick<api.Profile, '
   return supabase ? api.updateProfile(supabase, session, patch) : null
 }
 
+/* A fresh authorization code from Sign in with Apple, asked for no name
+   and no address, for the backend to revoke the account's Apple tokens
+   with; null when the seeker closed the dialog. */
+async function appleAuthorizationCode(): Promise<string | null> {
+  try {
+    const credential = await AppleAuthentication.signInAsync({ requestedScopes: [] })
+    if (!credential.authorizationCode) throw new Error('Apple sign-in returned no authorization code.')
+    return credential.authorizationCode
+  } catch (error) {
+    if (isAppleCancellation(error)) return null
+    throw error
+  }
+}
+
+export type DeleteAccountResult = 'deleted' | 'cancelled'
+
 /* Deletes the account for good through the backend's function (see
    @chatynkowo/api deleteAccount) and lets the Google session go; the
-   finds on the device stay. Throws when the backend refused or could not
-   be reached, with the session still in place. */
-export async function deleteAccount() {
-  if (previewEnabled || !supabase) return
-  await api.deleteAccount(supabase)
+   finds on the device stay. An account that signs in with Apple confirms
+   with Apple first, so the backend can revoke its Apple tokens, as Apple
+   asks; a closed dialog leaves the account as it was. Throws when the
+   backend refused or could not be reached, with the session still in
+   place. */
+export async function deleteAccount(session: Session): Promise<DeleteAccountResult> {
+  if (previewEnabled || !supabase) return 'deleted'
+  let appleCode: string | undefined
+  if (Platform.OS === 'ios' && api.hasAppleIdentity(session)) {
+    const code = await appleAuthorizationCode()
+    if (!code) return 'cancelled'
+    appleCode = code
+  }
+  await api.deleteAccount(supabase, { appleAuthorizationCode: appleCode })
   try {
     if (googleOffered) await GoogleSignin.signOut()
   } catch {
     // The account is gone; the Google session expires by itself.
   }
+  return 'deleted'
 }
 
 /* Push finds to the account. Resolves to false when the backend refused

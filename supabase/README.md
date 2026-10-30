@@ -101,6 +101,20 @@ depend on the gateway's JWT verification, which is a deploy option
 (`--no-verify-jwt`) rather than a guarantee; deploying with the default
 verification on is fine and changes nothing in the function.
 
+An account that signs in with Apple is also cut loose from Apple, which
+App Store review asks of every app offering Sign in with Apple: its
+Apple tokens are revoked through Apple's REST API before anything is
+deleted, and a revocation that fails deletes nothing, so the seeker can
+try again. The app asks the seeker to confirm with Apple (one Face ID)
+and sends the fresh authorization code; the function trades it for the
+account's tokens, checks they belong to the Apple account the user signs
+in with, and revokes them. The site sends the Apple refresh token
+Supabase hands over with an Apple sign-in (`provider_refresh_token`,
+kept by the session until its first refresh); when the session no longer
+has it, the deletion first takes the seeker to Apple and back
+(`deleteAccount` in apps/web/src/lib/sync.ts), and the page finishes the
+deletion on its return.
+
 Deploying, from the repository root (the link step is the one from
 "Working with the schema"):
 
@@ -110,8 +124,23 @@ pnpm dlx supabase link --project-ref wqlodfnukdjrulcvzvtk
 pnpm dlx supabase functions deploy delete-account
 ```
 
-There is nothing to configure: the Edge runtime injects `SUPABASE_URL`,
-`SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` into every function.
+The Edge runtime injects `SUPABASE_URL`, `SUPABASE_ANON_KEY` and
+`SUPABASE_SERVICE_ROLE_KEY` into every function. The Apple revocation
+reads five secrets, set once (and again with a new key): the team, the
+key and the Services ID from the same files `pnpm auth:apple` reads
+(below), the bundle id from `app.json`; the app's tokens are issued to the
+bundle id, the site's to the Services ID:
+
+```bash
+set -a; . apps/mobile/.env; . supabase/.env; set +a
+pnpm dlx supabase secrets set APPLE_TEAM_ID="$APPLE_TEAM_ID" APPLE_KEY_ID="$APPLE_KEY_ID" \
+  APPLE_APP_ID=com.blockchainwares.app.mysterious.cottages APPLE_SERVICES_ID="$APPLE_SERVICES_ID" \
+  APPLE_PRIVATE_KEY="$(cat "supabase/$APPLE_PRIVATE_KEY_PATH")"
+```
+
+The dashboard (Edge Functions, Secrets) accepts the same five by hand.
+Without them the function refuses an Apple account's deletion (the
+revocation cannot run), and deletes every other account as before.
 To try it by hand, take a signed-in seeker's access token (the site:
 `JSON.parse(localStorage.getItem('sb-wqlodfnukdjrulcvzvtk-auth-token')).access_token`
 in the console) and call the function; the account behind the token is

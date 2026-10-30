@@ -119,11 +119,28 @@ export function sessionEmail(session: Session): string | null {
    the client attaches. Once it answers, the local session is forgotten
    (the server one is gone with the user); the finds kept on the device
    are the caller's to keep. Throws when the function refused or could
-   not be reached, with the session left in place for another try. */
-export async function deleteAccount(client: ChatynkowoClient): Promise<void> {
-  const { error } = await client.functions.invoke('delete-account', { method: 'POST' })
+   not be reached, with the session left in place for another try.
+
+   An account that signs in with Apple hands over what lets the function
+   revoke its Apple tokens before deleting, as Apple asks of apps offering
+   its sign-in: the app a fresh authorization code from its own Sign in
+   with Apple (`appleAuthorizationCode`), the site the Apple refresh token
+   Supabase hands over with an Apple sign-in (`appleRefreshToken`). */
+export type AppleRevocation = { appleAuthorizationCode?: string; appleRefreshToken?: string }
+
+export async function deleteAccount(client: ChatynkowoClient, apple: AppleRevocation = {}): Promise<void> {
+  const body: AppleRevocation = {}
+  if (apple.appleAuthorizationCode) body.appleAuthorizationCode = apple.appleAuthorizationCode
+  if (apple.appleRefreshToken) body.appleRefreshToken = apple.appleRefreshToken
+  const { error } = await client.functions.invoke('delete-account', { method: 'POST', body })
   if (error) throw error
   await client.auth.signOut({ scope: 'local' })
+}
+
+/* Whether the account signs in with Apple: its Apple tokens are revoked
+   when it is deleted (deleteAccount). */
+export function hasAppleIdentity(session: Session): boolean {
+  return session.user.identities?.some((identity) => identity.provider === 'apple') ?? session.user.app_metadata.provider === 'apple'
 }
 
 export type ProfileNames = {

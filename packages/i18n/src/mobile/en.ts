@@ -109,6 +109,10 @@ export const mobileEn: typeof mobilePl = {
     entryFooter: 'This is how other trackers see you.',
     changeNickname: 'Change nickname',
     nicknameTitle: 'Your nickname',
+    /* The same sheet right after a sign-in that brought no name. */
+    nicknameWelcomeTitle: 'What should we call you?',
+    nicknameWelcomeLead: 'Your account did not share your name with us. Enter the nickname the other trackers will see you under.',
+    nicknameLater: 'Later',
     avatarRow: 'Account photo on the leaderboard',
     avatarOn: 'Your {{provider}} account photo shows next to your nickname.',
     avatarOff: 'The leaderboard shows only the initials of your nickname.',
@@ -118,6 +122,7 @@ export const mobileEn: typeof mobilePl = {
     openRanking: 'See your place on the leaderboard',
     signOutFooter: 'Your finds stay on this device and return to the account when you sign in again.',
     deleteTitle: 'Deleting the account',
+    deleteAppleCancelled: 'The account stays: deleting it needs a confirmation through Apple.',
   },
   preferences: {
     title: 'Preferences',

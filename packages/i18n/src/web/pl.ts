@@ -56,6 +56,14 @@ export const webPl = {
     entryTitle: 'Twój wpis w rankingu',
     publicNote: 'Te dane zobaczą pozostali tropiciele.',
     save: 'Zapisz zmiany',
+    /* The dialog for an account still under the default nickname. */
+    nameTitle: 'Jak mamy Cię nazywać?',
+    nameLead: 'Konto nie przekazało nam Twojego imienia. Wpisz pseudonim, pod którym zobaczą Cię pozostali tropiciele w rankingu.',
+    nameLater: 'Później',
+    /* Deleting an account that signs in with Apple goes through Apple. */
+    deleteAppleNote: 'Konto logujesz przez Apple, więc usunięcie potwierdzisz jeszcze w Apple. Na chwilę przejdziesz na stronę Apple i wrócisz tutaj.',
+    deleteAppleFailed: 'Nie udało się potwierdzić usunięcia w Apple, więc konto zostaje. Zaloguj się kontem, które chcesz usunąć, i spróbuj ponownie.',
+    deleting: 'Usuwamy konto…',
   },
   /* The account deletion page (delete-account.html), the address the app
      stores point to: what the account holds, what deleting it removes,

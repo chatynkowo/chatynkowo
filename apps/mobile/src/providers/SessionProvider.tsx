@@ -6,6 +6,7 @@ import {
   deleteAccount as removeAccount,
   ensureProfile,
   getSession,
+  isDefaultName,
   onSessionChange,
   signIn as nativeSignIn,
   signOut as nativeSignOut,
@@ -21,6 +22,7 @@ import { useReconnect } from './NetworkProvider'
 
 export type SignInOutcome = 'ok' | 'cancelled' | 'failed'
 export type SignOutOutcome = 'ok' | 'failed'
+export type DeleteOutcome = 'ok' | 'cancelled' | 'failed'
 
 type SessionValue = {
   providers: OAuthProvider[]
@@ -33,8 +35,13 @@ type SessionValue = {
   signIn: (provider: OAuthProvider) => Promise<SignInOutcome>
   signOut: () => Promise<SignOutOutcome>
   /* Deletes the account for good (the backend's function removes the
-     profile, the finds and the user); the device keeps its finds. */
-  deleteAccount: () => Promise<SignOutOutcome>
+     profile, the finds and the user); the device keeps its finds. An Apple
+     account confirms with Apple first; a closed dialog is 'cancelled'. */
+  deleteAccount: () => Promise<DeleteOutcome>
+  /* A sign-in landed on an account still under the default nickname (Apple
+     shares no name, or shared none this time): the app asks for one. */
+  nameRequested: boolean
+  settleNameRequest: () => void
   /* Throws when the backend refused or is unreachable. */
   saveProfile: (patch: Pick<Profile, 'display_name' | 'avatar_url'>) => Promise<void>
 }
@@ -50,6 +57,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   /* The name a sign-in dialog handed over, for the profile created on that
      account's first contact; Apple gives it once and never in the token. */
   const nameHint = useRef<string | null>(null)
+  /* Set by a sign-in, settled by the profile it brings. */
+  const askName = useRef(false)
+  const [nameRequested, setNameRequested] = useState(false)
   const sessionRef = useRef(session)
   const profileRef = useRef(profile)
   useEffect(() => {
@@ -85,7 +95,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     nameHint.current = null
     ensureProfile(active, hint)
       .then((row) => {
-        if (sessionRef.current?.user.id === active.user.id) setProfile(row)
+        if (sessionRef.current?.user.id !== active.user.id) return
+        setProfile(row)
+        if (askName.current && row && isDefaultName(row.display_name)) setNameRequested(true)
+        askName.current = false
       })
       .catch((error: unknown) => console.error('[account] profile', error))
   }, [])
@@ -110,6 +123,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         return 'failed'
       }
       if (result.kind === 'cancelled') return 'cancelled'
+      askName.current = true
       setSession(result.session)
       return 'ok'
     } finally {
@@ -131,10 +145,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const deleteAccount = useCallback(async (): Promise<SignOutOutcome> => {
+  const deleteAccount = useCallback(async (): Promise<DeleteOutcome> => {
+    const active = sessionRef.current
+    if (!active) return 'failed'
     setBusy(true)
     try {
-      await removeAccount()
+      if ((await removeAccount(active)) === 'cancelled') return 'cancelled'
       setSession(null)
       return 'ok'
     } catch (error) {
@@ -154,9 +170,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [session],
   )
 
+  const settleNameRequest = useCallback(() => setNameRequested(false), [])
+
   const value = useMemo<SessionValue>(
-    () => ({ providers, enabled: providers.length > 0, session, profile, busy, signIn, signOut, deleteAccount, saveProfile }),
-    [session, profile, busy, signIn, signOut, deleteAccount, saveProfile],
+    () => ({ providers, enabled: providers.length > 0, session, profile, busy, signIn, signOut, deleteAccount, nameRequested, settleNameRequest, saveProfile }),
+    [session, profile, busy, signIn, signOut, deleteAccount, nameRequested, settleNameRequest, saveProfile],
   )
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>

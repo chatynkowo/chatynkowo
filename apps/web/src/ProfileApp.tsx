@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { SitePage } from './components/SitePage'
 import { ACCOUNT_TITLE_ID, AccountCard } from './features/account/AccountCard'
 import { DeleteAccountSection } from './features/account/DeleteAccountSection'
+import { NamePrompt } from './features/account/NamePrompt'
 import { SignOutSection } from './features/account/SignOutSection'
 import { useAccount, useAccountExchange } from './providers/AccountProvider'
 import { Notice, ProfileIcon, iconSize } from './ui'
@@ -11,7 +12,8 @@ import { Notice, ProfileIcon, iconSize } from './ui'
    account is for, the account block (the way in, or who is signed in and
    their leaderboard entry), the way out and, last, the deletion of the
    account. The language, the lore and the legal and social links are the
-   header and the footer, as on every page. */
+   header and the footer, as on every page. An account still under the
+   default nickname is asked for one first (NamePrompt). */
 
 export function ProfileApp() {
   const { t } = useTranslation()
@@ -47,6 +49,7 @@ export function ProfileApp() {
       </div>
       {account.session && <SignOutSection />}
       {account.session && <DeleteAccountSection onDeleted={() => setDeleted(true)} />}
+      <NamePrompt />
     </SitePage>
   )
 }

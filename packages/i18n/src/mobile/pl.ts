@@ -114,6 +114,10 @@ export const mobilePl = {
     entryFooter: 'Tak widzą Cię pozostali tropiciele.',
     changeNickname: 'Zmień pseudonim',
     nicknameTitle: 'Twój pseudonim',
+    /* The same sheet right after a sign-in that brought no name. */
+    nicknameWelcomeTitle: 'Jak mamy Cię nazywać?',
+    nicknameWelcomeLead: 'Konto nie przekazało nam Twojego imienia. Wpisz pseudonim, pod którym zobaczą Cię pozostali tropiciele.',
+    nicknameLater: 'Później',
     avatarRow: 'Zdjęcie z konta w rankingu',
     avatarOn: 'Obok pseudonimu widać Twoje zdjęcie z konta {{provider}}.',
     avatarOff: 'W rankingu widać tylko inicjały pseudonimu.',
@@ -123,6 +127,7 @@ export const mobilePl = {
     openRanking: 'Zobacz swoje miejsce w rankingu',
     signOutFooter: 'Odkrycia zostaną na tym urządzeniu i wrócą do konta po ponownym zalogowaniu.',
     deleteTitle: 'Usuwanie konta',
+    deleteAppleCancelled: 'Konto zostaje. Usunięcie trzeba potwierdzić przez Apple.',
   },
   /* The preferences screen (src/features/preferences): the consent to
      ads, read from Google's consent SDK, and the row that opens the form

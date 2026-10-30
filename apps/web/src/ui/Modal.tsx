@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react'
+import { useRef, type ReactNode, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
 import { IconButton } from './Button'
 import { cx } from './classes'
@@ -22,12 +22,15 @@ type ModalProps = {
   stacked?: boolean
   /* Semantic element of the card. */
   as?: 'section' | 'article' | 'figure' | 'div'
+  /* What takes the focus on open; the close control by default, a field
+     for a dialog that exists to be typed into. */
+  initialFocus?: RefObject<HTMLElement | null>
   children: ReactNode
 }
 
-export function Modal({ onClose, closeLabel, labelledBy, label, className, stacked, as: Card = 'section', children }: ModalProps) {
+export function Modal({ onClose, closeLabel, labelledBy, label, className, stacked, as: Card = 'section', initialFocus, children }: ModalProps) {
   const closeRef = useRef<HTMLButtonElement>(null)
-  useModalLayer(onClose, closeRef)
+  useModalLayer(onClose, initialFocus ?? closeRef)
 
   return createPortal(
     <div

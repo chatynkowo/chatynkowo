@@ -51,6 +51,14 @@ export const webEn: typeof webPl = {
     entryTitle: 'Your leaderboard entry',
     publicNote: 'Other trackers will see these details.',
     save: 'Save changes',
+    /* The dialog for an account still under the default nickname. */
+    nameTitle: 'What should we call you?',
+    nameLead: 'Your account did not share your name with us. Enter the nickname the other trackers will see you under on the leaderboard.',
+    nameLater: 'Later',
+    /* Deleting an account that signs in with Apple goes through Apple. */
+    deleteAppleNote: 'You sign in with Apple, so you confirm the deletion with Apple too: you go to Apple for a moment and come back here.',
+    deleteAppleFailed: 'The deletion could not be confirmed with Apple, so the account stays. Sign in with the account you want to delete and try again.',
+    deleting: 'Deleting the account…',
   },
   deleteAccountPage: {
     eyebrow: 'Explorer account',

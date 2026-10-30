@@ -11,6 +11,9 @@ import { configured, deleteAccount as removeAccount, ensureProfile, getSession, 
 
 /* How a sign-out or a deletion ended; the failure is already logged. */
 export type AccountOutcome = 'ok' | 'failed'
+/* A deletion may also have left for Apple to confirm it ('confirming',
+   the page is leaving) or come back without the confirmation. */
+export type DeletionOutcome = AccountOutcome | 'confirming' | 'unconfirmed'
 
 export type AccountValue = {
   /* Whether the site has a backend to sign in to at all. */
@@ -29,8 +32,10 @@ export type AccountValue = {
   signIn: (provider: OAuthProvider) => void
   signOut: () => Promise<AccountOutcome>
   /* Deletes the account with its profile and finds for good and forgets
-     the session; the finds kept in this browser stay. */
-  deleteAccount: () => Promise<AccountOutcome>
+     the session; the finds kept in this browser stay. An Apple account
+     confirms with Apple first (see deleteAccount in lib/sync); `resume`
+     finishes a deletion that came back from Apple. */
+  deleteAccount: (resume?: boolean) => Promise<DeletionOutcome>
   /* Throws when the backend refused or is unreachable. */
   saveProfile: (patch: Pick<Profile, 'display_name' | 'avatar_url'>) => Promise<Profile>
 }
@@ -105,19 +110,25 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const deleteAccount = useCallback(async (): Promise<AccountOutcome> => {
-    setBusy(true)
-    try {
-      await removeAccount()
-      setSession(null)
-      return 'ok'
-    } catch (reason) {
-      console.error('[account] delete', reason)
-      return 'failed'
-    } finally {
-      setBusy(false)
-    }
-  }, [])
+  const deleteAccount = useCallback(
+    async (resume = false): Promise<DeletionOutcome> => {
+      if (!session) return 'failed'
+      setBusy(true)
+      try {
+        const result = await removeAccount(session, resume)
+        if (result === 'confirming') return 'confirming'
+        if (result === 'unconfirmed') return 'unconfirmed'
+        setSession(null)
+        return 'ok'
+      } catch (reason) {
+        console.error('[account] delete', reason)
+        return 'failed'
+      } finally {
+        setBusy(false)
+      }
+    },
+    [session],
+  )
 
   const saveProfile = useCallback(
     async (patch: Pick<Profile, 'display_name' | 'avatar_url'>) => {

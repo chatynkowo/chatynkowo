@@ -131,6 +131,8 @@ export function AccountScreen() {
             if (outcome === 'ok') {
               toast.show({ tone: 'success', text: t('profile.deleteAccountDone') })
               leave()
+            } else if (outcome === 'cancelled') {
+              toast.show({ tone: 'info', text: t('mobile:profile.deleteAppleCancelled') })
             } else {
               toast.show({ tone: 'error', text: t('profile.deleteAccountFailed') })
             }

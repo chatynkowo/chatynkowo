@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
+import { useLocalSearchParams } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { DISPLAY_NAME_MAX_LENGTH, profilePatch } from '@chatynkowo/core'
-import { providerAvatarUrl } from '../../lib/sync'
+import { isDefaultName, providerAvatarUrl } from '../../lib/sync'
 import { useCloseModal, useSession, useToast } from '../../providers'
 import { Button, SheetRoute, Text, TextField, space, type TextFieldHandle } from '../../ui'
 
@@ -14,15 +15,21 @@ import { Button, SheetRoute, Text, TextField, space, type TextFieldHandle } from
    and the typed name for the next try. A save that outlives the sheet
    (swiped away mid-await) leaves the receipt but closes nothing, as the
    code gate does. Opened signed out, or before the profile is read, the
-   sheet closes at once. */
+   sheet closes at once. Opened right after a sign-in that brought no name
+   (`first`, see NamePrompt in app/_layout.tsx) it asks for one in its own
+   words and lets the seeker put it off; a default name is never offered
+   as the text to keep, so the field starts empty. */
 
 export function NicknameSheet() {
   const { t } = useTranslation()
   const account = useSession()
   const toast = useToast()
   const close = useCloseModal()
+  const { first } = useLocalSearchParams<{ first?: string }>()
+  const welcome = first === '1'
   const field = useRef<TextFieldHandle>(null)
-  const [name, setName] = useState(account.profile?.display_name ?? '')
+  const current = account.profile?.display_name ?? ''
+  const [name, setName] = useState(isDefaultName(current) ? '' : current)
   const [saving, setSaving] = useState(false)
   const mounted = useRef(true)
   useEffect(
@@ -60,8 +67,13 @@ export function NicknameSheet() {
         <View style={styles.heading}>
           <Text variant="eyebrow">{t('mobile:profile.entryTitle')}</Text>
           <Text variant="title" accessibilityRole="header">
-            {t('mobile:profile.nicknameTitle')}
+            {welcome ? t('mobile:profile.nicknameWelcomeTitle') : t('mobile:profile.nicknameTitle')}
           </Text>
+          {welcome ? (
+            <Text variant="small" tone="soft">
+              {t('mobile:profile.nicknameWelcomeLead')}
+            </Text>
+          ) : null}
         </View>
         <TextField
           ref={field}
@@ -75,7 +87,7 @@ export function NicknameSheet() {
           returnKeyType="done"
           onSubmitEditing={() => void save()}
         />
-        {!name.trim() ? (
+        {!name.trim() && !welcome ? (
           <Text variant="small" tone="faint">
             {t('profile.nicknameEmpty')}
           </Text>
@@ -85,7 +97,7 @@ export function NicknameSheet() {
             {t('profile.save')}
           </Button>
           <Button block onPress={close}>
-            {t('mobile:common.cancel')}
+            {welcome ? t('mobile:profile.nicknameLater') : t('mobile:common.cancel')}
           </Button>
         </View>
       </View>
