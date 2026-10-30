@@ -52,8 +52,10 @@ const styles = StyleSheet.create({
   field: {
     gap: space.xs,
   },
+  /* The body size without its line height: a single-line field centres its
+     text itself, and a line height moves the text off the middle on iOS. */
   input: {
-    ...typeScale.body,
+    fontSize: typeScale.body.fontSize,
     minHeight: sizes.button,
     paddingHorizontal: space.lg,
     paddingVertical: space.sm,

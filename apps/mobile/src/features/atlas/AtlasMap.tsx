@@ -386,11 +386,15 @@ export const AtlasMap = memo(
 
     /* The frame the camera holds on its own follows the room it has: the
        chrome measured after the first frame, a foldable folding or
-       unfolding, a rotation. Not once the seeker has moved the map. */
+       unfolding, a rotation. Not once the seeker has moved the map, and
+       not before the map has loaded: the native camera takes no command
+       before then (the initial view already has the room). */
+    const [loaded, setLoaded] = useState(false)
+    const onLoaded = useCallback(() => setLoaded(true), [])
     useEffect(() => {
-      if (touched.current) return
+      if (!loaded || touched.current) return
       camera.current?.fitBounds(arrival.current ?? home, { padding: framePadding, duration: 0 })
-    }, [home, framePadding])
+    }, [loaded, home, framePadding])
 
     /* The live handlers write the shared value and the live view only; the
        React view (clusters, level) follows once the map has been still for
@@ -469,6 +473,7 @@ export const AtlasMap = memo(
         onPress={onPress}
         onRegionIsChanging={onRegionIsChanging}
         onRegionDidChange={onRegionDidChange}
+        onDidFinishLoadingMap={onLoaded}
       >
         <Camera ref={camera} initialViewState={{ bounds: home, padding: framePadding }} maxBounds={EUROPE} minZoom={toMapZoom(3)} maxZoom={toMapZoom(18)} />
 
