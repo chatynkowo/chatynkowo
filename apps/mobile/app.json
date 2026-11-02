@@ -14,6 +14,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.blockchainwares.app.mysterious.cottages",
+      "buildNumber": "2",
       "supportsTablet": true,
       "config": {
         "usesNonExemptEncryption": false
