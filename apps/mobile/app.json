@@ -58,11 +58,6 @@
               "scheme": "https",
               "host": "www.chatynkowo.pl",
               "pathPattern": "/index.html"
-            },
-            {
-              "scheme": "https",
-              "host": "chatynkowo.pl",
-              "pathPattern": "/"
             }
           ]
         }
