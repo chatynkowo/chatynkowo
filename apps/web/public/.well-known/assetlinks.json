@@ -1,0 +1,16 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.blockchainwares.app.mysterious.cottages",
+      "sha256_cert_fingerprints": [
+        "C0:7A:27:36:4C:01:BE:B2:53:72:57:73:39:7F:21:8C:24:E3:6C:3D:A7:05:AE:66:AE:90:FC:0A:E3:29:84:DF",
+        "8B:8D:D9:90:0C:71:1F:5B:1B:09:E0:42:6F:67:C7:3D:49:94:7D:EF:BC:47:56:61:8D:DF:0A:58:AA:25:6F:2C",
+        "FB:2A:FA:AA:FB:84:27:76:49:CE:17:63:65:5B:28:A1:A1:4D:41:B3:CE:47:6D:99:79:33:FC:CF:70:AC:AE:5F"
+      ]
+    }
+  }
+]
