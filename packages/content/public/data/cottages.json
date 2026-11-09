@@ -33,5 +33,5 @@
   { "slug": "oskar",          "lat": 50.224192,  "lng": 19.804968 },
   { "slug": "talarek",        "lat": 50.463935,  "lng": 19.551888 },
   { "slug": "pazurek",        "lat": 50.3354,    "lng": 19.6267,    "photos": ["IMG_4546.JPG"] },
-  { "slug": "ganek",          "lat": 50.32,      "lng": 19.6 }
+  { "slug": "ganek",          "lat": 50.32,      "lng": 19.6,       "photos": ["38ED5E54-CD19-41D4-9DB3-BD8C3DC0CEA7.png"] }
 ]
