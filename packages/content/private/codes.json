@@ -35,6 +35,7 @@
     { "slug": "ivgar",          "code": "0986" },
     { "slug": "bluetooth",      "code": "0987" },
     { "slug": "oskar",          "code": "0982" },
-    { "slug": "pazurek",        "code": "0994" }
+    { "slug": "pazurek",        "code": "0994" },
+    { "slug": "ganek",          "code": "0989" }
   ]
 }
