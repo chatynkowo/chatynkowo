@@ -5,6 +5,7 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../config'
 import i18n from '../i18n'
 import { totalCottages } from './content'
 import { localFinds, mergeAccountFinds } from './persistence'
+import { noteSignInStarted } from './sign-in-log'
 
 /* The site's instance of the shared backend client, plus the account
    functions bound to it. Everything here is a thin wrapper over
@@ -28,8 +29,11 @@ export async function enabledProviders() {
   return supabase ? api.enabledProviders({ url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY }) : []
 }
 
+/* Leaves for the provider and comes back to `redirectTo`; the choice goes
+   to the browser's sign-in log first (lib/sign-in-log). */
 export async function signInWith(provider: api.OAuthProvider, redirectTo: string) {
   if (!supabase) throw new Error('The backend is not configured.')
+  noteSignInStarted(provider)
   await api.signInWithOAuth(supabase, provider, redirectTo)
 }
 
@@ -74,7 +78,7 @@ export async function deleteAccount(session: Session, resume = false): Promise<D
     } catch {
       return 'unconfirmed'
     }
-    await api.signInWithOAuth(supabase, 'apple', `${location.origin}${location.pathname}`)
+    await signInWith('apple', `${location.origin}${location.pathname}`)
     return 'confirming'
   }
   await api.deleteAccount(supabase, { appleRefreshToken })

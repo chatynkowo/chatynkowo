@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { OAuthProvider, Profile, Session } from '@chatynkowo/api'
 import { mergeAccountFinds } from '../lib/persistence'
+import { forgetSignIns, noteSignedIn } from '../lib/sign-in-log'
 import { configured, deleteAccount as removeAccount, ensureProfile, getSession, onSessionChange, signInWith, signOut as endSession, syncAccount, updateProfile, type MergeRemoteFinds } from '../lib/sync'
 
 /* The account on the site: the Supabase session, the profile row, the way
@@ -32,9 +33,10 @@ export type AccountValue = {
   signIn: (provider: OAuthProvider) => void
   signOut: () => Promise<AccountOutcome>
   /* Deletes the account with its profile and finds for good and forgets
-     the session; the finds kept in this browser stay. An Apple account
-     confirms with Apple first (see deleteAccount in lib/sync); `resume`
-     finishes a deletion that came back from Apple. */
+     the session and the browser's sign-in log; the finds kept in this
+     browser stay. An Apple account confirms with Apple first (see
+     deleteAccount in lib/sync); `resume` finishes a deletion that came
+     back from Apple. */
   deleteAccount: (resume?: boolean) => Promise<DeletionOutcome>
   /* Throws when the backend refused or is unreachable. */
   saveProfile: (patch: Pick<Profile, 'display_name' | 'avatar_url'>) => Promise<Profile>
@@ -65,6 +67,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       unsubscribe()
     }
   }, [])
+
+  /* Each sign-in goes to the browser's sign-in log once (lib/sign-in-log);
+     a refreshed token is the same sign-in. */
+  useEffect(() => {
+    if (session) noteSignedIn(session)
+  }, [session])
 
   /* The row follows the account: read, or created on first contact, once
      per seeker rather than on every token refresh; dropped on sign-out. */
@@ -118,6 +126,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         const result = await removeAccount(session, resume)
         if (result === 'confirming') return 'confirming'
         if (result === 'unconfirmed') return 'unconfirmed'
+        forgetSignIns()
         setSession(null)
         return 'ok'
       } catch (reason) {

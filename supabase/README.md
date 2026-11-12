@@ -241,3 +241,33 @@ Android; without the Apple capability in the build (a free Personal Team
 cannot sign it) the Apple button stays away. The Kronika works the same
 either way: an account only collects what the devices found and hands it
 back to each of them.
+
+### Looking into a sign-in
+
+The site keeps a short log of the sign-ins a browser has seen, in that
+browser's `localStorage` only (`apps/web/src/lib/sign-in-log.ts`); nothing
+reads it and nothing sends it, it is there for the day a seeker reports a
+problem. In the console of the page:
+
+```js
+JSON.parse(localStorage.getItem('chatynkowo:sign-ins:v1'))
+// [{ event: 'started', at: '2026-11-12T10:02:11.120Z', provider: 'apple' },
+//  { event: 'signed-in', at: '2026-11-12T10:02:34.000Z', provider: 'apple',
+//    userId: '…', sessionId: '…' }]
+```
+
+- `started`: the seeker pressed a provider's button and left for it, or
+  left for Apple to confirm a deletion (the browser's clock). One with no
+  `signed-in` after it is a sign-in that did not come back: abandoned,
+  refused by the provider, or failed.
+- `signed-in`: a session arrived, once per sign-in however many pages,
+  tabs and token refreshes follow. `at` is the moment the backend signed
+  the account in, read from the access token (the browser's clock when
+  the token does not say), `userId` the account (`auth.users`,
+  `profiles.id`), `sessionId` the session (`auth.sessions`). `provider`
+  is the button pressed on the way, within ten minutes; for a session
+  that arrived without one (a seeker who was signed in before the log
+  existed) it is the provider the account began with.
+
+The last 50 entries are kept. Deleting the account on the site clears the
+log; signing out does not.
