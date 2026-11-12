@@ -11,11 +11,14 @@ export const SOCIAL_LINKS = {
   facebook: 'https://www.facebook.com/chatynkowo/',
 } as const
 
-/* The app in the stores. Only Android is published so far; the App Store
-   listing joins here when it is. */
+/* The app in the stores: Google Play for Android, the App Store for iPhone
+   and iPad. */
 export const STORE_LINKS = {
   googlePlay: 'https://play.google.com/store/apps/details?id=com.blockchainwares.app.mysterious.cottages',
+  appStore: 'https://apps.apple.com/pl/app/chatynkowo/id6828758921',
 } as const
+
+export type StoreId = keyof typeof STORE_LINKS
 
 /* A shareable link to one seeker's place in the ranking (the site reads
    `me` from the query). */

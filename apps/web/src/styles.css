@@ -1692,7 +1692,9 @@ h2 {
    the details and the store button. On wide screens one centred line in the
    accent colour; on phones the store-banner shape people know: the store
    mark in a tile, two short lines and the button in one row, the details
-   link hidden. The brand logo stays in the header right above. */
+   link hidden. The brand logo stays in the header right above. A computer
+   has no store of its own (.app-ribbon-both): no mark, a button for each
+   store, and in a narrow window the buttons go under the words. */
 .app-ribbon {
   display: flex;
   align-items: center;
@@ -1704,6 +1706,7 @@ h2 {
   box-shadow: inset 0 1px rgb(247 220 153 / .14);
   backdrop-filter: blur(10px);
 }
+.app-ribbon-both { flex-wrap: wrap; }
 .app-ribbon-store { display: inline-flex; color: var(--accent-strong); }
 .app-ribbon p { display: inline-flex; align-items: baseline; gap: 8px; margin: 0; color: var(--ink); font-size: .95rem; }
 .app-ribbon p strong { font-weight: 700; }

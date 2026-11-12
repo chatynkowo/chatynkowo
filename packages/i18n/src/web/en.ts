@@ -6,7 +6,7 @@ export const webEn: typeof webPl = {
   meta: {
     homeTitle: 'Chatynkowo | A fairy-tale outdoor game in the Kraków-Częstochowa Jura',
     homeDescription:
-      'A fairy-tale outdoor game in the Kraków-Częstochowa Jura. Seek out the hidden Cottages — homes of real Elves — collect seals and unlock their tales. The app is out on Google Play.',
+      'A fairy-tale outdoor game in the Kraków-Częstochowa Jura. Seek out the hidden Cottages — homes of real Elves — collect seals and unlock their tales. The app is out on Google Play and the App Store.',
     rankingTitle: "Explorers' Leaderboard | Chatynkowo",
     rankingDescription:
       "The Chatynkowo Explorers' Leaderboard: see who has discovered the most fairy-tale Cottages and who completed the set fastest.",
@@ -23,17 +23,24 @@ export const webEn: typeof webPl = {
   app: {
     ribbonAria: 'The Chatynkowo app is available',
     ribbonTitle: 'The Chatynkowo app',
-    ribbonText: 'Now on Google Play',
+    ribbonText: 'Now on Google Play and the App Store',
     ribbonMore: 'What does it do?',
     ribbonDownload: 'Get it',
     sectionAria: 'The Chatynkowo app',
     eyebrow: 'New',
     title: 'Chatynkowo now fits in your pocket',
     lead:
-      'The Chatynkowo app is out on Google Play. Take it on the trail: it scans the codes on the plaques, points you to the nearest Cottage and works even where there is no signal.',
-    download: 'Get it on Google Play',
-    downloadAria: 'Get the Chatynkowo app on Google Play (opens in a new tab)',
-    appStoreSoon: 'App Store soon',
+      'The Chatynkowo app is out on Google Play and the App Store. Take it on the trail: it scans the codes on the plaques, points you to the nearest Cottage and works even where there is no signal.',
+    googlePlay: {
+      ribbonText: 'Now on Google Play',
+      download: 'Get it on Google Play',
+      downloadAria: 'Get the Chatynkowo app on Google Play (opens in a new tab)',
+    },
+    appStore: {
+      ribbonText: 'Now on the App Store',
+      download: 'Download on the App Store',
+      downloadAria: 'Download the Chatynkowo app on the App Store (opens in a new tab)',
+    },
     perk1Title: 'Compete with others',
     perk1Body: 'The Explorers’ Leaderboard is at hand: see who has found the most Cottages and take your place in it.',
     perk2Title: 'A map without signal',

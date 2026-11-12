@@ -73,7 +73,8 @@ export const MOBILE_ICON_ROLES = [
 
 /* Roles only the site has a surface for. */
 export const WEB_ICON_ROLES = [
-  /* The invitation to install the app (apps/web/src/App.tsx). */
+  /* The invitation to install the app (apps/web/src/App.tsx) and the
+     stores' marks on its buttons (apps/web/src/components/StoreLink.tsx). */
   'AppIcon',
   'GooglePlayIcon',
   'AppStoreIcon',

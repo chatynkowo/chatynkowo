@@ -6,7 +6,7 @@ export const webPl = {
   meta: {
     homeTitle: 'Chatynkowo | Baśniowa gra terenowa w Jurze Krakowsko-Częstochowskiej',
     homeDescription:
-      'Baśniowa gra terenowa w Jurze Krakowsko-Częstochowskiej. Odszukuj ukryte Chatynki — domy prawdziwych Elfów — zdobywaj pieczęcie i otwieraj ich opowieści. Aplikacja już w Google Play.',
+      'Baśniowa gra terenowa w Jurze Krakowsko-Częstochowskiej. Odszukuj ukryte Chatynki — domy prawdziwych Elfów — zdobywaj pieczęcie i otwieraj ich opowieści. Aplikacja już w Google Play i App Store.',
     rankingTitle: 'Ranking Zdobywców | Chatynkowo',
     rankingDescription:
       'Ranking Zdobywców Chatynkowa: zobacz, kto odkrył najwięcej baśniowych Chatynek i kto zebrał komplet najszybciej.',
@@ -21,22 +21,34 @@ export const webPl = {
     skipToContent: 'Przejdź do treści',
   },
   /* The invitation to install the app: what the app adds to the site's
-     game, and the store it is published in. Only Google Play for now. */
+     game, and the stores it is published in, Google Play and the App Store. */
   app: {
     /* The ribbon under the header: the first thing a visitor sees. */
     ribbonAria: 'Aplikacja Chatynkowo jest dostępna',
     ribbonTitle: 'Aplikacja Chatynkowo',
-    ribbonText: 'Już dostępna w Google Play',
+    /* The line for a computer, which installs from neither store. A phone
+       or tablet reads the line of its own store, further down. */
+    ribbonText: 'Już dostępna w Google Play i App Store',
     ribbonMore: 'Co potrafi?',
     ribbonDownload: 'Pobierz',
     sectionAria: 'Aplikacja Chatynkowo',
     eyebrow: 'Nowość',
     title: 'Chatynkowo masz teraz w kieszeni',
     lead:
-      'Aplikacja Chatynkowo jest już w Google Play. Zabierz ją na szlak: wpisz kod z tabliczek, nawiguj do najbliższej Chatynki i ciesz się przygodą także tam, gdzie nie ma zasięgu.',
-    download: 'Pobierz z Google Play',
-    downloadAria: 'Pobierz aplikację Chatynkowo z Google Play (otwiera się w nowej karcie)',
-    appStoreSoon: 'App Store wkrótce',
+      'Aplikacja Chatynkowo jest już w Google Play i App Store. Zabierz ją na szlak: wpisz kod z tabliczek, nawiguj do najbliższej Chatynki i ciesz się przygodą także tam, gdzie nie ma zasięgu.',
+    /* One store's words, under the store's id (STORE_LINKS in
+       @chatynkowo/core): the ribbon's line on a device that installs from
+       it, its button in the section and that button's accessible name. */
+    googlePlay: {
+      ribbonText: 'Już dostępna w Google Play',
+      download: 'Pobierz z Google Play',
+      downloadAria: 'Pobierz aplikację Chatynkowo z Google Play (otwiera się w nowej karcie)',
+    },
+    appStore: {
+      ribbonText: 'Już dostępna w App Store',
+      download: 'Pobierz z App Store',
+      downloadAria: 'Pobierz aplikację Chatynkowo z App Store (otwiera się w nowej karcie)',
+    },
     /* Competition stands for the ranking today and for whatever the app
        grows into later, so the title names the idea, not the feature. */
     perk1Title: 'Rywalizuj z innymi',

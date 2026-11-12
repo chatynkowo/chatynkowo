@@ -1,11 +1,11 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AppIcon, AppStoreIcon, AtlasIcon, Button, ChronicleIcon, CottageIcon, CreedIcon, ElfIcon, ForestIcon, ForwardIcon, FoundIcon, GooglePlayIcon, KeyIcon, LinkButton, LoreIcon, Modal, NavigateIcon, NotebookIcon, QrIcon, RewardIcon, SealIcon, ShieldIcon, StoryAudioIcon, TrailIcon, iconSize } from './ui'
+import { AppIcon, AtlasIcon, Button, ChronicleIcon, CottageIcon, CreedIcon, ElfIcon, ForestIcon, ForwardIcon, FoundIcon, KeyIcon, LinkButton, LoreIcon, Modal, NavigateIcon, NotebookIcon, QrIcon, RewardIcon, SealIcon, ShieldIcon, StoryAudioIcon, TrailIcon, cx, iconSize } from './ui'
 import { marked } from './lib/markdown'
 import { useTranslation } from 'react-i18next'
 import { toLanguage } from './i18n'
 import { content, loadCottages, loadRewards, resolveCode, storyAudio } from './lib/content'
 import { backfillBadges, discoverCottage, loadStoredState, mergeAccountFinds } from './lib/persistence'
-import { STORE_LINKS, fallbackRewards, finalLevelId, requiredFinds } from '@chatynkowo/core'
+import { fallbackRewards, finalLevelId, requiredFinds } from '@chatynkowo/core'
 import { initializeAnalytics, track } from './lib/analytics'
 import { syncNewFind } from './lib/sync'
 import type { Cottage, RewardLevel, RewardsConfig, StoredState } from '@chatynkowo/core'
@@ -13,6 +13,7 @@ import { SitePage, type SectionId } from './components/SitePage'
 import { useAccountExchange } from './providers/AccountProvider'
 import { AudioPlayer } from './components/AudioPlayer'
 import { CottageGallery } from './components/CottageGallery'
+import { STORES, StoreLink, visitorStore } from './components/StoreLink'
 
 /* Shared cottage photos: `thumb` (320x480, ~35 KB, sharp up to 3x displays)
    is all the gallery strip downloads; `full` loads only in the tapped-open
@@ -62,6 +63,11 @@ function App() {
   const [rewards, setRewards] = useState<RewardsConfig>(fallbackRewards)
   const [achievement, setAchievement] = useState('')
   const codeInputRefs = useRef<Array<HTMLInputElement | null>>([])
+
+  /* The store of the visitor's own device leads the invitation to install
+     the app; a computer has none, and the two stores stand side by side. */
+  const ownStore = useMemo(visitorStore, [])
+  const stores = ownStore ? [ownStore, ...STORES.filter((store) => store !== ownStore)] : STORES
 
   const codeMessage = codeMessageKey ? t(codeMessageKey) : ''
   const foundSlugs = useMemo(() => new Set(Object.keys(stored.found)), [stored.found])
@@ -299,23 +305,24 @@ function App() {
   return (
     <SitePage page="home" onSection={openSection}>
         {/* The first thing under the header: the app exists and where to get
-            it. The details are in the "aplikacja" section further down. */}
-        <aside className="app-ribbon" aria-label={t('app.ribbonAria')}>
-          <span className="app-ribbon-store" aria-hidden="true"><GooglePlayIcon size={iconSize.md} weight="fill" /></span>
-          <p><strong>{t('app.ribbonTitle')}</strong><span>{t('app.ribbonText')}</span></p>
+            it. A phone or tablet is shown its own store: the mark, one line
+            and one button. A computer is told of both stores and gets a
+            button for each. The details are in the "aplikacja" section
+            further down. */}
+        <aside className={cx('app-ribbon', !ownStore && 'app-ribbon-both')} aria-label={t('app.ribbonAria')}>
+          {ownStore && <span className="app-ribbon-store" aria-hidden="true"><ownStore.Icon size={iconSize.md} weight="fill" /></span>}
+          <p><strong>{t('app.ribbonTitle')}</strong><span>{t(ownStore ? `app.${ownStore.id}.ribbonText` : 'app.ribbonText')}</span></p>
           <div className="app-ribbon-actions">
             <button type="button" className="app-ribbon-more" onClick={() => navigateTo('aplikacja')}>{t('app.ribbonMore')}</button>
-            <LinkButton
-              variant="primary"
-              className="app-ribbon-download"
-              href={STORE_LINKS.googlePlay}
-              rel="noreferrer"
-              target="_blank"
-              aria-label={t('app.downloadAria')}
-              onClick={() => track('app-google-play', 'Aplikacja: Google Play')}
-            >
-              {t('app.ribbonDownload')} <ForwardIcon size={iconSize.sm} />
-            </LinkButton>
+            {ownStore ? (
+              <StoreLink store={ownStore} className="app-ribbon-download">
+                {t('app.ribbonDownload')} <ForwardIcon size={iconSize.sm} />
+              </StoreLink>
+            ) : stores.map((store) => (
+              <StoreLink key={store.id} store={store} className="app-ribbon-download">
+                <store.Icon size={iconSize.sm} weight="fill" /> {store.name}
+              </StoreLink>
+            ))}
           </div>
         </aside>
 
@@ -405,9 +412,9 @@ function App() {
 
         {/* The invitation to install the app: what it adds to the game played
             here (the scanner, the offline map, the compass, one account) and
-            the store it is in. The click is counted like a page view, under
-            its own path, so the store's own install figures can be compared
-            with how many seekers set off from here. */}
+            the stores it is in. The visitor's own store comes first as the
+            main action, the other one after it; a computer has no store of
+            its own, so both are main. */}
         <section className="app-invite" id="aplikacja" aria-label={t('app.sectionAria')}>
           <div className="app-invite-board">
             <div className="app-invite-intro">
@@ -415,20 +422,11 @@ function App() {
               <h2>{t('app.title')}</h2>
               <p>{t('app.lead')}</p>
               <div className="app-invite-actions">
-                <LinkButton
-                  variant="primary"
-                  href={STORE_LINKS.googlePlay}
-                  rel="noreferrer"
-                  target="_blank"
-                  aria-label={t('app.downloadAria')}
-                  onClick={() => track('app-google-play', 'Aplikacja: Google Play')}
-                >
-                  <GooglePlayIcon size={iconSize.md} weight="fill" /> {t('app.download')}
-                </LinkButton>
-                {/* Not a link yet: the iOS build is not in the store. */}
-                <Button variant="ghost" disabled>
-                  <AppStoreIcon size={iconSize.md} weight="fill" /> {t('app.appStoreSoon')}
-                </Button>
+                {stores.map((store) => (
+                  <StoreLink key={store.id} store={store} variant={ownStore && store !== ownStore ? 'ghost' : 'primary'}>
+                    <store.Icon size={iconSize.md} weight="fill" /> {t(`app.${store.id}.download`)}
+                  </StoreLink>
+                ))}
               </div>
             </div>
             <ul className="app-invite-perks">
