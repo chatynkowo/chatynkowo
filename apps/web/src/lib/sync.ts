@@ -144,6 +144,14 @@ export async function syncAccount(session: Session, merge: MergeRemoteFinds = me
   await api.syncFinds(supabase, session, localFinds(), await totalCottages())
 }
 
+/* The finds the account holds, read and merged nowhere: for the
+   diagnostics report (lib/diagnostics), which describes and never
+   changes. Throws when the backend refused or is unreachable. */
+export async function fetchAccountFinds(session: Session): Promise<Record<string, StoredFind>> {
+  if (!supabase) throw new Error('The backend is not configured.')
+  return api.fetchFinds(supabase, session)
+}
+
 /* A fresh discovery goes to the account when someone is signed in; the
    browser's Kronika is the source of truth either way, and a find the
    backend did not take now goes up with the next exchange. */

@@ -1,0 +1,96 @@
+/* The tokens, the page base and the primitives come from ui/ui.css,
+   imported before this file; this one lays the diagnostics page out as a
+   readable column, like profile.css, and styles what only this page has:
+   the report's actions and the report to read. The card around them is
+   the account card (features/account/Account.css). */
+
+.diagnostics-main {
+  display: grid;
+  width: 100%;
+  max-width: calc(760px + 2 * var(--page-gutter));
+  margin: 0 auto;
+  padding: clamp(38px, 5vw, 66px) var(--page-gutter) 100px;
+  gap: 28px;
+}
+
+.diagnostics-intro h1 {
+  margin: 0 0 14px;
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  line-height: 1.05;
+}
+
+.diagnostics-intro__lede {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: clamp(1.02rem, 1.25vw, 1.16rem);
+}
+
+.diagnostics-section h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.35rem, 3vw, 1.7rem);
+}
+
+.diagnostics-section p,
+.diagnostics-section ul,
+.diagnostics-section ol {
+  max-width: 65ch;
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.diagnostics-section ul,
+.diagnostics-section ol {
+  display: grid;
+  gap: 6px;
+  padding-left: 1.4em;
+}
+
+.diagnostics-section ul { list-style: disc; }
+.diagnostics-section ol { list-style: decimal; }
+
+/* The address in a step is long and must not push a narrow page wide. */
+.diagnostics-section li { overflow-wrap: anywhere; }
+
+/* The card is a grid: a column no wider than the card keeps the report's
+   long lines scrolling inside their box. */
+.diagnostics-main .account-card { grid-template-columns: minmax(0, 1fr); }
+
+.diagnostics-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* The receipt is on the page all along (a live region) and takes room
+   only once it has a say. */
+.diagnostics-main .account-card .notice:empty { display: none; }
+
+.diagnostics-preview summary {
+  width: fit-content;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.diagnostics-preview summary:hover { color: var(--ink); }
+
+.diagnostics-preview pre {
+  max-height: 340px;
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  background: var(--page);
+  color: var(--ink-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 560px) {
+  .diagnostics-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

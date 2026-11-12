@@ -95,6 +95,7 @@ export const ResetViewIcon = ArrowCounterClockwiseIcon
 export const LocateIcon = GpsFixIcon
 export const SpinnerIcon = CircleNotchIcon
 export const SearchIcon = MagnifyingGlassIcon
+export const DownloadIcon = DownloadSimpleIcon
 
 /* ---------- Domain: the expedition ---------- */
 export const CottageIcon = HouseLineIcon
@@ -132,7 +133,6 @@ export const FacebookIcon = FacebookLogoIcon
 export const CameraIcon = PhosphorCamera
 export const OfflineIcon = WifiSlashIcon
 export const SyncIcon = CloudArrowUpIcon
-export const DownloadIcon = DownloadSimpleIcon
 export const WarningIcon = PhosphorWarning
 export const LanguageIcon = TranslateIcon
 export const ShareIcon = ShareNetworkIcon
@@ -152,11 +152,11 @@ export const WatchAdIcon = MonitorPlayIcon
    roles: a missing role is a compile error. */
 export const ICON_VOCABULARY = {
   CloseIcon, BackIcon, ForwardIcon, PreviousIcon, NextIcon, ExpandIcon, CheckIcon, PlayIcon, PauseIcon,
-  SoundOnIcon, SoundOffIcon, ZoomInIcon, ZoomOutIcon, ResetViewIcon, LocateIcon, SpinnerIcon, SearchIcon,
+  SoundOnIcon, SoundOffIcon, ZoomInIcon, ZoomOutIcon, ResetViewIcon, LocateIcon, SpinnerIcon, SearchIcon, DownloadIcon,
   CottageIcon, FoundIcon, PinIcon, NavigateIcon, BearingIcon, AtlasIcon, TrailIcon, KeyIcon, SealIcon, QrIcon, ShieldIcon,
   ChronicleIcon, RewardIcon, NotebookIcon, StoryAudioIcon, LoreIcon, CreedIcon, ElfIcon, ForestIcon,
   InstagramIcon, FacebookIcon,
-  CameraIcon, ProfileIcon, SignOutIcon, OfflineIcon, SyncIcon, DownloadIcon, WarningIcon, LanguageIcon,
+  CameraIcon, ProfileIcon, SignOutIcon, OfflineIcon, SyncIcon, WarningIcon, LanguageIcon,
   ShareIcon, TorchIcon, TorchOffIcon, InfoIcon,
   CoffeeIcon, WatchAdIcon,
 } satisfies Record<SharedIconRole | MobileIconRole, Icon>

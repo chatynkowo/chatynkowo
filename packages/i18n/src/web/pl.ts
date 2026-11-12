@@ -16,6 +16,9 @@ export const webPl = {
     deleteAccountTitle: 'Usuń konto | Chatynkowo',
     deleteAccountDescription:
       'Usuń swoje konto w Chatynkowie wraz z profilem, pseudonimem, zdjęciem i odkryciami zapisanymi w koncie. Operacja jest nieodwracalna.',
+    diagnosticsTitle: 'Zgłoś błąd | Chatynkowo',
+    diagnosticsDescription:
+      'Coś na stronie Chatynkowa nie działa? Przygotuj raport diagnostyczny w swojej przeglądarce i wyślij go nam razem z opisem kłopotu.',
   },
   common: {
     skipToContent: 'Przejdź do treści',
@@ -76,6 +79,41 @@ export const webPl = {
     deleteAppleNote: 'Konto logujesz przez Apple, więc usunięcie potwierdzisz jeszcze w Apple. Na chwilę przejdziesz na stronę Apple i wrócisz tutaj.',
     deleteAppleFailed: 'Nie udało się potwierdzić usunięcia w Apple, więc konto zostaje. Zaloguj się kontem, które chcesz usunąć, i spróbuj ponownie.',
     deleting: 'Usuwamy konto…',
+    /* The way to the diagnostics page, with or without an account. */
+    report: 'Zgłoś błąd',
+    reportLead: 'Coś nie działa tak, jak powinno? Przygotuj raport z tej przeglądarki i wyślij go nam, a sprawdzimy, co się stało.',
+  },
+  /* The diagnostics page (diagnostics.html), reached from the profile: how
+     to report a problem, the report to send along, what it holds and what
+     it leaves out. */
+  diagnosticsPage: {
+    eyebrow: 'Pomoc',
+    title: 'Zgłoś błąd',
+    lede: 'Jeśli coś na stronie nie działa tak, jak powinno, przygotuj tutaj raport diagnostyczny i wyślij go nam razem z opisem kłopotu. Dzięki niemu szybciej znajdziemy przyczynę.',
+    howTitle: 'Jak zgłosić błąd',
+    howReport: 'Pobierz raport albo skopiuj go.',
+    howWrite: 'Napisz do nas na adres {{email}} i opisz, co się stało: co chcesz zrobić i co widzisz zamiast tego.',
+    howAttach: 'Dołącz do wiadomości pobrany plik albo wklej do niej skopiowany raport.',
+    reportTitle: 'Raport diagnostyczny',
+    preparing: 'Przygotowuję raport…',
+    ready: 'Raport jest gotowy. Powstał w tej przeglądarce i nigdzie go nie wysłaliśmy: trafi do nas dopiero wtedy, gdy go prześlesz.',
+    download: 'Pobierz raport',
+    copy: 'Skopiuj raport',
+    write: 'Napisz do nas',
+    copied: 'Raport jest w schowku. Wklej go do wiadomości.',
+    copyFailed: 'Nie udało się skopiować raportu. Pobierz go jako plik.',
+    /* The message the button opens in the seeker's mail program. */
+    mailSubject: 'Zgłoszenie błędu w Chatynkowie',
+    mailBody: 'Co się stało:\n\n\n(Dołącz pobrany plik raportu albo wklej tutaj skopiowany raport.)',
+    preview: 'Zobacz, co jest w raporcie',
+    previewAria: 'Treść raportu',
+    holdsTitle: 'Co zawiera raport',
+    holdsBrowser: 'to, co strona zapisała w tej przeglądarce: odkryte Chatynki, odznaki, wybrany język i historię logowań,',
+    holdsAccount: 'po zalogowaniu także dane konta: adres e-mail, pseudonim, sposób logowania i odkrycia zapisane w koncie,',
+    holdsDevice: 'informacje o przeglądarce i urządzeniu: ich rodzaj i wersję, rozmiar ekranu, język i strefę czasową,',
+    holdsSite: 'wersję strony i wynik próby połączenia z naszym serwerem.',
+    withoutTitle: 'Czego w nim nie ma',
+    withoutBody: 'Haseł ani kluczy logowania. Usuwamy je z raportu, zanim go zobaczysz, więc nikt nie zaloguje się nim na Twoje konto.',
   },
   /* The account deletion page (delete-account.html), the address the app
      stores point to: what the account holds, what deleting it removes,

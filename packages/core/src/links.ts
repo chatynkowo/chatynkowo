@@ -1,10 +1,14 @@
 /* Where Chatynkowo lives outside the clients: the published site (the
    content origin for the app, the ranking page for shared results), the
-   social profiles the footer and the app's about screen link to, and the
-   store listings of the app itself. */
+   contact address, the social profiles the footer and the app's about
+   screen link to, and the store listings of the app itself. */
 export const SITE_ORIGIN = 'https://www.chatynkowo.pl'
 
 export const RANKING_PAGE = `${SITE_ORIGIN}/ranking.html`
+
+/* The address for every matter, the one the privacy policy names; a
+   seeker's report of a problem goes there. */
+export const CONTACT_EMAIL = 'chatynkowo@gmail.com'
 
 export const SOCIAL_LINKS = {
   instagram: 'https://www.instagram.com/chatynkowo.pl/',

@@ -245,9 +245,12 @@ back to each of them.
 ### Looking into a sign-in
 
 The site keeps a short log of the sign-ins a browser has seen, in that
-browser's `localStorage` only (`apps/web/src/lib/sign-in-log.ts`); nothing
-reads it and nothing sends it, it is there for the day a seeker reports a
-problem. In the console of the page:
+browser's `localStorage` only (`apps/web/src/lib/sign-in-log.ts`); the
+site acts on nothing in it and sends it nowhere, it is there for the day
+a seeker reports a problem. A seeker hands it over inside the diagnostics
+report they make on `/diagnostics.html` (the profile's "Zgłoś błąd"),
+together with the rest of what the browser holds; in the console of the
+page it is:
 
 ```js
 JSON.parse(localStorage.getItem('chatynkowo:sign-ins:v1'))
@@ -271,3 +274,15 @@ JSON.parse(localStorage.getItem('chatynkowo:sign-ins:v1'))
 
 The last 50 entries are kept. Deleting the account on the site clears the
 log; signing out does not.
+
+The diagnostics report (`apps/web/src/lib/diagnostics.ts`) is one JSON
+document: `site` (the build's commit, the page, the language), `browser`
+and `storage` (the user agent, the screen, the time zone, the storage
+used), `account` (whether signed in, the claims of the access token, the
+profile row), `backend` (asked as the report is made: the providers on
+offer, the number of published cottages, the finds the account holds),
+then `localStorage` and `sessionStorage` whole. The tokens are replaced
+by `[removed: N characters]`, so a report signs nobody in; a part that
+could not be gathered is `{ "failed": "<why>" }` in its place. Making a
+report changes nothing: the page runs no exchange of finds with the
+account.

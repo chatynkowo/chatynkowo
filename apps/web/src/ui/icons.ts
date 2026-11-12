@@ -23,14 +23,18 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpenText,
+  Bug,
   CaretDown,
   CaretLeft,
   CaretRight,
   Check,
   CheckCircle,
   CircleNotch,
+  Copy,
   Crown,
   DeviceMobile,
+  DownloadSimple,
+  EnvelopeSimple,
   FacebookLogo,
   Footprints,
   GooglePlayLogo,
@@ -85,6 +89,7 @@ export const ResetViewIcon = ArrowCounterClockwise
 export const LocateIcon = GpsFix
 export const SpinnerIcon = CircleNotch
 export const SearchIcon = MagnifyingGlass
+export const DownloadIcon = DownloadSimple
 
 /* ---------- Domain: the expedition ---------- */
 export const CottageIcon = HouseLine
@@ -121,14 +126,20 @@ export const AppIcon = DeviceMobile
 export const GooglePlayIcon = GooglePlayLogo
 export const AppStoreIcon = AppStoreLogo
 
+/* ---------- Site-only roles (reporting a problem) ---------- */
+export const ReportIcon = Bug
+export const CopyIcon = Copy
+export const MailIcon = EnvelopeSimple
+
 /* The vocabulary as one object, checked against the shared roles: a
    missing role is a compile error. */
 export const ICON_VOCABULARY = {
   CloseIcon, BackIcon, ForwardIcon, PreviousIcon, NextIcon, ExpandIcon, CheckIcon, PlayIcon, PauseIcon,
-  SoundOnIcon, SoundOffIcon, ZoomInIcon, ZoomOutIcon, ResetViewIcon, LocateIcon, SpinnerIcon, SearchIcon,
+  SoundOnIcon, SoundOffIcon, ZoomInIcon, ZoomOutIcon, ResetViewIcon, LocateIcon, SpinnerIcon, SearchIcon, DownloadIcon,
   CottageIcon, FoundIcon, PinIcon, NavigateIcon, AtlasIcon, TrailIcon, KeyIcon, SealIcon, QrIcon, ShieldIcon,
   ChronicleIcon, RewardIcon, NotebookIcon, StoryAudioIcon, LoreIcon, CreedIcon, ElfIcon, ForestIcon,
   ProfileIcon, SignOutIcon,
   InstagramIcon, FacebookIcon,
   AppIcon, GooglePlayIcon, AppStoreIcon,
+  ReportIcon, CopyIcon, MailIcon,
 } satisfies Record<SharedIconRole | WebIconRole, Icon>

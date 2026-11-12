@@ -1,7 +1,9 @@
 /* The account block (features/account): the card, the way in, the entry
    form and its receipts, the identity line, the way out and the deletion
    with the confirm dialog they share. Tokens from ui/ui.css; the buttons,
-   the notices and the avatar are the primitives from there. */
+   the notices and the avatar are the primitives from there. The
+   diagnostics page, reached from the profile, puts its report in the
+   same card (DiagnosticsApp). */
 
 .account-card {
   display: grid;

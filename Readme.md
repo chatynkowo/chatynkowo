@@ -68,6 +68,13 @@ Supabase project.
 - `/delete-account.html` — deleting the account: what is deleted, what
   stays, and the way to do it after signing in; the URL the stores point
   to (`src/delete-account-main.tsx`),
+- `/diagnostics.html` — reporting a problem, reached from the profile:
+  the diagnostics report a seeker downloads or copies and sends to us
+  with their own words. The report is made in the browser
+  (`src/lib/diagnostics.ts`): everything the site keeps in `localStorage`
+  and `sessionStorage`, the account as the site and the backend see it,
+  the browser and the device, with every token taken out; the site sends
+  it nowhere (`src/diagnostics-main.tsx`),
 - `/admin/` — the content and location editor (`admin/editor.ts`).
 
 Vite builds all entry points in one process. In development the plugin in

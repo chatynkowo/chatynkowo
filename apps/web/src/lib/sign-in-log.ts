@@ -1,11 +1,13 @@
 import { sessionProvider, type OAuthProvider, type Session } from '@chatynkowo/api'
+import { tokenClaims } from './token'
 
 /* The sign-ins this browser has seen, kept in localStorage for looking
    into a problem later: which provider the seeker chose and when, and
-   the account that came back. Nothing on the site reads it and it is
-   never sent anywhere; a person reads it in the console (see
-   supabase/README.md, "Looking into a sign-in"). The log is best effort:
-   it never stands in the way of signing in. */
+   the account that came back. Nothing on the site acts on it and the
+   site sends it nowhere: it leaves the browser only inside the report a
+   seeker makes and sends themselves (lib/diagnostics), or read out of
+   the console (see supabase/README.md, "Looking into a sign-in"). The
+   log is best effort: it never stands in the way of signing in. */
 
 export type SignInEvent =
   /* The seeker chose a provider and left the site for it; `at` is this
@@ -43,8 +45,7 @@ function writeLog(log: SignInEvent[]) {
    token refresh keeps (`session_id`, `amr`). The moment is this browser's
    own when the token does not say. */
 function sessionOrigin(session: Session): { sessionId: string; at: string } | null {
-  const payload = session.access_token.split('.')[1] ?? ''
-  const claims = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as { session_id?: unknown; amr?: unknown }
+  const claims = tokenClaims(session.access_token)
   if (typeof claims.session_id !== 'string') return null
   const methods: unknown[] = Array.isArray(claims.amr) ? claims.amr : []
   const times = methods.map((method) => (method as { timestamp?: unknown } | null)?.timestamp).filter((time) => typeof time === 'number')

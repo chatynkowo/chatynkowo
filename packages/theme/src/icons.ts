@@ -23,6 +23,7 @@ export const SHARED_ICON_ROLES = [
   'LocateIcon',
   'SpinnerIcon',
   'SearchIcon',
+  'DownloadIcon',
   /* The expedition */
   'CottageIcon',
   'FoundIcon',
@@ -56,7 +57,6 @@ export const MOBILE_ICON_ROLES = [
   'CameraIcon',
   'OfflineIcon',
   'SyncIcon',
-  'DownloadIcon',
   'WarningIcon',
   'LanguageIcon',
   'ShareIcon',
@@ -78,6 +78,11 @@ export const WEB_ICON_ROLES = [
   'AppIcon',
   'GooglePlayIcon',
   'AppStoreIcon',
+  /* Reporting a problem (apps/web/src/DiagnosticsApp.tsx): the way to the
+     page, and what a seeker does with the report besides downloading it. */
+  'ReportIcon',
+  'CopyIcon',
+  'MailIcon',
 ] as const
 
 export type SharedIconRole = (typeof SHARED_ICON_ROLES)[number]

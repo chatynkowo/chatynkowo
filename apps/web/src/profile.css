@@ -25,10 +25,21 @@
 }
 
 .profile-main .profile-signout,
+.profile-main .profile-report,
 .profile-main .account-delete {
   padding-top: 24px;
   border-top: 1px solid var(--line);
 }
+
+/* The way to the diagnostics page: a line of what it is for, then the
+   button, laid out as the way out and the deletion are. */
+.profile-report {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+}
+
+.profile-report .account-lead { max-width: 60ch; }
 
 /* The card with the receipt of a deletion under it: the receipt is on the
    page all along (a live region) and takes room only once it has a say. */

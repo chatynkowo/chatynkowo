@@ -75,6 +75,7 @@ export default defineConfig({
         ranking: resolve(import.meta.dirname, 'ranking.html'),
         profile: resolve(import.meta.dirname, 'profile.html'),
         deleteAccount: resolve(import.meta.dirname, 'delete-account.html'),
+        diagnostics: resolve(import.meta.dirname, 'diagnostics.html'),
         admin: resolve(import.meta.dirname, 'admin/index.html'),
       },
     },
