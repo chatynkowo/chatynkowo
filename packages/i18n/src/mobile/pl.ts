@@ -133,8 +133,8 @@ export const mobilePl = {
     row: 'Zgłoś błąd',
     rowHint: 'Otwiera ekran z raportem do wysłania',
     title: 'Zgłoś błąd',
-    /* The screen says little on purpose: one line, one button. */
-    lead: 'Wyślij nam raport i dopisz, co się stało.',
+    /* A sentence or two per part: what happens and why, and no more. */
+    lead: 'Przycisk otworzy wiadomość do nas z gotowym raportem w załączniku. Dopisz w niej, co się stało, i wyślij.',
     preparing: 'Przygotowuję raport…',
     send: 'Wyślij raport',
     /* The message the composer opens with. */
@@ -146,11 +146,13 @@ export const mobilePl = {
     /* The site's own report: an app cannot read a browser's storage, so
        the seeker is sent to the site's page, at both of its addresses. */
     siteTitle: 'Korzystasz też ze strony?',
-    siteRow: 'Raport ze strony ({{scheme}})',
+    siteLead: 'Aplikacja nie widzi danych strony, więc wyślij raport także z niej. Strona ma dwa adresy i każdy pamięta co innego: otwórz oba w przeglądarce, z której korzystasz.',
+    siteRow: 'Zgłoś błąd na stronie ({{scheme}})',
     siteFailed: 'Nie udało się otworzyć przeglądarki. Wpisz w niej adres {{address}}.',
+    holdsTitle: 'Co jest w raporcie',
+    holds: 'Wersja aplikacji, model telefonu, stan konta i zapisane odkrycia. Bez haseł i bez Twojego położenia.',
     show: 'Zobacz raport',
     hide: 'Ukryj raport',
-    without: 'Bez haseł i bez Twojego położenia.',
   },
   /* The preferences screen (src/features/preferences): the consent to
      ads, read from Google's consent SDK, and the row that opens the form

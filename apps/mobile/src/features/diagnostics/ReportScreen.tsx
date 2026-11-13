@@ -6,9 +6,14 @@ import { collectDiagnostics, mailReport, shareReport, type AppDiagnosticsReport 
 import { useContent, useSession, useToast } from '../../providers'
 import { Button, MailIcon, Screen, SettingsRow, SettingsSection, Text, colors, iconSize, radius, space, useTabBarClearance } from '../../ui'
 
-/* Reporting a problem (the route /profile/report, from the Profile list),
-   in as few words as it takes, because nobody reads a screen of
-   explanations: one line, one button, and the rest for whoever looks.
+/* Reporting a problem (the route /profile/report, from the Profile list).
+   How much the screen says was settled in three tries: paragraphs and a
+   list were noise nobody would read, a bare button and two unexplained
+   rows told nothing. So each of its three parts gets a sentence or two
+   that says what happens and why, and no more: the button (it opens a
+   message with the report attached), the site's rows (why the site's
+   report is wanted too, and why at two addresses), the report (what is
+   in it and what is not).
 
    The app makes the diagnostics report by itself when the screen opens
    (lib/diagnostics) and the button hands it over: a message to us with
@@ -100,18 +105,25 @@ export function ReportScreen() {
           {report ? t('mobile:report.send') : t('mobile:report.preparing')}
         </Button>
       </View>
-      <SettingsSection title={t('mobile:report.siteTitle')}>
-        {(['https', 'http'] as const).map((scheme) => (
-          <SettingsRow
-            key={scheme}
-            label={t('mobile:report.siteRow', { scheme })}
-            trailing="external"
-            accessibilityHint={t('mobile:profile.openExternal')}
-            onPress={() => void openSite(SITE_DIAGNOSTICS_PAGES[scheme])}
-          />
-        ))}
-      </SettingsSection>
-      <SettingsSection footer={t('mobile:report.without')}>
+      <View style={styles.site}>
+        {/* The section's title, with its words between it and the rows. */}
+        <Text variant="eyebrow" style={styles.siteTitle}>
+          {t('mobile:report.siteTitle')}
+        </Text>
+        <Text tone="soft">{t('mobile:report.siteLead')}</Text>
+        <SettingsSection>
+          {(['https', 'http'] as const).map((scheme) => (
+            <SettingsRow
+              key={scheme}
+              label={t('mobile:report.siteRow', { scheme })}
+              trailing="external"
+              accessibilityHint={t('mobile:profile.openExternal')}
+              onPress={() => void openSite(SITE_DIAGNOSTICS_PAGES[scheme])}
+            />
+          ))}
+        </SettingsSection>
+      </View>
+      <SettingsSection title={t('mobile:report.holdsTitle')} footer={t('mobile:report.holds')}>
         <SettingsRow label={shown ? t('mobile:report.hide') : t('mobile:report.show')} disabled={!report} onPress={() => setShown((open) => !open)} />
       </SettingsSection>
       {shown && report ? (
@@ -128,6 +140,12 @@ export function ReportScreen() {
 const styles = StyleSheet.create({
   send: {
     gap: space.md,
+  },
+  site: {
+    gap: space.sm,
+  },
+  siteTitle: {
+    paddingHorizontal: space.xs,
   },
   report: {
     padding: space.md,

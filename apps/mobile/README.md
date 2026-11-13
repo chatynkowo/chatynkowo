@@ -325,10 +325,11 @@ through `src/lib/haptics.ts`.
   our address, a subject and the report attached, so the seeker writes
   what happened and sends. A phone with no mail set up gets the share
   sheet instead (the file on iOS, the text on Android) with a toast naming
-  our address. The screen says as little as it can, on the owner's word
-  that nobody reads explanations there: one line, the button, two rows to
-  the site's report and a row that shows the report. The report is the
-  app's twin of the site's
+  our address. How much the screen says took three tries with the owner
+  (paragraphs and a list: noise nobody reads; a bare button and rows:
+  nothing is clear): each of its three parts, the button, the rows to the
+  site's report and the row that shows the report, has a sentence or two
+  saying what happens and why. The report is the app's twin of the site's
   (`apps/web/src/lib/diagnostics.ts`, the shared rules in core's
   `diagnostics.ts`): `app` (version, build number, commit, language),
   `device` (brand, model, system and its version, locales, time zone,
