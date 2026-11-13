@@ -42,8 +42,10 @@ export function AccountCard({ exchange }: { exchange: AccountExchange }) {
     return () => window.clearTimeout(timer)
   }, [receipt])
 
-  /* The finds this browser holds, complete once the exchange settled. */
-  const finds = useMemo(() => Object.keys(localFinds()).length, [exchange.settled])
+  /* The finds this browser holds, complete once the exchange settled; the
+     ones still waiting in the queue are not the account's yet. */
+  const finds = useMemo(() => Object.keys(localFinds()).length, [exchange.settled, exchange.synced, exchange.pending])
+  const saved = Math.max(0, finds - exchange.pending)
 
   const avatarUrl = session ? providerAvatarUrl(session) : null
   /* What a save would send; null when nothing changed (the rule is in core,
@@ -129,7 +131,8 @@ export function AccountCard({ exchange }: { exchange: AccountExchange }) {
         </div>
       </form>
       <p className="account-card__footer" role="status" aria-live="polite">
-        {t('profile.finds', { count: finds })}
+        {t('profile.finds', { count: saved })}
+        {exchange.pending > 0 && <span>{t('profile.pendingSync', { count: exchange.pending })}</span>}
         {exchange.exchanging && (
           <span className="account-status">
             <SpinnerIcon size={iconSize.sm} aria-hidden /> {t('profile.exchanging')}

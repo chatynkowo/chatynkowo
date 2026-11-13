@@ -137,10 +137,23 @@ export type MergeRemoteFinds = (remote: Record<string, StoredFind>) => StoredSta
 /* The exchange with the account: its finds come down and are merged into
    the browser, then everything the browser knows goes up, so a seeker who
    signs in on a new device gets their Kronika back and the account sees
-   every find. */
+   every find. Throws when the backend refused or is unreachable; the
+   caller keeps trying (useAccountExchange). */
 export async function syncAccount(session: Session, merge: MergeRemoteFinds = mergeAccountFinds): Promise<void> {
   if (!supabase) return
   merge(await api.fetchFinds(supabase, session))
+  await pushFinds(session)
+}
+
+/* Everything the browser found goes up to the account: an idempotent
+   upsert in which existing rows keep their date, so sending the whole
+   Kronika for one new find is safe, lets the backend see the real count
+   and mark the collection complete, and is what the app sends too. The
+   browser's Kronika is the source of truth either way. Throws when the
+   backend refused or is unreachable, so the caller keeps the finds
+   queued. */
+export async function pushFinds(session: Session): Promise<void> {
+  if (!supabase) return
   await api.syncFinds(supabase, session, localFinds(), await totalCottages())
 }
 
@@ -150,16 +163,6 @@ export async function syncAccount(session: Session, merge: MergeRemoteFinds = me
 export async function fetchAccountFinds(session: Session): Promise<Record<string, StoredFind>> {
   if (!supabase) throw new Error('The backend is not configured.')
   return api.fetchFinds(supabase, session)
-}
-
-/* A fresh discovery goes to the account when someone is signed in; the
-   browser's Kronika is the source of truth either way, and a find the
-   backend did not take now goes up with the next exchange. */
-export async function syncNewFind(slug: string, foundAt: string, foundCount: number) {
-  const session = await getSession()
-  if (!supabase || !session) return
-  await ensureProfile(session)
-  await api.recordFind(supabase, session, slug, foundAt, foundCount, await totalCottages())
 }
 
 export async function updateProfile(session: Session, patch: Pick<api.Profile, 'display_name' | 'avatar_url'>) {

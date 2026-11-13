@@ -9,7 +9,9 @@ import './Ranking.css'
 /* The account line at the top of the leaderboard, the twin of the app's
    AccountRow: signed out, the way to the profile page, where signing in
    lives; signed in, who the seeker is, their place, a share of it and the
-   way to edit the entry. The ranking itself never signs anyone in. */
+   way to edit the entry, and a line when finds still wait for the
+   account, since the place on the board does not count them yet. The
+   ranking itself never signs anyone in. */
 
 const COPIED_MS = 2500
 
@@ -17,9 +19,11 @@ type AccountRowProps = {
   /* The seeker's 1-based place on the board, null when not listed,
      undefined while the board has not arrived. */
   place: number | null | undefined
+  /* Finds the account has not taken yet (useAccountExchange). */
+  pending: number
 }
 
-export function AccountRow({ place }: AccountRowProps) {
+export function AccountRow({ place, pending }: AccountRowProps) {
   const { t } = useTranslation()
   const account = useAccount()
   const [copied, setCopied] = useState(false)
@@ -76,6 +80,7 @@ export function AccountRow({ place }: AccountRowProps) {
         )}
         <LinkButton href={pageHref('profile')}>{t('ranking.edit')}</LinkButton>
       </span>
+      {pending > 0 && <Notice tone="note">{t('profile.pendingSync', { count: pending })}</Notice>}
       <Notice live tone={copied ? 'success' : undefined}>
         {copied && t('ranking.copied')}
       </Notice>

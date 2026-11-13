@@ -1,5 +1,5 @@
 import type { OAuthProvider, Profile, Session } from '@chatynkowo/api'
-import type { StoredFind } from '@chatynkowo/core'
+import { withTimeout, type StoredFind } from '@chatynkowo/core'
 import { SUPABASE_URL } from '../config'
 import { content } from './content'
 import { configured, enabledProviders, fetchAccountFinds } from './sync'
@@ -100,18 +100,10 @@ function reasonOf(reason: unknown): string {
 }
 
 async function gather<T>(read: () => T | Promise<T>): Promise<Gathered<T>> {
-  let timer: number | undefined
   try {
-    return await Promise.race([
-      Promise.resolve().then(read),
-      new Promise<never>((_resolve, reject) => {
-        timer = window.setTimeout(() => reject(new Error(`No answer in ${ANSWER_MS / 1000} s.`)), ANSWER_MS)
-      }),
-    ])
+    return await withTimeout(Promise.resolve().then(read), ANSWER_MS)
   } catch (reason) {
     return { failed: reasonOf(reason) }
-  } finally {
-    window.clearTimeout(timer)
   }
 }
 

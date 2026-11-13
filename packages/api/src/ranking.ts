@@ -190,21 +190,6 @@ export async function syncFinds(client: ChatynkowoClient, session: Session, foun
   await markCompleted(client, session, rows.length, total)
 }
 
-export async function recordFind(
-  client: ChatynkowoClient,
-  session: Session,
-  slug: string,
-  foundAt: string,
-  foundCount: number,
-  total: number,
-) {
-  const { error } = await client
-    .from('finds')
-    .upsert({ user_id: session.user.id, slug, found_at: foundAt }, { onConflict: 'user_id,slug', ignoreDuplicates: true })
-  if (error) throw error
-  await markCompleted(client, session, foundCount, total)
-}
-
 /* The account's finds as the shared progress shape, for merging into a
    device's local state. */
 export async function fetchFinds(client: ChatynkowoClient, session: Session): Promise<Record<string, StoredFind>> {

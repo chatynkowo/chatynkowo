@@ -22,7 +22,9 @@ export function RankingApp() {
   const sharedId = new URLSearchParams(location.search).get('me')
 
   /* The board loads once the exchange with the account settled, so it
-     reflects this browser's finds; a failed load is said on the page. */
+     reflects this browser's finds, and again each time finds reach the
+     account later (a failed exchange that got through, a find that
+     waited for a connection); a failed load is said on the page. */
   useEffect(() => {
     if (!exchange.settled) return
     let current = true
@@ -31,6 +33,7 @@ export function RankingApp() {
         if (!current) return
         setTotal(count)
         setRows(list)
+        setLoadFailed(false)
       })
       .catch((reason: unknown) => {
         console.error(reason)
@@ -42,7 +45,7 @@ export function RankingApp() {
     return () => {
       current = false
     }
-  }, [exchange.settled])
+  }, [exchange.settled, exchange.synced])
 
   const mine = (row: LeaderboardRow) => row.public_id === (account.profile?.public_id || sharedId)
   /* Unknown until the board is here; null when the seeker is not on it. */
@@ -54,7 +57,7 @@ export function RankingApp() {
     <SitePage page="ranking" mainClassName="rank-main">
       <section className="rank-intro" aria-labelledby="ranking-title">
         <div className="rank-intro__copy"><p className="eyebrow">{t('ranking.eyebrow')}</p><h1 id="ranking-title">{t('ranking.title')}</h1><p className="rank-intro__lede">{t('ranking.lede')}</p>
-          <AccountRow place={place} />
+          <AccountRow place={place} pending={exchange.pending} />
         </div>
         <aside className="rank-method" aria-label={t('ranking.rulesAria')}><p className="rank-method__title">{t('ranking.rulesTitle')}</p><div><span className="rank-method__index">01</span><p><strong>{t('ranking.rule1Title')}</strong>{t('ranking.rule1Body')}</p></div><div><span className="rank-method__index">02</span><p><strong>{t('ranking.rule2Title')}</strong>{t('ranking.rule2Body')}</p></div></aside>
       </section>

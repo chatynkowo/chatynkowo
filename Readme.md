@@ -93,6 +93,21 @@ code in `packages/api`, the description and procedures in
 only; content is published statically and read through the content client
 in `@chatynkowo/core`.
 
+Both clients treat the backend as something that may be away. The Kronika
+on the device is the source of truth; a find is saved there first and
+lands in a queue of finds waiting for the account (`SyncQueue` in core's
+`offline.ts`; `localStorage` on the site, AsyncStorage in the app, under
+the same key). What waits is sent as the whole Kronika, an idempotent
+upsert, and what the backend did not take is tried again: when the
+connection returns, when the seeker comes back to the page or the app,
+and after a growing pause while it stays open (`retryDelay`, with
+`ATTEMPT_TIMEOUT_MS` for a try that never answers). On the site this is
+`lib/retry.ts` under `useAccountExchange` and the profile read in
+`AccountProvider`; the page also keeps the plaque-code lookup it last read
+(`lib/content.ts`), so a code checks on a page that is open with the
+signal gone. In the app it is `ProgressProvider` with the reconnect and
+foreground hooks. Both say how many finds wait (`profile.pendingSync`).
+
 ## Content layout (`packages/content`)
 
 Paths below are the published ones; in the repository they sit under
@@ -191,7 +206,8 @@ column (`--page-column` in `ui/base.css`); the profile keeps a narrower
 reading column inside the same gutters (`--page-gutter`). The account comes from `providers/AccountProvider`
 (`useAccount`, `useAccountExchange`), mounted by each entry and mirroring
 the app's `SessionProvider`: the session, the profile row read once per
-seeker, the way in and out, and the exchange of finds with the account.
+seeker, the way in and out, and the exchange of finds with the account,
+which goes on for as long as the page is open (see Backend).
 Feature components live in `src/features/<feature>/` with their own
 stylesheet (`account`, `ranking`), as in `apps/mobile/src/features`. Copy
 that both clients render goes to the shared dictionaries (the account

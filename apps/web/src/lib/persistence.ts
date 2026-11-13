@@ -2,18 +2,26 @@ import {
   backfillBadges as applyBackfill,
   discoverCottage as applyDiscovery,
   emptyProgress,
+  emptyQueue,
+  enqueueFind,
   mergeFinds,
   normalizeProgress,
+  normalizeQueue,
+  settleFinds,
   type RewardLevel,
   type StoredFind,
   type StoredState,
+  type SyncQueue,
 } from '@chatynkowo/core'
 
-/* Browser storage for the seeker's progress. The rules live in
-   @chatynkowo/core (progress.ts); this module only reads and writes
-   localStorage around them. */
+/* Browser storage for the seeker's progress and for the finds waiting to
+   reach the account. The rules live in @chatynkowo/core (progress.ts,
+   offline.ts); this module only reads and writes localStorage around
+   them, as the app's progress-store does with AsyncStorage. */
 
 const STORAGE_KEY = 'chatynkowo:state:v1'
+/* The app keeps its queue under the same name. */
+const QUEUE_KEY = 'chatynkowo:sync-queue:v1'
 
 export function loadStoredState(): StoredState {
   try {
@@ -66,4 +74,63 @@ export function mergeAccountFinds(remote: Record<string, StoredFind>, current: S
   if (!changed) return null
   saveState(merged)
   return merged
+}
+
+/* ---------- Finds waiting for the account ---------- */
+
+/* Every new find lands in the queue, signed in or not. The exchange with
+   the account (useAccountExchange) sends what waits and settles it, and
+   keeps trying while the backend does not take it; signing out ends the
+   queue, as in the app, because the next sign-in sends the whole Kronika
+   anyway. */
+
+const queueListeners = new Set<() => void>()
+
+export function loadQueue(): SyncQueue {
+  try {
+    return normalizeQueue(JSON.parse(localStorage.getItem(QUEUE_KEY) || 'null'))
+  } catch {
+    return emptyQueue()
+  }
+}
+
+function saveQueue(queue: SyncQueue) {
+  try {
+    if (queue.pending.length) localStorage.setItem(QUEUE_KEY, JSON.stringify(queue))
+    else localStorage.removeItem(QUEUE_KEY)
+  } catch {
+    // Without storage there is no Kronika to send either.
+  }
+  queueListeners.forEach((listener) => listener())
+}
+
+export function queueFind(slug: string, foundAt: string) {
+  saveQueue(enqueueFind(loadQueue(), slug, foundAt))
+}
+
+/* Drops the finds that reached the account. */
+export function settleQueue(slugs: string[]) {
+  if (slugs.length) saveQueue(settleFinds(loadQueue(), slugs))
+}
+
+export function clearQueue() {
+  saveQueue(emptyQueue())
+}
+
+/* How many finds wait, for a page to say so. */
+export function pendingFinds(): number {
+  return loadQueue().pending.length
+}
+
+/* Every change of the queue, made here or in another tab of the site. */
+export function subscribeQueue(listener: () => void): () => void {
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === QUEUE_KEY || event.key === null) listener()
+  }
+  queueListeners.add(listener)
+  window.addEventListener('storage', onStorage)
+  return () => {
+    queueListeners.delete(listener)
+    window.removeEventListener('storage', onStorage)
+  }
 }

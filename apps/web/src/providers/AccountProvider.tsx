@@ -1,8 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import type { OAuthProvider, Profile, Session } from '@chatynkowo/api'
-import { mergeAccountFinds } from '../lib/persistence'
+import { clearQueue, loadQueue, mergeAccountFinds, pendingFinds, settleQueue, subscribeQueue } from '../lib/persistence'
+import { offline, persist } from '../lib/retry'
 import { forgetSignIns, noteSignedIn } from '../lib/sign-in-log'
-import { configured, deleteAccount as removeAccount, ensureProfile, getSession, onSessionChange, signInWith, signOut as endSession, syncAccount, updateProfile, type MergeRemoteFinds } from '../lib/sync'
+import { configured, deleteAccount as removeAccount, ensureProfile, getSession, onSessionChange, pushFinds, signInWith, signOut as endSession, syncAccount, updateProfile, type MergeRemoteFinds } from '../lib/sync'
 
 /* The account on the site: the Supabase session, the profile row, the way
    in and out and the way to delete it, mirroring the app's SessionProvider.
@@ -24,7 +25,8 @@ export type AccountValue = {
      while it is being read, or when it could not be. */
   profile: Profile | null
   /* The session is restored and, when signed in, the row was read or its
-     read failed: what the screen shows is the truth, not a blank. */
+     first read failed: what the screen shows is the truth, not a blank.
+     A read that failed is kept at, so the row may still arrive. */
   ready: boolean
   /* A save, a sign-out or a deletion in flight. */
   busy: boolean
@@ -33,10 +35,10 @@ export type AccountValue = {
   signIn: (provider: OAuthProvider) => void
   signOut: () => Promise<AccountOutcome>
   /* Deletes the account with its profile and finds for good and forgets
-     the session and the browser's sign-in log; the finds kept in this
-     browser stay. An Apple account confirms with Apple first (see
-     deleteAccount in lib/sync); `resume` finishes a deletion that came
-     back from Apple. */
+     the session, the browser's sign-in log and the queue of finds that
+     waited for the account; the finds kept in this browser stay. An Apple
+     account confirms with Apple first (see deleteAccount in lib/sync);
+     `resume` finishes a deletion that came back from Apple. */
   deleteAccount: (resume?: boolean) => Promise<DeletionOutcome>
   /* Throws when the backend refused or is unreachable. */
   saveProfile: (patch: Pick<Profile, 'display_name' | 'avatar_url'>) => Promise<Profile>
@@ -75,7 +77,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   }, [session])
 
   /* The row follows the account: read, or created on first contact, once
-     per seeker rather than on every token refresh; dropped on sign-out. */
+     per seeker rather than on every token refresh; dropped on sign-out.
+     A read the backend did not answer is kept at (lib/retry) until the
+     row is here, so a page opened without a connection gets its account
+     when the connection returns; the account counts as ready after the
+     first try either way. */
   const userId = session?.user.id ?? null
   useEffect(() => {
     if (!session || !userId) {
@@ -86,16 +92,27 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     let current = true
     setProfile(null)
     setSettledFor(null)
-    ensureProfile(session)
-      .then((row) => {
+    /* Read once: a later return to the page finds nothing left to do. */
+    let read = false
+    const reading = persist(async () => {
+      if (read) return true
+      try {
+        if (offline()) return false
+        const row = await ensureProfile(session)
+        read = true
         if (current) setProfile(row)
-      })
-      .catch((reason: unknown) => console.error('[account] profile', reason))
-      .finally(() => {
+        return true
+      } catch (reason) {
+        console.error('[account] profile', reason)
+        return false
+      } finally {
         if (current) setSettledFor(userId)
-      })
+      }
+    })
+    reading.kick()
     return () => {
       current = false
+      reading.stop()
     }
     // The session object changes on every refresh; the seeker is what matters.
   }, [userId])
@@ -108,6 +125,9 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     setBusy(true)
     try {
       await endSession()
+      /* The queue of finds was waiting for this account; the next sign-in
+         sends the whole Kronika anyway. */
+      clearQueue()
       setSession(null)
       return 'ok'
     } catch (reason) {
@@ -127,6 +147,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         if (result === 'confirming') return 'confirming'
         if (result === 'unconfirmed') return 'unconfirmed'
         forgetSignIns()
+        clearQueue()
         setSession(null)
         return 'ok'
       } catch (reason) {
@@ -173,19 +194,34 @@ export function useAccount(): AccountValue {
 export type AccountExchange = {
   /* The finds are travelling between the browser and the account. */
   exchanging: boolean
-  /* The exchange ran, or there was no account to exchange with: what the
-     browser holds is complete for this visit. */
+  /* The first try of the exchange is over, or there was no account to
+     exchange with: the page shows what the browser holds. */
   settled: boolean
+  /* Finds this browser holds that the account has not taken yet. */
+  pending: number
+  /* How many times the account and the browser got in step on this visit
+     (the exchange, then each later push of new finds): what shows the
+     account's side of things loads again when it grows. */
+  synced: number
 }
 
-/* The exchange with the account, once per page: the account's finds come
-   down and are merged into the browser (through `merge`, so a page that
-   holds the progress in memory merges into its latest state), then
-   everything the browser knows goes up. Runs when the account is ready
-   with its row; a failed exchange is logged and waits for the next visit. */
+/* Keeps the account and the browser in step for as long as the page is
+   open. First the exchange: the account's finds come down and are merged
+   into the browser (through `merge`, so a page that holds the progress in
+   memory merges into its latest state), then everything the browser knows
+   goes up. After it, every find that lands in the queue (lib/persistence),
+   on this page or in another tab, goes up the same way. Runs when the
+   account is ready with its row.
+
+   What the backend did not take is kept at (lib/retry): tried again after
+   a pause, when the browser is back online and when the page is back in
+   front. A seeker who finds a cottage with the page open and no
+   connection sees the find go to the account when the connection
+   returns, without opening the site again. */
 export function useAccountExchange(merge?: MergeRemoteFinds): AccountExchange {
   const account = useAccount()
-  const [exchange, setExchange] = useState<AccountExchange>({ exchanging: false, settled: false })
+  const [exchange, setExchange] = useState({ exchanging: false, settled: false, synced: 0 })
+  const pending = useSyncExternalStore(subscribeQueue, pendingFinds)
   const mergeRef = useRef(merge)
   const sessionRef = useRef(account.session)
   useEffect(() => {
@@ -196,22 +232,47 @@ export function useAccountExchange(merge?: MergeRemoteFinds): AccountExchange {
   const accountId = account.ready && account.session && account.profile ? account.profile.id : null
   useEffect(() => {
     if (!account.ready) return
-    const session = sessionRef.current
-    if (!accountId || !session) {
-      setExchange({ exchanging: false, settled: true })
+    if (!accountId) {
+      setExchange((state) => ({ ...state, exchanging: false, settled: true }))
       return
     }
     let current = true
-    setExchange({ exchanging: true, settled: false })
-    syncAccount(session, (remote) => (current ? (mergeRef.current ?? mergeAccountFinds)(remote) : null))
-      .catch((reason: unknown) => console.error('[account] exchange', reason))
-      .finally(() => {
-        if (current) setExchange({ exchanging: false, settled: true })
-      })
+    /* The account's finds came down on this visit; from then on only what
+       the browser finds goes up. */
+    let exchanged = false
+    const keeping = persist(async () => {
+      const session = sessionRef.current
+      if (!current || !session) return true
+      /* The finds waiting now are the ones this try settles; one made
+         while it is in flight waits for the next. */
+      const waiting = loadQueue().pending.map((find) => find.slug)
+      if (exchanged && !waiting.length) return true
+      if (offline()) {
+        setExchange((state) => ({ ...state, settled: true }))
+        return false
+      }
+      if (!exchanged) setExchange((state) => ({ ...state, exchanging: true }))
+      try {
+        if (exchanged) await pushFinds(session)
+        else await syncAccount(session, (remote) => (current ? (mergeRef.current ?? mergeAccountFinds)(remote) : null))
+        exchanged = true
+        settleQueue(waiting)
+        if (current) setExchange((state) => ({ exchanging: false, settled: true, synced: state.synced + 1 }))
+        return true
+      } catch (reason) {
+        console.error('[account] exchange', reason)
+        if (current) setExchange((state) => ({ ...state, exchanging: false, settled: true }))
+        return false
+      }
+    })
+    keeping.kick()
+    const unsubscribe = subscribeQueue(keeping.kick)
     return () => {
       current = false
+      unsubscribe()
+      keeping.stop()
     }
   }, [account.ready, accountId])
 
-  return exchange
+  return useMemo(() => ({ ...exchange, pending }), [exchange, pending])
 }

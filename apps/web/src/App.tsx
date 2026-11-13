@@ -3,11 +3,10 @@ import { AppIcon, AtlasIcon, Button, ChronicleIcon, CottageIcon, CreedIcon, ElfI
 import { marked } from './lib/markdown'
 import { useTranslation } from 'react-i18next'
 import { toLanguage } from './i18n'
-import { content, loadCottages, loadRewards, resolveCode, storyAudio } from './lib/content'
-import { backfillBadges, discoverCottage, loadStoredState, mergeAccountFinds } from './lib/persistence'
+import { content, loadCottages, loadRewards, resolveCode, storyAudio, warmCodeLookup } from './lib/content'
+import { backfillBadges, discoverCottage, loadStoredState, mergeAccountFinds, queueFind } from './lib/persistence'
 import { fallbackRewards, finalLevelId, requiredFinds } from '@chatynkowo/core'
 import { initializeAnalytics, track } from './lib/analytics'
-import { syncNewFind } from './lib/sync'
 import type { Cottage, RewardLevel, RewardsConfig, StoredState } from '@chatynkowo/core'
 import { SitePage, type SectionId } from './components/SitePage'
 import { useAccountExchange } from './providers/AccountProvider'
@@ -120,9 +119,14 @@ function App() {
 
   useEffect(() => initializeAnalytics(), [])
 
+  /* The plaque codes are read while there is a connection, so a code
+     still checks when the page is open and the signal is gone. */
+  useEffect(() => warmCodeLookup(), [])
+
   /* A signed-in seeker gets the account's finds into this browser (and the
      browser's into the account) on every visit, merged into the progress
-     as it stands when the answer arrives. */
+     as it stands when the answer arrives; after that each new find goes
+     up from the queue, and what did not get through is tried again. */
   const storedRef = useRef(stored)
   useEffect(() => {
     storedRef.current = stored
@@ -281,8 +285,9 @@ function App() {
         // aggregate into a single set of events.
         track(`found-${cottage.slug}`, `Odkryto: ${cottage.title}`)
         track(`progress-${count}`, `Postęp: ${count}`)
-        const foundAt = result.next.found[cottage.slug].foundAt
-        syncNewFind(cottage.slug, foundAt, count).catch((reason: unknown) => console.error(reason))
+        /* The find waits in the queue until the account has it: sent at
+           once with a connection, and as soon as one returns without. */
+        queueFind(cottage.slug, result.next.found[cottage.slug].foundAt)
       }
       if (result.newlyEarned.length) {
         const latest = rewards.levels.find((level) => level.id === result.newlyEarned.at(-1))
