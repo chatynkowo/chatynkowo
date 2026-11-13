@@ -2,7 +2,7 @@ import { AppState, Platform } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as api from '@chatynkowo/api'
 import type { OAuthProvider, Session } from '@chatynkowo/api'
-import type { StoredFind } from '@chatynkowo/core'
+import { ATTEMPT_TIMEOUT_MS, withTimeout, type StoredFind } from '@chatynkowo/core'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import * as AppleAuthentication from 'expo-apple-authentication'
 import * as Crypto from 'expo-crypto'
@@ -219,13 +219,14 @@ export async function deleteAccount(session: Session): Promise<DeleteAccountResu
   return 'deleted'
 }
 
-/* Push finds to the account. Resolves to false when the backend refused
-   or is unreachable, so the caller keeps them queued; the reason goes to
-   the console. */
+/* Push finds to the account. Resolves to false when the backend refused,
+   is unreachable or did not answer in time (a request can hang on a dying
+   signal, and a hung push would hold every later one back), so the caller
+   keeps them queued; the reason goes to the console. */
 export async function pushFinds(session: Session, found: Record<string, StoredFind>, total: number): Promise<boolean> {
   if (previewEnabled || !supabase || !Object.keys(found).length) return true
   try {
-    await api.syncFinds(supabase, session, found, total)
+    await withTimeout(api.syncFinds(supabase, session, found, total), ATTEMPT_TIMEOUT_MS)
     return true
   } catch (error) {
     console.error('[sync] push', error)
@@ -234,11 +235,11 @@ export async function pushFinds(session: Session, found: Record<string, StoredFi
 }
 
 /* The account's finds, for merging into the local Kronika. Throws when
-   the backend cannot be read, so the caller retries instead of taking an
-   empty answer for an empty account. */
+   the backend cannot be read or does not answer in time, so the caller
+   retries instead of taking an empty answer for an empty account. */
 export async function fetchFinds(session: Session): Promise<Record<string, StoredFind>> {
   if (previewEnabled) return {}
-  return supabase ? api.fetchFinds(supabase, session) : {}
+  return supabase ? withTimeout(api.fetchFinds(supabase, session), ATTEMPT_TIMEOUT_MS) : {}
 }
 
 export async function fetchLeaderboard(total: number) {

@@ -8,6 +8,7 @@ import {
   mergeFinds,
   mergeProgress,
   queuedFinds,
+  retryDelay,
   settleFinds,
   type DiscoveryResult,
   type StoredState,
@@ -26,7 +27,9 @@ import { useSession } from './SessionProvider'
    the device) and the queue of finds waiting for the account. Discoveries
    are applied with the core rules, saved, queued, and pushed whenever the
    device is online and someone is signed in; on sign-in the account's finds
-   are merged back into the device. Two kinds of "new reward" leave here:
+   are merged back into the device. What the backend did not take stays
+   queued and is tried again: on a reconnect, on a return to the
+   foreground, and after a pause while the app stays open. Two kinds of "new reward" leave here:
    the in-memory celebration queue (levels earned by a live discovery, shown
    by the Atlas after the story closes) and the persisted unseen list (the
    Kronika tab badge, which also covers levels back-filled by a content
@@ -160,6 +163,29 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
     }
   }, [commitState, commitQueue])
 
+  /* A push or an exchange the backend did not take although the device
+     looked connected (a refused request, a signal too weak to carry it) is
+     tried again after a growing pause (core's retryDelay), for as long as
+     the app stays open. A reconnect or a return to the foreground tries at
+     once and starts the pauses over. */
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const failures = useRef(0)
+  const retry = useRef(() => {})
+  const tryAgainLater = useCallback(() => {
+    if (!mounted.current || retryTimer.current) return
+    failures.current += 1
+    retryTimer.current = setTimeout(() => {
+      retryTimer.current = null
+      retry.current()
+    }, retryDelay(failures.current))
+  }, [])
+  useEffect(
+    () => () => {
+      if (retryTimer.current) clearTimeout(retryTimer.current)
+    },
+    [],
+  )
+
   /* Push to the account while something is queued. The whole Kronika goes
      up (an idempotent upsert; existing rows keep their date), so the backend
      sees the seeker's real count and marks the collection complete when the
@@ -173,25 +199,33 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
     try {
       const found = { ...stateRef.current.found, ...queuedFinds(pending) }
       if (await pushFinds(current, found, totalRef.current)) {
+        failures.current = 0
         commitQueue(settleFinds(queueRef.current, pending.pending.map((find) => find.slug)))
+      } else {
+        tryAgainLater()
       }
     } finally {
       syncing.current = false
     }
-  }, [commitQueue])
+  }, [commitQueue, tryAgainLater])
 
   /* Whenever something new is waiting and someone is signed in; retried on
-     every reconnect and every return to the foreground. */
+     every reconnect, every return to the foreground and, after a failure,
+     when its pause is over. */
+  const wake = useCallback(() => {
+    failures.current = 0
+    void flush()
+  }, [flush])
   useEffect(() => {
     void flush()
   }, [flush, queue, session])
-  useReconnect(() => void flush())
-  useForeground(() => void flush())
+  useReconnect(wake)
+  useForeground(wake)
 
   /* On sign-in, the account and the device exchange finds: everything local
      goes up, everything remote comes down, the earliest date wins. Once per
-     account; a failure (logged) forgets the attempt so a reconnect or the
-     next return to the foreground retries it. */
+     account; a failure (logged) forgets the attempt so a reconnect, the
+     next return to the foreground or the end of the pause retries it. */
   const exchangedFor = useRef<string | null>(null)
   const exchangeAttempt = useRef(0)
   const exchange = useCallback(async () => {
@@ -208,14 +242,20 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
       const remote = await fetchFinds(current)
       if (cancelled()) return
       if (Object.keys(remote).length) await commitState(mergeFinds(stateRef.current, remote))
-      if (!pushed) exchangedFor.current = null
+      if (!pushed) {
+        exchangedFor.current = null
+        tryAgainLater()
+      }
     } catch (error) {
       console.error('[sync] exchange', error)
-      if (!cancelled()) exchangedFor.current = null
+      if (!cancelled()) {
+        exchangedFor.current = null
+        tryAgainLater()
+      }
     } finally {
       if (mounted.current && exchangeAttempt.current === attempt) setExchanging(false)
     }
-  }, [commitState])
+  }, [commitState, tryAgainLater])
 
   const userId = session?.user.id
   const contentReady = total > 0
@@ -226,6 +266,12 @@ export function ProgressProvider({ initial, children }: { initial: BootResult; c
   }, [userId, contentReady, exchange])
   useReconnect(() => void exchange())
   useForeground(() => void exchange())
+  useEffect(() => {
+    retry.current = () => {
+      void exchange()
+      void flush()
+    }
+  }, [exchange, flush])
 
   /* The queue belongs to the account it was waiting for: signing out ends
      it (the exchange on the next sign-in pushes the whole Kronika anyway),

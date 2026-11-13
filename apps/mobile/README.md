@@ -280,9 +280,14 @@ through `src/lib/haptics.ts`.
   Kronika is the source of truth (`StoredState`, the same shape as the site
   and the backend). A discovery runs the core rules, is saved, and lands in
   the sync queue (`SyncQueue`, core `offline.ts`); the queue is pushed with
-  `syncFinds` whenever the device is online and someone is signed in, and
-  retried on every reconnect. Signing in exchanges finds with the account
-  (earliest date wins, nothing is ever removed).
+  `syncFinds` whenever the device is online and someone is signed in. A
+  push the backend did not take keeps the finds queued and is tried again
+  on every reconnect, on every return to the foreground and, while the app
+  stays open, after a growing pause (core `retryDelay`); a push or a read
+  that does not answer in `ATTEMPT_TIMEOUT_MS` counts as failed, so a
+  request hung on a dying signal never holds the next try back. Signing in
+  exchanges finds with the account (earliest date wins, nothing is ever
+  removed), retried the same way.
 - **Account** (`SessionProvider`, `src/lib/sync.ts`): the Supabase session
   lives in AsyncStorage with URL detection off; token refresh runs only in
   the foreground. Sign-in is native: Google (`@react-native-google-signin`)

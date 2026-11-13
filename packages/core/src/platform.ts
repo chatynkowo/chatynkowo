@@ -1,7 +1,9 @@
 /* Platform adapters. The package assumes neither the DOM nor Node — whatever
    depends on the environment (fetching files, SHA-256) is injected: the
    browser uses its built-in fetch and WebCrypto, React Native supplies its
-   own hash (e.g. expo-crypto), and tests can pass stubs. */
+   own hash (e.g. expo-crypto), and tests can pass stubs. Timers are the
+   one thing every runtime has; they are read off globalThis because the
+   package's types assume no environment. */
 
 export interface ResponseLike {
   ok: boolean
@@ -40,4 +42,27 @@ export const webCryptoSha256Hex: Sha256Hex = async (text) => {
   }
   const digest = await g.crypto.subtle.digest('SHA-256', new g.TextEncoder().encode(text))
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+type Timers = { setTimeout(run: () => void, ms: number): unknown; clearTimeout(timer: unknown): void }
+
+/* The work's result, or a rejection once `ms` have passed without one. The
+   work itself is not stopped, only no longer waited for: for a request
+   that may hang on a dying connection, where the caller would rather try
+   again than wait. */
+export function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
+  const timers = globalThis as unknown as Timers
+  return new Promise<T>((resolve, reject) => {
+    const timer = timers.setTimeout(() => reject(new Error(`No answer in ${ms / 1000} s.`)), ms)
+    work.then(
+      (value) => {
+        timers.clearTimeout(timer)
+        resolve(value)
+      },
+      (reason: unknown) => {
+        timers.clearTimeout(timer)
+        reject(reason)
+      },
+    )
+  })
 }

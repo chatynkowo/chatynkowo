@@ -1,9 +1,11 @@
 import type { StoredFind } from './types'
 
 /* Offline rules, free of any storage: a stale-while-revalidate envelope for
-   cached content and the queue of finds waiting to reach the account. The
-   mobile app keeps both in AsyncStorage; every function here returns a new
-   value and never mutates its input. */
+   cached content, the queue of finds waiting to reach the account, and the
+   pace at which a client tries again what the backend did not take. The
+   mobile app keeps the cache and the queue in AsyncStorage, the site keeps
+   the queue in localStorage; every function here returns a new value and
+   never mutates its input. */
 
 /* ---------- Cached content ---------- */
 
@@ -84,3 +86,23 @@ export function settleFinds(queue: SyncQueue, slugs: Iterable<string>): SyncQueu
 export function queuedFinds(queue: SyncQueue): Record<string, StoredFind> {
   return Object.fromEntries(queue.pending.map((find) => [find.slug, { foundAt: find.foundAt }]))
 }
+
+/* ---------- Trying again ---------- */
+
+/* The pauses between tries of something the backend did not take while the
+   device looked connected (a refused request, a signal too weak to carry
+   it): short at first, then every few minutes for as long as the client
+   is open. A reconnect, or a return to the client, tries at once whatever
+   the pause. */
+export const RETRY_DELAYS_MS = [5_000, 15_000, 60_000, 300_000] as const
+
+/* The pause after the nth failure in a row; the last one repeats. */
+export function retryDelay(failures: number): number {
+  return RETRY_DELAYS_MS[Math.min(Math.max(failures, 1), RETRY_DELAYS_MS.length) - 1]
+}
+
+/* How long one try may take. A request on a dying connection can hang for
+   minutes; past this the try counts as failed and the next one is free to
+   go. What the clients send this way is idempotent, so a request that
+   arrives late after all does no harm. */
+export const ATTEMPT_TIMEOUT_MS = 20_000
