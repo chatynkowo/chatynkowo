@@ -2,7 +2,7 @@
 title: GANEK
 slug: ganek
 occupant: "elf Ganek"
-virtue: "odporność na krytykę"
+virtue: "bycie nie idealnym"
 ---
 
 # GANEK
