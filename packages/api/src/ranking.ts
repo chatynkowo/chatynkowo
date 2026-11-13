@@ -105,6 +105,41 @@ export function sessionProvider(session: Session): OAuthProvider | null {
   return OAUTH_PROVIDERS.find((candidate) => candidate === provider) ?? null
 }
 
+const BASE64_URL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+
+/* The bytes behind base64url text. Decoded by hand: the package assumes
+   neither the browser's atob nor Node's Buffer, and React Native has had
+   the former only lately. */
+function base64UrlBytes(text: string): number[] {
+  const bytes: number[] = []
+  let buffer = 0
+  let bits = 0
+  for (const character of text.replace(/=+$/, '')) {
+    const value = BASE64_URL.indexOf(character)
+    if (value < 0) throw new Error('The token is not base64url.')
+    buffer = (buffer << 6) | value
+    bits += 6
+    if (bits < 8) continue
+    bits -= 8
+    bytes.push(buffer >> bits)
+    buffer &= (1 << bits) - 1
+  }
+  return bytes
+}
+
+/* The claims of a session's access token, read without checking the
+   signature: the token is the client's own, and its claims are read to
+   describe the session (its id, how and when it authenticated), never to
+   trust it. The site's sign-in log and both clients' diagnostics reports
+   read them. Throws on a token that is not a JWT. */
+export function tokenClaims(token: string): Record<string, unknown> {
+  const bytes = base64UrlBytes(token.split('.')[1] ?? '')
+  /* UTF-8 through percent-encoding, which every runtime decodes. */
+  const claims: unknown = JSON.parse(decodeURIComponent(bytes.map((byte) => `%${byte.toString(16).padStart(2, '0')}`).join('')))
+  if (typeof claims !== 'object' || claims === null) throw new Error('The token carries no claims.')
+  return claims as Record<string, unknown>
+}
+
 /* The address the provider shared, to name the account the seeker is
    signed in with; null when the provider hid it (Apple's relay is still an
    address and is shown as one). */

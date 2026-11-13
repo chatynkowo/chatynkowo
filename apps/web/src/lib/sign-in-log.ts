@@ -1,5 +1,4 @@
-import { sessionProvider, type OAuthProvider, type Session } from '@chatynkowo/api'
-import { tokenClaims } from './token'
+import { sessionProvider, tokenClaims, type OAuthProvider, type Session } from '@chatynkowo/api'
 
 /* The sign-ins this browser has seen, kept in localStorage for looking
    into a problem later: which provider the seeker chose and when, and

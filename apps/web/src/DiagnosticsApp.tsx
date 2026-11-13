@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CONTACT_EMAIL } from '@chatynkowo/core'
+import { CONTACT_EMAIL, reportFileName, reportText } from '@chatynkowo/core'
 import { SitePage } from './components/SitePage'
 import './features/account/Account.css'
-import { collectDiagnostics, reportFileName, reportText, type DiagnosticsReport } from './lib/diagnostics'
+import { collectDiagnostics, type DiagnosticsReport } from './lib/diagnostics'
 import { useAccount } from './providers/AccountProvider'
 import { Button, CopyIcon, DownloadIcon, LinkButton, MailIcon, Notice, ReportIcon, SpinnerIcon, iconSize } from './ui'
 
