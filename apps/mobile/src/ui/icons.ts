@@ -23,6 +23,7 @@ import { ArrowLeftIcon } from 'phosphor-react-native/src/icons/ArrowLeft'
 import { ArrowRightIcon } from 'phosphor-react-native/src/icons/ArrowRight'
 import { ArrowUpIcon } from 'phosphor-react-native/src/icons/ArrowUp'
 import { BookOpenTextIcon } from 'phosphor-react-native/src/icons/BookOpenText'
+import { BugIcon } from 'phosphor-react-native/src/icons/Bug'
 import { CameraIcon as PhosphorCamera } from 'phosphor-react-native/src/icons/Camera'
 import { CaretDownIcon } from 'phosphor-react-native/src/icons/CaretDown'
 import { CaretLeftIcon } from 'phosphor-react-native/src/icons/CaretLeft'
@@ -34,6 +35,7 @@ import { CloudArrowUpIcon } from 'phosphor-react-native/src/icons/CloudArrowUp'
 import { CoffeeIcon as PhosphorCoffee } from 'phosphor-react-native/src/icons/Coffee'
 import { CrownIcon } from 'phosphor-react-native/src/icons/Crown'
 import { DownloadSimpleIcon } from 'phosphor-react-native/src/icons/DownloadSimple'
+import { EnvelopeSimpleIcon } from 'phosphor-react-native/src/icons/EnvelopeSimple'
 import { FacebookLogoIcon } from 'phosphor-react-native/src/icons/FacebookLogo'
 import { FlashlightIcon } from 'phosphor-react-native/src/icons/Flashlight'
 import { FootprintsIcon } from 'phosphor-react-native/src/icons/Footprints'
@@ -96,6 +98,8 @@ export const LocateIcon = GpsFixIcon
 export const SpinnerIcon = CircleNotchIcon
 export const SearchIcon = MagnifyingGlassIcon
 export const DownloadIcon = DownloadSimpleIcon
+export const ReportIcon = BugIcon
+export const MailIcon = EnvelopeSimpleIcon
 
 /* ---------- Domain: the expedition ---------- */
 export const CottageIcon = HouseLineIcon
@@ -153,6 +157,7 @@ export const WatchAdIcon = MonitorPlayIcon
 export const ICON_VOCABULARY = {
   CloseIcon, BackIcon, ForwardIcon, PreviousIcon, NextIcon, ExpandIcon, CheckIcon, PlayIcon, PauseIcon,
   SoundOnIcon, SoundOffIcon, ZoomInIcon, ZoomOutIcon, ResetViewIcon, LocateIcon, SpinnerIcon, SearchIcon, DownloadIcon,
+  ReportIcon, MailIcon,
   CottageIcon, FoundIcon, PinIcon, NavigateIcon, BearingIcon, AtlasIcon, TrailIcon, KeyIcon, SealIcon, QrIcon, ShieldIcon,
   ChronicleIcon, RewardIcon, NotebookIcon, StoryAudioIcon, LoreIcon, CreedIcon, ElfIcon, ForestIcon,
   InstagramIcon, FacebookIcon,

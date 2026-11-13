@@ -74,7 +74,9 @@ Supabase project.
   (`src/lib/diagnostics.ts`): everything the site keeps in `localStorage`
   and `sessionStorage`, the account as the site and the backend see it,
   the browser and the device, with every token taken out; the site sends
-  it nowhere (`src/diagnostics-main.tsx`),
+  it nowhere (`src/diagnostics-main.tsx`). The app has the same under
+  Profile, "Zgłoś błąd", made from its own storage and sent through the
+  mail composer (`apps/mobile/README.md`),
 - `/admin/` — the content and location editor (`admin/editor.ts`).
 
 Vite builds all entry points in one process. In development the plugin in

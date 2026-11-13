@@ -90,6 +90,8 @@ export const LocateIcon = GpsFix
 export const SpinnerIcon = CircleNotch
 export const SearchIcon = MagnifyingGlass
 export const DownloadIcon = DownloadSimple
+export const ReportIcon = Bug
+export const MailIcon = EnvelopeSimple
 
 /* ---------- Domain: the expedition ---------- */
 export const CottageIcon = HouseLine
@@ -126,20 +128,19 @@ export const AppIcon = DeviceMobile
 export const GooglePlayIcon = GooglePlayLogo
 export const AppStoreIcon = AppStoreLogo
 
-/* ---------- Site-only roles (reporting a problem) ---------- */
-export const ReportIcon = Bug
+/* ---------- Site-only roles (the report on the clipboard) ---------- */
 export const CopyIcon = Copy
-export const MailIcon = EnvelopeSimple
 
 /* The vocabulary as one object, checked against the shared roles: a
    missing role is a compile error. */
 export const ICON_VOCABULARY = {
   CloseIcon, BackIcon, ForwardIcon, PreviousIcon, NextIcon, ExpandIcon, CheckIcon, PlayIcon, PauseIcon,
   SoundOnIcon, SoundOffIcon, ZoomInIcon, ZoomOutIcon, ResetViewIcon, LocateIcon, SpinnerIcon, SearchIcon, DownloadIcon,
+  ReportIcon, MailIcon,
   CottageIcon, FoundIcon, PinIcon, NavigateIcon, AtlasIcon, TrailIcon, KeyIcon, SealIcon, QrIcon, ShieldIcon,
   ChronicleIcon, RewardIcon, NotebookIcon, StoryAudioIcon, LoreIcon, CreedIcon, ElfIcon, ForestIcon,
   ProfileIcon, SignOutIcon,
   InstagramIcon, FacebookIcon,
   AppIcon, GooglePlayIcon, AppStoreIcon,
-  ReportIcon, CopyIcon, MailIcon,
+  CopyIcon,
 } satisfies Record<SharedIconRole | WebIconRole, Icon>

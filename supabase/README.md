@@ -276,13 +276,19 @@ The last 50 entries are kept. Deleting the account on the site clears the
 log; signing out does not.
 
 The diagnostics report (`apps/web/src/lib/diagnostics.ts`) is one JSON
-document: `site` (the build's commit, the page, the language), `browser`
-and `storage` (the user agent, the screen, the time zone, the storage
-used), `account` (whether signed in, the claims of the access token, the
-profile row), `backend` (asked as the report is made: the providers on
-offer, the number of published cottages, the finds the account holds),
-then `localStorage` and `sessionStorage` whole. The tokens are replaced
-by `[removed: N characters]`, so a report signs nobody in; a part that
-could not be gathered is `{ "failed": "<why>" }` in its place. Making a
-report changes nothing: the page runs no exchange of finds with the
-account.
+document: `client` (`site`), `site` (the build's commit, the page, the
+language), `browser` and `storage` (the user agent, the screen, the time
+zone, the storage used), `account` (whether signed in, the claims of the
+access token, the profile row), `backend` (asked as the report is made:
+the providers on offer, the number of published cottages, the finds the
+account holds), then `localStorage` and `sessionStorage` whole. The
+tokens are replaced by `[removed: N characters]`, so a report signs
+nobody in; a part that could not be gathered is `{ "failed": "<why>" }`
+in its place. Making a report changes nothing: the page runs no exchange
+of finds with the account.
+
+The app makes its own report (`client: app`, see `apps/mobile/README.md`,
+"Reporting a problem") from the Profile tab and sends it through the
+mail composer; the rules the two share are core's `diagnostics.ts`. A
+browser's storage and an app's are closed to each other, so a seeker who
+uses both and has a problem on both sends two reports.

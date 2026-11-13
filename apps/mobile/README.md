@@ -194,11 +194,12 @@ app/                     expo-router routes
                          and the parchment cottage sheet (a gesture sheet with three snaps)
   (tabs)/kronika/        its own native stack: the collection grid with the progress card
   (tabs)/ranking/        its own native stack: the leaderboard list, the rules and share header items
-  (tabs)/profile/        its own native stack: grouped settings (account, language, preferences, lore, legal, social)
-                         with the support invitation, account.tsx (the signed-in account: identity, leaderboard entry,
-                         finds, preferences, sign-out, deletion), preferences.tsx (the consent to ads: its state and
-                         the form reopened, to change or withdraw it), about.tsx (the lore sections) and guide.tsx
-                         (the onboarding pager replayed)
+  (tabs)/profile/        its own native stack: grouped settings (account, language, preferences, lore, help, legal,
+                         social) with the support invitation, account.tsx (the signed-in account: identity,
+                         leaderboard entry, finds, preferences, sign-out, deletion), preferences.tsx (the consent to
+                         ads: its state and the form reopened, to change or withdraw it), about.tsx (the lore
+                         sections), guide.tsx (the onboarding pager replayed) and report.tsx (the diagnostics report
+                         and the way to send it)
   code.tsx               the code entry as a sheet (auto-submits at the fourth digit)
   scan.tsx               the QR scanner, full screen under a transparent bar with torch and close items
   cottages.tsx           every cottage, found first, with a search box and an undiscovered-only filter: one page
@@ -317,6 +318,27 @@ through `src/lib/haptics.ts`.
   `supabase/README.md`, "Deleting an account"); the Kronika on the device
   stays, like after a sign-out. A refusal is a toast and the session is
   kept for another try.
+- **Reporting a problem** (`app/(tabs)/profile/report.tsx`,
+  `src/features/diagnostics`, `src/lib/diagnostics.ts`): "Zgłoś błąd" in
+  the Profile list opens a screen that makes the diagnostics report by
+  itself and hands it over with one button: the system mail composer with
+  our address, a subject and the report attached, so the seeker writes
+  what happened and sends. A phone with no mail set up gets the share
+  sheet instead, which has a button of its own too (the file on iOS, the
+  text on Android). The report is the app's twin of the site's
+  (`apps/web/src/lib/diagnostics.ts`, the shared rules in core's
+  `diagnostics.ts`): `app` (version, build number, commit, language),
+  `device` (brand, model, system and its version, locales, time zone,
+  screen), `network`, `permissions` (location and camera, as the system
+  has them; nothing is asked for), `content` (what the app holds of the
+  forest), `account` (whether signed in and through what, the claims of
+  the access token, the profile row), `backend` (asked now: the providers
+  on offer, the finds the account holds) and `storage`, every AsyncStorage
+  entry with the tokens replaced by `[removed: N characters]` and the
+  cached content files named by their age and size. An app cannot read
+  what a browser keeps for the site, so each client reports its own
+  storage. Making a report reads and never writes, and the app sends
+  nothing on its own.
 - **Account preview** (`src/lib/account-preview.ts`): with
   `EXPO_PUBLIC_ACCOUNT_PREVIEW=1` in `apps/mobile/.env` a development
   build behaves as if a Google account were signed in, so the account
@@ -356,6 +378,7 @@ through `src/lib/haptics.ts`.
 | Haptics | `expo-haptics` | one module (`src/lib/haptics.ts`) and only three moments: medium on the seal of a fresh find, success on an accepted code and a revealed reward, error on a refused code; no control, tab, pager or toast vibrates; iOS uses the UIKit generators, Android the system `HapticFeedbackConstants` through `performAndroidHapticsAsync` (the OEM's short click, under the system touch-feedback setting and intensity), with the Vibrator notification patterns kept only for success and error below API 30 |
 | Images | `expo-image` | `ContentImage`: memory and disk cache, cross-dissolve, retries with a backoff and on reconnect, a quiet fallback after the last failure, prefetch of the reward art and the found cottages' photos |
 | Legal pages | `expo-web-browser` | the terms and privacy pages open in an in-app browser sheet |
+| Problem report | `expo-device`, `expo-mail-composer` | the phone's brand, model and system for the diagnostics report (the device's own name, which is the owner's, is not read); the system mail composer with the report attached (`MFMailComposeViewController` on iOS, a mail intent on Android). The composer's config plugin is left out: it only declares mail apps' URL schemes for `getClients()`, which the app does not call |
 | Store billing | `expo-iap` | the coffee for the elf as consumable products through Google Play Billing and StoreKit 2 (`src/lib/billing.ts`, driven by `SupportProvider`): listeners registered before the connection opens and kept for the life of the app, every paid purchase finished at once (consumed on Android), the leftovers settled at launch and on every return to the foreground, pending purchases (cash, Ask to Buy) reported and left alone until paid; prices come from the store's product records, the app carries only the product ids (`src/features/support/tips.ts`) |
 | Ads | `react-native-google-mobile-ads` | one rewarded ad, only in the support sheet and only when asked for (`src/features/support/useRewardedSupportAd.ts`); Google's consent flow (UMP) runs before the first request and decides between personalised and non-personalised requests, the SDK initialises after it (`delayAppMeasurementInit`); the AdMob app ids reach the native manifests through the plugin in `app.config.ts`, the rewarded units come from `EXPO_PUBLIC_ADMOB_REWARDED_*_UNIT_ID`, and without one a development build shows Google's test ad while a release build offers no ad |
 | Fonts | `expo-font` + `@expo-google-fonts/*` | Cormorant Garamond and Cinzel Decorative, imported per weight; the repository's woff2 files cannot be used natively |

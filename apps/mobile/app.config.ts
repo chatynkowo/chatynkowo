@@ -63,6 +63,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     'react-native-google-mobile-ads',
     { androidSdk: 'classic', androidAppId: admobAndroidAppId, iosAppId: admobIosAppId, delayAppMeasurementInit: true, skAdNetworkItems: ADMOB_SKADNETWORK_IDS },
   ])
+  /* expo-mail-composer's own plugin is left out on purpose: it only lists
+     the URL schemes of two dozen mail apps for getClients(), which the app
+     never calls (the report goes through the system composer or the share
+     sheet), and iOS allows an app fifty such schemes in all. */
   /* app.json carries the name and the slug the type asks for. */
   return {
     ...config,

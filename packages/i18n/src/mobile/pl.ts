@@ -125,6 +125,39 @@ export const mobilePl = {
     deleteTitle: 'Usuwanie konta',
     deleteAppleCancelled: 'Konto zostaje. Usunięcie trzeba potwierdzić przez Apple.',
   },
+  /* Reporting a problem (src/features/diagnostics): the row in the Profile
+     list and the screen that makes the diagnostics report and hands it to
+     the mail composer or the share sheet. */
+  report: {
+    section: 'Pomoc',
+    row: 'Zgłoś błąd',
+    rowHint: 'Otwiera ekran z raportem do wysłania',
+    title: 'Zgłoś błąd',
+    lead: 'Coś w aplikacji nie działa tak, jak powinno? Wyślij nam raport i dopisz, co się stało, a poszukamy przyczyny.',
+    preparing: 'Przygotowuję raport…',
+    send: 'Wyślij raport',
+    share: 'Udostępnij raport',
+    sendFooter: 'Otworzy się wiadomość do nas z raportem w załączniku. Możesz też wysłać go inną aplikacją na adres {{email}}.',
+    /* The message the composer opens with. */
+    mailSubject: 'Zgłoszenie błędu w aplikacji Chatynkowo',
+    mailBody: 'Co się stało:\n\n',
+    sent: 'Dziękujemy! Raport jest w drodze do nas.',
+    noMail: 'Na tym telefonie nie ma ustawionej poczty. Wybierz aplikację i wyślij raport na adres {{email}}.',
+    failed: 'Nie udało się przygotować raportu. Spróbuj ponownie.',
+    holdsTitle: 'Co zawiera raport',
+    holdsApp: 'Aplikacja i telefon',
+    holdsAppDetail: 'Wersja aplikacji, model telefonu i wersja systemu.',
+    holdsStorage: 'Pamięć aplikacji',
+    holdsStorageDetail: 'Odkryte Chatynki, odznaki i ustawienia z tego urządzenia.',
+    holdsAccount: 'Konto',
+    holdsAccountDetail: 'Po zalogowaniu: e-mail, pseudonim, sposób logowania i odkrycia z konta.',
+    holdsNetwork: 'Połączenie',
+    holdsNetworkDetail: 'Stan sieci, zgody aplikacji i odpowiedź naszego serwera.',
+    without:
+      'W raporcie nie ma haseł ani kluczy logowania, Twojego położenia ani zdjęć. Aplikacja sama niczego nie wysyła: raport trafia do nas dopiero wtedy, gdy go prześlesz.',
+    show: 'Zobacz raport',
+    hide: 'Ukryj raport',
+  },
   /* The preferences screen (src/features/preferences): the consent to
      ads, read from Google's consent SDK, and the row that opens the form
      again, so it can be changed or withdrawn as easily as it was given. */

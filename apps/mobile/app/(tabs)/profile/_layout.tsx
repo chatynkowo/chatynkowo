@@ -3,8 +3,9 @@ import { Stack } from 'expo-router'
 import { TabStack, opaqueHeaderOptions } from '../../../src/ui'
 
 /* The Profile tab's own stack: the settings list under a standard title,
-   with the account screen, the preferences, About and How to play pushed
-   on top under their own titles and the native back button. Titles are read here so they follow the language
+   with the account screen, the preferences, About, How to play and the
+   problem report pushed on top under their own titles and the native back
+   button. Titles are read here so they follow the language
    switch. The guide is a fixed pager (pages, dots), not a scroll view, so
    its content cannot slide under a transparent bar: the bar is opaque. */
 /* The list stays under the account screen also when a link lands on the
@@ -23,6 +24,7 @@ export default function ProfileLayout() {
       <Stack.Screen name="preferences" options={{ title: t('mobile:preferences.title') }} />
       <Stack.Screen name="about" options={{ title: t('nav.about') }} />
       <Stack.Screen name="guide" options={{ ...opaqueHeaderOptions, title: t('mobile:profile.howToPlay') }} />
+      <Stack.Screen name="report" options={{ title: t('mobile:report.title') }} />
     </TabStack>
   )
 }
