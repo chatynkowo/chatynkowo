@@ -151,6 +151,11 @@ export const sharedEn: typeof sharedPl = {
     defaultName: 'Explorer',
     loading: 'Loading your account...',
     exchanging: 'Merging your finds with the account...',
+    /* Finds made without a connection, or not taken by the backend yet. */
+    pendingSync_one: '{{count}} discovery is waiting to be saved to your account.',
+    pendingSync_few: '{{count}} discoveries are waiting to be saved to your account.',
+    pendingSync_many: '{{count}} discoveries are waiting to be saved to your account.',
+    pendingSync_other: '{{count}} discoveries are waiting to be saved to your account.',
     nickname: 'Nickname',
     showAvatar: 'Show my account photo',
     saved: 'Saved.',

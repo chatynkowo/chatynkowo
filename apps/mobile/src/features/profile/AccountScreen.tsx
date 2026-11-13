@@ -143,7 +143,7 @@ export function AccountScreen() {
   const avatarFooter = !picture ? t('mobile:profile.avatarNone', { provider }) : showAvatar ? t('mobile:profile.avatarOn', { provider }) : t('mobile:profile.avatarOff')
 
   const findsFooter =
-    [pendingCount > 0 ? t('mobile:common.pendingSync', { count: pendingCount }) : null, exchanging ? t('profile.exchanging') : null].filter(Boolean).join('\n') || undefined
+    [pendingCount > 0 ? t('profile.pendingSync', { count: pendingCount }) : null, exchanging ? t('profile.exchanging') : null].filter(Boolean).join('\n') || undefined
 
   return (
     <Screen contentStyle={[styles.content, contentStyle]}>

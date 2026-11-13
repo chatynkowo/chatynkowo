@@ -45,7 +45,7 @@ export function AccountSection() {
 
   const footer = [
     t('profile.finds', { count: foundCount }),
-    pendingCount > 0 ? t('mobile:common.pendingSync', { count: pendingCount }) : null,
+    pendingCount > 0 ? t('profile.pendingSync', { count: pendingCount }) : null,
     exchanging ? t('profile.exchanging') : null,
   ]
     .filter(Boolean)

@@ -35,7 +35,7 @@ export function AccountRow({ place, onSignedIn }: AccountRowProps) {
     pendingCount > 0 ? (
       <View style={styles.line}>
         <SyncIcon size={iconSize.sm} color={colors.inkSoft} />
-        <CrossfadeText variant="small" tone="soft" style={styles.lineText} value={t('mobile:common.pendingSync', { count: pendingCount })} />
+        <CrossfadeText variant="small" tone="soft" style={styles.lineText} value={t('profile.pendingSync', { count: pendingCount })} />
       </View>
     ) : null
 

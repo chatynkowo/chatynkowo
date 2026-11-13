@@ -154,6 +154,11 @@ export const sharedPl = {
     defaultName: 'Zdobywca',
     loading: 'Wczytuję konto...',
     exchanging: 'Łączę odkrycia z kontem...',
+    /* Finds made without a connection, or not taken by the backend yet. */
+    pendingSync_one: '{{count}} odkrycie czeka na zapis w koncie.',
+    pendingSync_few: '{{count}} odkrycia czekają na zapis w koncie.',
+    pendingSync_many: '{{count}} odkryć czeka na zapis w koncie.',
+    pendingSync_other: '{{count}} odkryć czeka na zapis w koncie.',
     nickname: 'Pseudonim',
     showAvatar: 'Pokaż zdjęcie z konta',
     saved: 'Zapisano.',

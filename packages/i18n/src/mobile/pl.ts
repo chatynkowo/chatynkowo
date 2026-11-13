@@ -20,10 +20,6 @@ export const mobilePl = {
     offlineShort: 'Bez zasięgu',
     stale: 'Zapisana wersja',
     offlineNoData: 'Brak połączenia, a na tym urządzeniu nie ma jeszcze zapisanej mapy. Połącz się raz, aby pobrać Chatynki.',
-    pendingSync_one: '{{count}} odkrycie czeka na zapis w koncie.',
-    pendingSync_few: '{{count}} odkrycia czekają na zapis w koncie.',
-    pendingSync_many: '{{count}} odkryć czeka na zapis w koncie.',
-    pendingSync_other: '{{count}} odkryć czeka na zapis w koncie.',
     language: 'Język',
   },
   atlas: {

@@ -19,10 +19,6 @@ export const mobileEn: typeof mobilePl = {
     offlineShort: 'Offline',
     stale: 'Saved copy',
     offlineNoData: 'No connection, and this device has no saved map yet. Connect once to download the Cottages.',
-    pendingSync_one: '{{count}} discovery is waiting to be saved to your account.',
-    pendingSync_few: '{{count}} discoveries are waiting to be saved to your account.',
-    pendingSync_many: '{{count}} discoveries are waiting to be saved to your account.',
-    pendingSync_other: '{{count}} discoveries are waiting to be saved to your account.',
     language: 'Language',
   },
   atlas: {
