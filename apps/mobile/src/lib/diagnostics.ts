@@ -243,10 +243,10 @@ export async function mailReport(report: AppDiagnosticsReport, words: { subject:
   return status === MailComposer.MailComposerStatus.SAVED ? 'saved' : 'cancelled'
 }
 
-/* The system's share sheet, for a seeker who sends mail from another app
-   or wants to keep the report: the file on iOS, the text on Android,
-   whose share intent takes no file from here. Resolves to whether
-   something was done with it. */
+/* The system's share sheet, where the report goes when the phone has no
+   mail set up: the file on iOS, the text on Android, whose share intent
+   takes no file from here. Resolves to whether something was done with
+   it. */
 export async function shareReport(report: AppDiagnosticsReport, title: string): Promise<boolean> {
   const result = await Share.share(Platform.OS === 'ios' ? { url: writeReport(report), title } : { message: reportText(report), title }, { subject: title })
   return result.action !== Share.dismissedAction

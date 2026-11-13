@@ -133,11 +133,10 @@ export const mobilePl = {
     row: 'Zgłoś błąd',
     rowHint: 'Otwiera ekran z raportem do wysłania',
     title: 'Zgłoś błąd',
-    lead: 'Coś w aplikacji nie działa tak, jak powinno? Wyślij nam raport i dopisz, co się stało, a poszukamy przyczyny.',
+    /* The screen says little on purpose: one line, one button. */
+    lead: 'Wyślij nam raport i dopisz, co się stało.',
     preparing: 'Przygotowuję raport…',
     send: 'Wyślij raport',
-    share: 'Udostępnij raport',
-    sendFooter: 'Otworzy się wiadomość do nas z raportem w załączniku. Możesz też wysłać go inną aplikacją na adres {{email}}.',
     /* The message the composer opens with. */
     mailSubject: 'Zgłoszenie błędu w aplikacji Chatynkowo',
     mailBody: 'Co się stało:\n\n',
@@ -147,25 +146,11 @@ export const mobilePl = {
     /* The site's own report: an app cannot read a browser's storage, so
        the seeker is sent to the site's page, at both of its addresses. */
     siteTitle: 'Korzystasz też ze strony?',
-    siteLead:
-      'Aplikacja nie widzi tego, co strona chatynkowo.pl zapisała w przeglądarce. Jeśli korzystasz też ze strony, wyślij nam raport także z niej. Strona działa pod dwoma adresami, a przeglądarka pamięta każdy osobno, więc otwórz oba w każdej przeglądarce, w której ją otwierasz.',
-    siteOpen: 'Zgłoś błąd na stronie',
-    siteOpenOther: 'To samo pod drugim adresem',
-    siteFooter: 'Przyciski otwierają domyślną przeglądarkę telefonu. W innej przeglądarce albo na komputerze wpisz oba adresy ręcznie.',
+    siteRow: 'Raport ze strony ({{scheme}})',
     siteFailed: 'Nie udało się otworzyć przeglądarki. Wpisz w niej adres {{address}}.',
-    holdsTitle: 'Co zawiera raport',
-    holdsApp: 'Aplikacja i telefon',
-    holdsAppDetail: 'Wersja aplikacji, model telefonu i wersja systemu.',
-    holdsStorage: 'Pamięć aplikacji',
-    holdsStorageDetail: 'Odkryte Chatynki, odznaki i ustawienia z tego urządzenia.',
-    holdsAccount: 'Konto',
-    holdsAccountDetail: 'Po zalogowaniu: e-mail, pseudonim, sposób logowania i odkrycia z konta.',
-    holdsNetwork: 'Połączenie',
-    holdsNetworkDetail: 'Stan sieci, zgody aplikacji i odpowiedź naszego serwera.',
-    without:
-      'W raporcie nie ma haseł ani kluczy logowania, Twojego położenia ani zdjęć. Aplikacja sama niczego nie wysyła: raport trafia do nas dopiero wtedy, gdy go prześlesz.',
     show: 'Zobacz raport',
     hide: 'Ukryj raport',
+    without: 'Bez haseł i bez Twojego położenia.',
   },
   /* The preferences screen (src/features/preferences): the consent to
      ads, read from Google's consent SDK, and the row that opens the form
