@@ -144,6 +144,15 @@ export const mobilePl = {
     sent: 'Dziękujemy! Raport jest w drodze do nas.',
     noMail: 'Na tym telefonie nie ma ustawionej poczty. Wybierz aplikację i wyślij raport na adres {{email}}.',
     failed: 'Nie udało się przygotować raportu. Spróbuj ponownie.',
+    /* The site's own report: an app cannot read a browser's storage, so
+       the seeker is sent to the site's page, at both of its addresses. */
+    siteTitle: 'Korzystasz też ze strony?',
+    siteLead:
+      'Aplikacja nie widzi tego, co strona chatynkowo.pl zapisała w przeglądarce. Jeśli korzystasz też ze strony, wyślij nam raport także z niej. Strona działa pod dwoma adresami, a przeglądarka pamięta każdy osobno, więc otwórz oba w każdej przeglądarce, w której ją otwierasz.',
+    siteOpen: 'Zgłoś błąd na stronie',
+    siteOpenOther: 'To samo pod drugim adresem',
+    siteFooter: 'Przyciski otwierają domyślną przeglądarkę telefonu. W innej przeglądarce albo na komputerze wpisz oba adresy ręcznie.',
+    siteFailed: 'Nie udało się otworzyć przeglądarki. Wpisz w niej adres {{address}}.',
     holdsTitle: 'Co zawiera raport',
     holdsApp: 'Aplikacja i telefon',
     holdsAppDetail: 'Wersja aplikacji, model telefonu i wersja systemu.',

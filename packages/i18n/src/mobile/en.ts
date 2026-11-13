@@ -135,6 +135,13 @@ export const mobileEn: typeof mobilePl = {
     sent: 'Thank you! The report is on its way to us.',
     noMail: 'No mail is set up on this phone. Pick an app and send the report to {{email}}.',
     failed: 'The report could not be prepared. Try again.',
+    siteTitle: 'Do you use the site too?',
+    siteLead:
+      'The app cannot see what the chatynkowo.pl site has saved in your browser. If you use the site as well, send us its report too. The site answers at two addresses and a browser remembers each one apart, so open both in every browser you open the site in.',
+    siteOpen: 'Report a problem on the site',
+    siteOpenOther: 'The same at the other address',
+    siteFooter: "The buttons open the phone's default browser. In another browser, or on a computer, type both addresses in by hand.",
+    siteFailed: 'The browser could not be opened. Type {{address}} into it.',
     holdsTitle: 'What the report holds',
     holdsApp: 'The app and the phone',
     holdsAppDetail: 'The version of the app, the model of the phone and its system.',

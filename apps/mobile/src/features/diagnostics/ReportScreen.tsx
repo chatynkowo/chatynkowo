@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Platform, StyleSheet, View } from 'react-native'
+import { Linking, Platform, StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { CONTACT_EMAIL, reportText } from '@chatynkowo/core'
+import { CONTACT_EMAIL, SITE_DIAGNOSTICS_PAGES, reportText } from '@chatynkowo/core'
 import { collectDiagnostics, mailReport, shareReport, type AppDiagnosticsReport } from '../../lib/diagnostics'
 import { useContent, useSession, useToast } from '../../providers'
 import { Button, MailIcon, Screen, SettingsRow, SettingsSection, ShareIcon, Text, colors, iconSize, radius, space, useTabBarClearance } from '../../ui'
@@ -12,9 +12,16 @@ import { Button, MailIcon, Screen, SettingsRow, SettingsSection, ShareIcon, Text
    the report attached and the address and the subject filled in, so the
    seeker only writes what happened and sends. The share sheet is there
    for a phone with no mail set up and for a seeker who would rather use
-   another app. Under the buttons: what the report holds, what it leaves
-   out, and the report itself for anyone who wants to read it first. The
-   app sends nothing on its own. */
+   another app. Under the buttons: the way to the site's own report, what
+   the app's report holds, what it leaves out, and the report itself for
+   anyone who wants to read it first. The app sends nothing on its own.
+
+   An app cannot read what a browser keeps for the site, so a seeker who
+   uses the site as well is asked to send its report too, from the site's
+   page for it, and at both addresses the site answers at (http and
+   https, which a browser remembers apart). The links open the system's
+   browser, not an in-app one: only there is the site's storage the one
+   the seeker has been using. */
 
 export function ReportScreen() {
   const { t, i18n } = useTranslation()
@@ -80,6 +87,15 @@ export function ReportScreen() {
     }
   }
 
+  async function openSite(address: string) {
+    try {
+      await Linking.openURL(address)
+    } catch (error) {
+      console.warn('[report] site', error)
+      toast.show({ tone: 'error', text: t('mobile:report.siteFailed', { address }), durationMs: 7000 })
+    }
+  }
+
   return (
     <Screen contentStyle={{ gap: space.xl, paddingBottom: space.xxl + tabBarClearance }}>
       <Text tone="soft">{t('mobile:report.lead')}</Text>
@@ -102,6 +118,29 @@ export function ReportScreen() {
         <Text variant="small" tone="faint" selectable>
           {t('mobile:report.sendFooter', { email: CONTACT_EMAIL })}
         </Text>
+      </View>
+      <View style={styles.site}>
+        {/* The section's title, with its words between it and the rows. */}
+        <Text variant="eyebrow" style={styles.siteTitle}>
+          {t('mobile:report.siteTitle')}
+        </Text>
+        <Text tone="soft">{t('mobile:report.siteLead')}</Text>
+        <SettingsSection footer={t('mobile:report.siteFooter')}>
+          <SettingsRow
+            label={t('mobile:report.siteOpen')}
+            subtitle={SITE_DIAGNOSTICS_PAGES.https}
+            trailing="external"
+            accessibilityHint={t('mobile:profile.openExternal')}
+            onPress={() => void openSite(SITE_DIAGNOSTICS_PAGES.https)}
+          />
+          <SettingsRow
+            label={t('mobile:report.siteOpenOther')}
+            subtitle={SITE_DIAGNOSTICS_PAGES.http}
+            trailing="external"
+            accessibilityHint={t('mobile:profile.openExternal')}
+            onPress={() => void openSite(SITE_DIAGNOSTICS_PAGES.http)}
+          />
+        </SettingsSection>
       </View>
       <SettingsSection title={t('mobile:report.holdsTitle')} footer={t('mobile:report.without')}>
         <SettingsRow label={t('mobile:report.holdsApp')} subtitle={t('mobile:report.holdsAppDetail')} />
@@ -126,6 +165,12 @@ export function ReportScreen() {
 const styles = StyleSheet.create({
   actions: {
     gap: space.md,
+  },
+  site: {
+    gap: space.sm,
+  },
+  siteTitle: {
+    paddingHorizontal: space.xs,
   },
   report: {
     padding: space.md,

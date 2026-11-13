@@ -291,4 +291,14 @@ The app makes its own report (`client: app`, see `apps/mobile/README.md`,
 "Reporting a problem") from the Profile tab and sends it through the
 mail composer; the rules the two share are core's `diagnostics.ts`. A
 browser's storage and an app's are closed to each other, so a seeker who
-uses both and has a problem on both sends two reports.
+uses both sends the site's report as well: the app's screen links to
+`/diagnostics.html` at both addresses the site answers at.
+
+Those are two, `https://www.chatynkowo.pl` and `http://www.chatynkowo.pl`:
+the server answers on http without sending the browser to https, and a
+browser keeps `localStorage` apart for each, so a seeker's Kronika and
+sign-in log may sit under either. `site.address` in a report says which
+one it was made at. Over http a browser is not a secure context: the
+report is still made (the storage estimate is missing, and copying gives
+way to the download), but a plaque code cannot be checked there at all,
+because hashing it needs `crypto.subtle`.

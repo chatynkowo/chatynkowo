@@ -337,8 +337,15 @@ through `src/lib/haptics.ts`.
   entry with the tokens replaced by `[removed: N characters]` and the
   cached content files named by their age and size. An app cannot read
   what a browser keeps for the site, so each client reports its own
-  storage. Making a report reads and never writes, and the app sends
-  nothing on its own.
+  storage, and the screen asks a seeker who uses the site as well for the
+  site's report too: two rows open the site's `diagnostics.html` in the
+  system browser (`Linking.openURL`, never the in-app browser, whose
+  storage on iOS is not Safari's), at `https://www.chatynkowo.pl` and at
+  `http://www.chatynkowo.pl` (`SITE_DIAGNOSTICS_PAGES` in core). Both,
+  because the server does not turn http into https and a browser keeps
+  the two addresses' storage apart; the words above the rows say to open
+  both in every browser the seeker uses the site in. Making a report
+  reads and never writes, and the app sends nothing on its own.
 - **Account preview** (`src/lib/account-preview.ts`): with
   `EXPO_PUBLIC_ACCOUNT_PREVIEW=1` in `apps/mobile/.env` a development
   build behaves as if a Google account were signed in, so the account

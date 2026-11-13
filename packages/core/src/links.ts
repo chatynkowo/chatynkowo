@@ -6,6 +6,19 @@ export const SITE_ORIGIN = 'https://www.chatynkowo.pl'
 
 export const RANKING_PAGE = `${SITE_ORIGIN}/ranking.html`
 
+/* The site's page for reporting a problem (diagnostics.html), at both
+   addresses the site answers at. The server does not turn http into
+   https, and a browser keeps what a site stored apart for each of the
+   two (localStorage is per origin), so a seeker's Kronika and sign-in log
+   may sit under either. The app, which cannot read a browser's storage,
+   sends the seeker to both. Neither is an address the app itself claims
+   as an app link (those are `/` and `/index.html`), so both open in the
+   browser. */
+export const SITE_DIAGNOSTICS_PAGES = {
+  https: `${SITE_ORIGIN}/diagnostics.html`,
+  http: 'http://www.chatynkowo.pl/diagnostics.html',
+} as const
+
 /* The address for every matter, the one the privacy policy names; a
    seeker's report of a problem goes there. */
 export const CONTACT_EMAIL = 'chatynkowo@gmail.com'
