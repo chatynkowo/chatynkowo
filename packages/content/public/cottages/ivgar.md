@@ -13,8 +13,7 @@ virtue: Wytrwałość
     And so, the former lake-dwelling helper became the keeper of human memories.
     Because even the smallest among us can preserve the biggest stories.
 
-
 Co zrobić, gdy trafisz pod chatynkę?
 
 1. Przystań na chwilę.
-2. Przeczytaj opowieść
+2. Przeczytaj historię
